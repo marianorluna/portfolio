@@ -40,9 +40,12 @@ export function createFloor(
 
   const angle = i * 0.15;
   const scale = 1 - i * 0.015;
+  const slabH = FLOOR_HEIGHT * 0.8;
 
-  const geom = new THREE.BoxGeometry(16 * scale, FLOOR_HEIGHT * 0.8, 16 * scale);
+  // BoxGeometry es centrada: sin offset, la cota 0 (planta) cortaba el bloque a la mitad.
+  const geom = new THREE.BoxGeometry(16 * scale, slabH, 16 * scale);
   const mesh = new THREE.Mesh(geom, baseMat.clone());
+  mesh.position.y = slabH / 2;
   mesh.rotation.y = angle;
 
   const edges = new THREE.EdgesGeometry(geom);
@@ -64,6 +67,7 @@ export function createFloor(
   const coreGeom = new THREE.BoxGeometry(4, FLOOR_HEIGHT, 4);
   const coreMat = new THREE.MeshBasicMaterial({ color: 0x0a0a0a });
   const core = new THREE.Mesh(coreGeom, coreMat);
+  core.position.y = FLOOR_HEIGHT / 2;
   group.add(core);
 
   // Pop-in animation

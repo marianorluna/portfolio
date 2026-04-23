@@ -1,14 +1,27 @@
 import * as THREE from "three";
+import { SCENE_BACKGROUND } from "@/config/scene-theme";
+import { createInfiniteGrid, type InfiniteGridUpdateOptions } from "@/utils/infinite-grid";
 
-export function setupScene(): THREE.Scene {
+const FOG_DENSITY = 0.012;
+
+export function setupScene(): {
+  scene: THREE.Scene;
+  updateInfiniteGrid: (
+    camera: THREE.Camera,
+    opts?: Partial<InfiniteGridUpdateOptions>
+  ) => void;
+  disposeInfiniteGrid: () => void;
+} {
   const scene = new THREE.Scene();
-  scene.fog = new THREE.FogExp2(0x050505, 0.015);
+  scene.background = new THREE.Color(SCENE_BACKGROUND);
+  scene.fog = new THREE.FogExp2(SCENE_BACKGROUND, FOG_DENSITY);
 
-  const gridHelper = new THREE.GridHelper(100, 50, 0x333333, 0x111111);
-  gridHelper.position.y = -0.1;
-  scene.add(gridHelper);
+  const { mesh: gridMesh, horizon: horizonLine, update: updateInfiniteGrid, dispose: disposeInfiniteGrid } =
+    createInfiniteGrid({ cellSize: 2.0, fogDensity: FOG_DENSITY });
+  scene.add(gridMesh);
+  scene.add(horizonLine);
 
-  const ambientLight = new THREE.AmbientLight(0xffffff, 0.3);
+  const ambientLight = new THREE.AmbientLight(0xffffff, 0.42);
   scene.add(ambientLight);
 
   const dirLight = new THREE.DirectionalLight(0x0070f3, 1.5);
@@ -19,5 +32,5 @@ export function setupScene(): THREE.Scene {
   dirLight2.position.set(-20, 20, 20);
   scene.add(dirLight2);
 
-  return scene;
+  return { scene, updateInfiniteGrid, disposeInfiniteGrid };
 }

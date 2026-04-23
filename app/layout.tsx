@@ -1,4 +1,6 @@
 import type { Metadata } from "next";
+import type { CSSProperties } from "react";
+import { SCENE_BACKGROUND_CSS } from "@/config/scene-theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -9,8 +11,12 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
+  const rootStyle: CSSProperties & { "--bg-color": string } = {
+    "--bg-color": SCENE_BACKGROUND_CSS,
+  };
+
   return (
-    <html lang="es" suppressHydrationWarning>
+    <html lang="es" suppressHydrationWarning style={rootStyle}>
       <body suppressHydrationWarning>{children}</body>
     </html>
   );

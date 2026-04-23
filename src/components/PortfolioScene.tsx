@@ -5,6 +5,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import type { PortfolioData } from "@/types/portfolio";
 import { setupScene } from "@/utils/three-scene";
+import { SCENE_BACKGROUND } from "@/config/scene-theme";
 import {
   createFloor,
   createBaseMaterial,
@@ -24,7 +25,12 @@ import { LevelControls } from "./LevelControls";
 const FRUSTUM_SIZE = 40;
 const MAX_FLOORS = 40;
 const INITIAL_FLOORS = 15;
+/** Más estrecho que 45: encuadre al tercio central del edificio (mismo sentido en toggle orto). */
+const PERSP_FOV = 32;
 const DESKTOP_OFFSET_X = 10;
+/** Cota y=0 = base del edificio; el pan no debe cruzar el suelo. */
+const MIN_PAN_TARGET_Y = 0;
+const MIN_ORBIT_EYE_Y = 0.22;
 
 const DEFAULT_CODE_HTML =
   `<span class="kd">const</span> <span class="na">BuildingModel</span> <span class="p">=</span> () <span class="kd">=&gt;</span> {<br>` +
@@ -34,6 +40,54 @@ const DEFAULT_CODE_HTML =
   `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// para inspeccionar los nodos.</span><br>` +
   `&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">&lt;/</span><span class="nc">IFCContainer</span><span class="p">&gt;</span><br>` +
   `&nbsp;&nbsp;);<br>};`;
+
+function clampOrbitToGround(controls: OrbitControls, camera: THREE.Camera): void {
+  if (camera instanceof THREE.OrthographicCamera) {
+    // En ortográfico el borde inferior del frustum (mundo) = target.y - halfFrustum/zoom.
+    // Forzamos target.y >= halfFrustum/zoom para que y=0 nunca se vea por debajo.
+    const minTargetY = (FRUSTUM_SIZE / 2) / camera.zoom;
+    if (controls.target.y < minTargetY) {
+      controls.target.y = minTargetY;
+    }
+    return;
+  }
+  if (camera.position.y < MIN_ORBIT_EYE_Y) {
+    camera.position.y = MIN_ORBIT_EYE_Y;
+  }
+  if (controls.target.y < MIN_PAN_TARGET_Y) {
+    controls.target.y = MIN_PAN_TARGET_Y;
+  }
+}
+
+/**
+ * Ajusta el target (y por tanto la cámara horizontal) para que y=0 coincida
+ * exactamente con el borde inferior del frustum ortográfico.
+ * Llamar siempre DESPUÉS de que `cameraOrtho.zoom` esté actualizado.
+ */
+function snapFrontToGround(
+  cameraOrtho: THREE.OrthographicCamera,
+  controls: OrbitControls
+): void {
+  const halfH = (FRUSTUM_SIZE / 2) / cameraOrtho.zoom;
+  controls.target.y = halfH;
+  cameraOrtho.position.y = halfH;
+  controls.update();
+}
+
+/** En alzado + orto el plano de suelo y la cámara deben quedar al mismo nivel: φ = 90°. */
+function applyOrbitPolarLock(
+  controls: OrbitControls,
+  activeView: ViewPreset | null,
+  isOrtho: boolean
+): void {
+  if (activeView === "front" && isOrtho) {
+    controls.minPolarAngle = Math.PI / 2;
+    controls.maxPolarAngle = Math.PI / 2;
+  } else {
+    controls.minPolarAngle = 0;
+    controls.maxPolarAngle = Math.PI / 2 - 0.05;
+  }
+}
 
 type Props = { data: PortfolioData };
 
@@ -62,9 +116,10 @@ export function PortfolioScene({ data }: Props) {
   const flyTargetLookAtRef = useRef(new THREE.Vector3());
   const isOrthoRef = useRef(false);
   const autoRotateRef = useRef(true);
-  const activeViewRef = useRef<ViewPreset | null>(null);
+  const activeViewRef = useRef<ViewPreset | null>("iso");
   const floorCountRef = useRef(INITIAL_FLOORS);
   const rafRef = useRef(0);
+  const buildingOffsetXRef = useRef(0);
 
   // React UI state
   const [loadProgress, setLoadProgress] = useState(0);
@@ -73,7 +128,7 @@ export function PortfolioScene({ data }: Props) {
   const [floorCount, setFloorCount] = useState(INITIAL_FLOORS);
   const [codeHtml, setCodeHtml] = useState(DEFAULT_CODE_HTML);
   const [isOrtho, setIsOrtho] = useState(false);
-  const [activeView, setActiveView] = useState<ViewPreset | null>(null);
+  const [activeView, setActiveView] = useState<ViewPreset | null>("iso");
   const [autoRotate, setAutoRotate] = useState(true);
 
   // ── UI Handlers ──────────────────────────────────────────────────────────
@@ -121,7 +176,7 @@ export function PortfolioScene({ data }: Props) {
     if (!controls || !camera) return;
 
     const bX = window.innerWidth > 768 ? DESKTOP_OFFSET_X : 0;
-    const target = getViewTarget(view, bX);
+    const target = getViewTarget(view, bX, { stackFloors: floorCountRef.current });
     flyTargetPosRef.current.copy(target.position);
     flyTargetLookAtRef.current.copy(target.lookAt);
     isFlyingRef.current = true;
@@ -161,6 +216,9 @@ export function PortfolioScene({ data }: Props) {
       cameraOrtho.updateProjectionMatrix();
       activeCameraRef.current = cameraOrtho;
       controls.object = cameraOrtho;
+      if (activeViewRef.current === "front") {
+        snapFrontToGround(cameraOrtho, controls);
+      }
     } else {
       const halfHeight = (FRUSTUM_SIZE / 2) / cameraOrtho.zoom;
       const newDistance =
@@ -175,6 +233,7 @@ export function PortfolioScene({ data }: Props) {
       activeCameraRef.current = cameraPersp;
       controls.object = cameraPersp;
     }
+    applyOrbitPolarLock(controls, activeViewRef.current, nextOrtho);
     controls.update();
   }, []);
 
@@ -188,14 +247,18 @@ export function PortfolioScene({ data }: Props) {
     const aspect = W / H;
     const isDesk = W > 768;
     const bX = isDesk ? DESKTOP_OFFSET_X : 0;
+    buildingOffsetXRef.current = bX;
+    const viewOpts = { stackFloors: INITIAL_FLOORS } as const;
 
     // Scene
-    const scene = setupScene();
+    const { scene, updateInfiniteGrid, disposeInfiniteGrid } = setupScene();
     sceneRef.current = scene;
 
-    // Cameras
-    const cameraPersp = new THREE.PerspectiveCamera(45, aspect, 1, 1000);
-    cameraPersp.position.set(40, 30, 50);
+    // Cameras — posición y mirada alineadas con la vista ISO (mismo origen que el botón Iso)
+    const { position: isoPos, lookAt: isoLookAt } = getViewTarget("iso", bX, viewOpts);
+    const cameraPersp = new THREE.PerspectiveCamera(PERSP_FOV, aspect, 1, 1000);
+    cameraPersp.position.copy(isoPos);
+    cameraPersp.lookAt(isoLookAt);
     cameraPerspRef.current = cameraPersp;
 
     const cameraOrtho = new THREE.OrthographicCamera(
@@ -205,7 +268,8 @@ export function PortfolioScene({ data }: Props) {
       FRUSTUM_SIZE / -2,
       1, 1000
     );
-    cameraOrtho.position.copy(cameraPersp.position);
+    cameraOrtho.position.copy(isoPos);
+    cameraOrtho.quaternion.copy(cameraPersp.quaternion);
     cameraOrthoRef.current = cameraOrtho;
     activeCameraRef.current = cameraPersp;
 
@@ -213,7 +277,7 @@ export function PortfolioScene({ data }: Props) {
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setSize(W, H);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x050505, 1);
+    renderer.setClearColor(SCENE_BACKGROUND, 1);
     rendererRef.current = renderer;
 
     // OrbitControls
@@ -221,9 +285,10 @@ export function PortfolioScene({ data }: Props) {
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
     controls.maxPolarAngle = Math.PI / 2 - 0.05;
-    controls.target.set(bX, 10, 0);
+    controls.target.copy(isoLookAt);
     controls.autoRotate = true;
     controls.autoRotateSpeed = 0.8;
+    controls.update();
     controlsRef.current = controls;
 
     // Building group
@@ -259,6 +324,11 @@ export function PortfolioScene({ data }: Props) {
           cam.position.copy(flyTargetPosRef.current);
           controls.target.copy(flyTargetLookAtRef.current);
           isFlyingRef.current = false;
+          applyOrbitPolarLock(controls, activeViewRef.current, isOrthoRef.current);
+          if (activeViewRef.current === "front" && isOrthoRef.current) {
+            const ortho = cameraOrthoRef.current;
+            if (ortho) snapFrontToGround(ortho, controls);
+          }
         }
       }
 
@@ -293,6 +363,18 @@ export function PortfolioScene({ data }: Props) {
       }
 
       controls.update();
+      clampOrbitToGround(controls, activeCameraRef.current!);
+      {
+        const cam = activeCameraRef.current!;
+        const frontElOrtho =
+          activeViewRef.current === "front" &&
+          isOrthoRef.current &&
+          cam instanceof THREE.OrthographicCamera;
+        updateInfiniteGrid(cam, {
+          buildingOffsetX: buildingOffsetXRef.current,
+          frontElevationOrtho: frontElOrtho,
+        });
+      }
 
       // Si el hover apuntaba a un mesh ya eliminado, limpiar UI sin tocar materiales
       {
@@ -350,6 +432,7 @@ export function PortfolioScene({ data }: Props) {
       const nH = window.innerHeight;
       const nAspect = nW / nH;
       const newBX = nW > 768 ? DESKTOP_OFFSET_X : 0;
+      buildingOffsetXRef.current = newBX;
 
       if (cameraPerspRef.current) {
         cameraPerspRef.current.aspect = nAspect;
@@ -375,6 +458,7 @@ export function PortfolioScene({ data }: Props) {
       setAutoRotate(false);
       activeViewRef.current = null;
       setActiveView(null);
+      applyOrbitPolarLock(controls, null, isOrthoRef.current);
     });
 
     document.addEventListener("mousemove", onMouseMove);
@@ -388,6 +472,7 @@ export function PortfolioScene({ data }: Props) {
 
     return () => {
       cancelAnimationFrame(rafRef.current);
+      disposeInfiniteGrid();
       controls.dispose();
       renderer.dispose();
       document.removeEventListener("mousemove", onMouseMove);

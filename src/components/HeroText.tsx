@@ -6,45 +6,31 @@ type Props = {
 
 export function HeroText({ data }: Props) {
   const { meta, hero } = data;
-
   return (
-    <div className="hero-text" id="heroText">
-      <div className="hero-badge">
-        <div className="badge-pulse" />
-        {meta.badge} · {meta.location}
+    <div className="hero-content">
+      <div className="badge">
+        <span className="dot" />
+        {meta.badge}
       </div>
-      <h1 className="hero-title">
-        {hero.titleLines.map((line, i) => {
-          if (line === hero.accentWord) {
-            return (
-              <span key={i} className="t-blue">
-                {line}
-              </span>
-            );
-          }
-          if (line === "Dev") {
-            return (
-              <span key={i}>
-                <span className="t-dim">{"{ "}</span>
-                {line}
-                <span className="t-dim">{" }"}</span>
-              </span>
-            );
-          }
-          return <span key={i}>{line}</span>;
-        })}
-      </h1>
-      <p className="hero-desc">
-        {hero.descriptionLines.map((line, i) => (
+      <h1>
+        {hero.titleLines.map((line, i) => (
           <span key={i}>
             {line}
-            {i < hero.descriptionLines.length - 1 && <br />}
+            {i < hero.titleLines.length - 1 && <br />}
           </span>
         ))}
-      </p>
-      <div className="hint-row">
-        <span className="hint-icon">⬡</span>
-        <span>{meta.hint}</span>
+      </h1>
+      <p className="subtitle">{hero.subtitle}</p>
+      <div className="cta-group">
+        <a href="#" className="btn btn-primary">{hero.cta.primary}</a>
+        <a
+          href={hero.cta.secondaryUrl}
+          className="btn btn-secondary"
+          target="_blank"
+          rel="noreferrer"
+        >
+          {hero.cta.secondary}
+        </a>
       </div>
     </div>
   );

@@ -8,7 +8,7 @@ export function LoadingScreen({ progress, text, hidden }: Props) {
   return (
     <div id="loading" className={hidden ? "hidden" : ""}>
       <div className="loading-logo">
-        ARC<span>×</span>DEV
+        ARQ<span>_DEV</span>
       </div>
       <div className="loading-bar-wrap">
         <div className="loading-bar" style={{ width: `${progress}%` }} />

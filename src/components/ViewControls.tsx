@@ -1,42 +1,60 @@
-import type { ViewMode } from "@/utils/view-variants";
+import type { ViewPreset } from "@/utils/view-variants";
 
 type Props = {
-  viewMode: ViewMode;
-  xray: boolean;
-  onSetViewMode: (mode: ViewMode) => void;
-  onToggleXray: () => void;
-  onReset: () => void;
+  activeView: ViewPreset | null;
+  isOrtho: boolean;
+  autoRotate: boolean;
+  onViewClick: (view: ViewPreset) => void;
+  onToggleCamera: () => void;
+  onToggleAuto: () => void;
 };
 
-export function ViewControls({ viewMode, xray, onSetViewMode, onToggleXray, onReset }: Props) {
+export function ViewControls({
+  activeView,
+  isOrtho,
+  autoRotate,
+  onViewClick,
+  onToggleCamera,
+  onToggleAuto,
+}: Props) {
   return (
     <div className="view-controls">
       <button
-        className={`vc-btn${viewMode === "wireframe" ? " active" : ""}`}
-        onClick={() => onSetViewMode("wireframe")}
+        className={`view-btn${activeView === "iso" ? " active" : ""}`}
+        onClick={() => onViewClick("iso")}
         type="button"
       >
-        Wireframe
+        Iso
       </button>
-      <div className="vc-sep" />
       <button
-        className={`vc-btn${viewMode === "solid" ? " active" : ""}`}
-        onClick={() => onSetViewMode("solid")}
+        className={`view-btn${activeView === "top" ? " active" : ""}`}
+        onClick={() => onViewClick("top")}
         type="button"
       >
-        Solid
+        Planta
       </button>
-      <div className="vc-sep" />
       <button
-        className={`vc-btn${xray ? " active" : ""}`}
-        onClick={onToggleXray}
+        className={`view-btn${activeView === "front" ? " active" : ""}`}
+        onClick={() => onViewClick("front")}
         type="button"
       >
-        X-Ray
+        Alzado
       </button>
-      <div className="vc-sep" />
-      <button className="vc-btn" onClick={onReset} type="button">
-        Reset
+      <div className="view-sep" />
+      <button
+        className={`view-btn${isOrtho ? " active" : ""}`}
+        onClick={onToggleCamera}
+        type="button"
+      >
+        {isOrtho ? "Ortogonal" : "Perspectiva"}
+      </button>
+      <div className="view-sep" />
+      <button
+        className={`view-btn${autoRotate ? " active" : ""}`}
+        onClick={onToggleAuto}
+        type="button"
+      >
+        Auto
       </button>
     </div>
   );

@@ -2,330 +2,384 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
-import type { Hotspot, PortfolioData } from "@/types/portfolio";
-import { buildSceneObjects } from "@/utils/three-scene";
-import { applyBuildingVariant, type ViewMode } from "@/utils/view-variants";
+import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import type { PortfolioData } from "@/types/portfolio";
+import { setupScene } from "@/utils/three-scene";
+import {
+  createFloor,
+  createBaseMaterial,
+  createLineMaterial,
+  FLOOR_HEIGHT,
+  type FloorUserData,
+} from "@/utils/building-model";
+import { getViewTarget, type ViewPreset } from "@/utils/view-variants";
 import { simulateLoad } from "@/utils/simulate-load";
 import { LoadingScreen } from "./LoadingScreen";
 import { Navbar } from "./Navbar";
-import { StatusBar } from "./StatusBar";
 import { HeroText } from "./HeroText";
-import { SidePanel } from "./SidePanel";
+import { NodeInspector } from "./NodeInspector";
 import { ViewControls } from "./ViewControls";
+import { LevelControls } from "./LevelControls";
+
+const FRUSTUM_SIZE = 40;
+const MAX_FLOORS = 40;
+const INITIAL_FLOORS = 15;
+const DESKTOP_OFFSET_X = 10;
+
+const DEFAULT_CODE_HTML =
+  `<span class="kd">const</span> <span class="na">BuildingModel</span> <span class="p">=</span> () <span class="kd">=&gt;</span> {<br>` +
+  `&nbsp;&nbsp;<span class="kd">return</span> (<br>` +
+  `&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">&lt;</span><span class="nc">IFCContainer</span> <span class="na">id=</span><span class="s">"TWIN-01"</span><span class="p">&gt;</span><br>` +
+  `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// Interactúa con el modelo 3D</span><br>` +
+  `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// para inspeccionar los nodos.</span><br>` +
+  `&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">&lt;/</span><span class="nc">IFCContainer</span><span class="p">&gt;</span><br>` +
+  `&nbsp;&nbsp;);<br>};`;
 
 type Props = { data: PortfolioData };
 
 export function PortfolioScene({ data }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const isPanelOpenRef = useRef(false);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  // Three.js refs
+  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
+  const sceneRef = useRef<THREE.Scene | null>(null);
+  const cameraPerspRef = useRef<THREE.PerspectiveCamera | null>(null);
+  const cameraOrthoRef = useRef<THREE.OrthographicCamera | null>(null);
+  const activeCameraRef = useRef<THREE.Camera | null>(null);
+  const controlsRef = useRef<OrbitControls | null>(null);
+  const buildingGroupRef = useRef<THREE.Group | null>(null);
+  const floorsRef = useRef<THREE.Mesh[]>([]);
+  const baseMaterialRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
+  const lineMaterialRef = useRef<THREE.LineBasicMaterial | null>(null);
+  const intersectedRef = useRef<THREE.Mesh | null>(null);
+  const mouseRef = useRef(new THREE.Vector2());
+  const raycasterRef = useRef(new THREE.Raycaster());
+
+  // Animation state refs
+  const isFlyingRef = useRef(false);
+  const flyTargetPosRef = useRef(new THREE.Vector3());
+  const flyTargetLookAtRef = useRef(new THREE.Vector3());
+  const isOrthoRef = useRef(false);
+  const autoRotateRef = useRef(true);
+  const activeViewRef = useRef<ViewPreset | null>(null);
+  const floorCountRef = useRef(INITIAL_FLOORS);
   const rafRef = useRef(0);
 
-  // Three.js mutable state via refs (no re-renders needed)
-  const rotYRef = useRef(0.3);
-  const rotXRef = useRef(0.15);
-  const targetRotYRef = useRef(0.3);
-  const targetRotXRef = useRef(0.15);
-  const zoomRef = useRef(12);
-  const targetZoomRef = useRef(12);
-  const isDraggingRef = useRef(false);
-  const autoRotateRef = useRef(true);
-  const lastMouseXRef = useRef(0);
-  const lastMouseYRef = useRef(0);
-  const tRef = useRef(0);
-  const buildingMeshesRef = useRef<THREE.Object3D[]>([]);
-  const sceneRef = useRef<THREE.Scene | null>(null);
-  const cameraRef = useRef<THREE.PerspectiveCamera | null>(null);
-  const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
-  const viewModeRef = useRef<ViewMode>("wireframe");
-  const xrayRef = useRef(false);
-
-  // UI React state (triggers re-renders only when needed)
+  // React UI state
   const [loadProgress, setLoadProgress] = useState(0);
   const [loadText, setLoadText] = useState("Initializing 3D engine...");
   const [loadHidden, setLoadHidden] = useState(false);
-  const [selectedHotspot, setSelectedHotspot] = useState<Hotspot | null>(null);
-  const [isPanelOpen, setIsPanelOpen] = useState(false);
-  const [activeNav, setActiveNav] = useState("all");
-  const [viewMode, setViewModeState] = useState<ViewMode>("wireframe");
-  const [xray, setXrayState] = useState(false);
+  const [floorCount, setFloorCount] = useState(INITIAL_FLOORS);
+  const [codeHtml, setCodeHtml] = useState(DEFAULT_CODE_HTML);
+  const [isOrtho, setIsOrtho] = useState(false);
+  const [activeView, setActiveView] = useState<ViewPreset | null>(null);
+  const [autoRotate, setAutoRotate] = useState(true);
 
-  // High-frequency DOM refs (updated directly in rAF, never via state)
-  const coordXRef = useRef<HTMLSpanElement>(null);
-  const coordYRef = useRef<HTMLSpanElement>(null);
-  const coordZRef = useRef<HTMLSpanElement>(null);
-  const coordAzRef = useRef<HTMLSpanElement>(null);
-  const coordElRef = useRef<HTMLSpanElement>(null);
-  const sbHoverRef = useRef<HTMLSpanElement>(null);
-  const hotspotLabelRefs = useRef<Record<string, HTMLDivElement | null>>({});
+  // ── UI Handlers ──────────────────────────────────────────────────────────
 
-  const openHotspotPanel = useCallback(
-    (id: string) => {
-      const h = data.hotspots.find(x => x.id === id);
-      if (!h) return;
-      autoRotateRef.current = false;
-      isPanelOpenRef.current = true;
-      setSelectedHotspot(h);
-      setIsPanelOpen(true);
-    },
-    [data.hotspots]
-  );
+  const handleAddFloor = useCallback(() => {
+    if (floorCountRef.current >= MAX_FLOORS) return;
+    const baseMat = baseMaterialRef.current;
+    const lineMat = lineMaterialRef.current;
+    const buildingGroup = buildingGroupRef.current;
+    if (!baseMat || !lineMat || !buildingGroup) return;
 
-  const closePanel = useCallback(() => {
-    isPanelOpenRef.current = false;
-    autoRotateRef.current = true;
-    setIsPanelOpen(false);
+    const { group, mesh } = createFloor(floorCountRef.current, baseMat, lineMat);
+    buildingGroup.add(group);
+    floorsRef.current.push(mesh);
+    floorCountRef.current++;
+    setFloorCount(floorCountRef.current);
   }, []);
 
-  const handleSetViewMode = useCallback((mode: ViewMode) => {
-    viewModeRef.current = mode;
-    setViewModeState(mode);
-    const scene = sceneRef.current;
-    if (!scene) return;
-    applyBuildingVariant(scene, mode, xrayRef.current);
+  const handleRemoveFloor = useCallback(() => {
+    if (floorCountRef.current <= 1) return;
+    const buildingGroup = buildingGroupRef.current;
+    if (!buildingGroup) return;
+
+    floorCountRef.current--;
+    setFloorCount(floorCountRef.current);
+
+    const topFloor = buildingGroup.getObjectByName(`floor_${floorCountRef.current}`);
+    if (topFloor) {
+      topFloor.userData.targetScaleY = 0.001;
+      topFloor.userData.isRemoving = true;
+
+      const intersected = intersectedRef.current;
+      if (intersected && intersected.parent === topFloor) {
+        // No tocar materiales: el piso se anima a salida; reset podría chocar con el estado de Three
+        intersectedRef.current = null;
+        if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
+        setCodeHtml(DEFAULT_CODE_HTML);
+      }
+    }
   }, []);
 
-  const handleToggleXray = useCallback(() => {
-    const next = !xrayRef.current;
-    xrayRef.current = next;
-    setXrayState(next);
-    const scene = sceneRef.current;
-    if (!scene) return;
-    applyBuildingVariant(scene, viewModeRef.current, next);
+  const handleViewClick = useCallback((view: ViewPreset) => {
+    const controls = controlsRef.current;
+    const camera = activeCameraRef.current;
+    if (!controls || !camera) return;
+
+    const bX = window.innerWidth > 768 ? DESKTOP_OFFSET_X : 0;
+    const target = getViewTarget(view, bX);
+    flyTargetPosRef.current.copy(target.position);
+    flyTargetLookAtRef.current.copy(target.lookAt);
+    isFlyingRef.current = true;
+
+    autoRotateRef.current = false;
+    controls.autoRotate = false;
+    setAutoRotate(false);
+    activeViewRef.current = view;
+    setActiveView(view);
   }, []);
 
-  const handleResetCamera = useCallback(() => {
-    targetRotYRef.current = 0.3;
-    targetRotXRef.current = 0.15;
-    targetZoomRef.current = 12;
-    viewModeRef.current = "wireframe";
-    xrayRef.current = false;
-    setViewModeState("wireframe");
-    setXrayState(false);
-    const scene = sceneRef.current;
-    if (!scene) return;
-    applyBuildingVariant(scene, "wireframe", false);
+  const handleToggleAuto = useCallback(() => {
+    const controls = controlsRef.current;
+    if (!controls) return;
+    const next = !autoRotateRef.current;
+    autoRotateRef.current = next;
+    controls.autoRotate = next;
+    setAutoRotate(next);
   }, []);
+
+  const handleToggleCamera = useCallback(() => {
+    const controls = controlsRef.current;
+    const cameraPersp = cameraPerspRef.current;
+    const cameraOrtho = cameraOrthoRef.current;
+    if (!controls || !cameraPersp || !cameraOrtho) return;
+
+    const nextOrtho = !isOrthoRef.current;
+    isOrthoRef.current = nextOrtho;
+    setIsOrtho(nextOrtho);
+
+    if (nextOrtho) {
+      const distance = cameraPersp.position.distanceTo(controls.target);
+      cameraOrtho.position.copy(cameraPersp.position);
+      cameraOrtho.quaternion.copy(cameraPersp.quaternion);
+      const halfHeight = Math.tan(THREE.MathUtils.degToRad(cameraPersp.fov) / 2) * distance;
+      cameraOrtho.zoom = (FRUSTUM_SIZE / 2) / halfHeight;
+      cameraOrtho.updateProjectionMatrix();
+      activeCameraRef.current = cameraOrtho;
+      controls.object = cameraOrtho;
+    } else {
+      const halfHeight = (FRUSTUM_SIZE / 2) / cameraOrtho.zoom;
+      const newDistance =
+        halfHeight / Math.tan(THREE.MathUtils.degToRad(cameraPersp.fov) / 2);
+      const direction = new THREE.Vector3()
+        .subVectors(cameraOrtho.position, controls.target)
+        .normalize();
+      cameraPersp.position.copy(controls.target).addScaledVector(direction, newDistance);
+      cameraPersp.quaternion.copy(cameraOrtho.quaternion);
+      cameraPersp.zoom = 1;
+      cameraPersp.updateProjectionMatrix();
+      activeCameraRef.current = cameraPersp;
+      controls.object = cameraPersp;
+    }
+    controls.update();
+  }, []);
+
+  // ── Three.js Setup ────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (!canvasRef.current) return;
     const canvas = canvasRef.current;
     const W = window.innerWidth;
     const H = window.innerHeight;
+    const aspect = W / H;
+    const isDesk = W > 768;
+    const bX = isDesk ? DESKTOP_OFFSET_X : 0;
+
+    // Scene
+    const scene = setupScene();
+    sceneRef.current = scene;
+
+    // Cameras
+    const cameraPersp = new THREE.PerspectiveCamera(45, aspect, 1, 1000);
+    cameraPersp.position.set(40, 30, 50);
+    cameraPerspRef.current = cameraPersp;
+
+    const cameraOrtho = new THREE.OrthographicCamera(
+      (FRUSTUM_SIZE * aspect) / -2,
+      (FRUSTUM_SIZE * aspect) / 2,
+      FRUSTUM_SIZE / 2,
+      FRUSTUM_SIZE / -2,
+      1, 1000
+    );
+    cameraOrtho.position.copy(cameraPersp.position);
+    cameraOrthoRef.current = cameraOrtho;
+    activeCameraRef.current = cameraPersp;
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
     renderer.setSize(W, H);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
-    renderer.setClearColor(0x050c1a, 1);
+    renderer.setClearColor(0x050505, 1);
     rendererRef.current = renderer;
 
-    // Scene
-    const scene = new THREE.Scene();
-    sceneRef.current = scene;
+    // OrbitControls
+    const controls = new OrbitControls(cameraPersp, renderer.domElement);
+    controls.enableDamping = true;
+    controls.dampingFactor = 0.05;
+    controls.maxPolarAngle = Math.PI / 2 - 0.05;
+    controls.target.set(bX, 10, 0);
+    controls.autoRotate = true;
+    controls.autoRotateSpeed = 0.8;
+    controlsRef.current = controls;
 
-    // Camera
-    const camera = new THREE.PerspectiveCamera(40, W / H, 0.1, 1000);
-    camera.position.set(0, 4, zoomRef.current);
-    cameraRef.current = camera;
+    // Building group
+    const buildingGroup = new THREE.Group();
+    buildingGroup.position.x = bX;
+    scene.add(buildingGroup);
+    buildingGroupRef.current = buildingGroup;
 
-    // Raycaster
-    const raycaster = new THREE.Raycaster();
-    const mouse = new THREE.Vector2();
+    const baseMaterial = createBaseMaterial();
+    const lineMaterial = createLineMaterial();
+    baseMaterialRef.current = baseMaterial;
+    lineMaterialRef.current = lineMaterial;
 
-    // Build scene
-    buildSceneObjects(scene, buildingMeshesRef.current, data.hotspots);
-    applyBuildingVariant(scene, viewModeRef.current, xrayRef.current);
+    const floors: THREE.Mesh[] = [];
+    for (let i = 0; i < INITIAL_FLOORS; i++) {
+      const { group, mesh } = createFloor(i, baseMaterial, lineMaterial);
+      buildingGroup.add(group);
+      floors.push(mesh);
+    }
+    floorsRef.current = floors;
 
-    // Lights
-    scene.add(new THREE.AmbientLight(0x4a9eff, 0.3));
-    const dirLight = new THREE.DirectionalLight(0x8b5cf6, 0.5);
-    dirLight.position.set(5, 10, 5);
-    scene.add(dirLight);
+    // ── Animation Loop ────────────────────────────────────────────────────
 
-    // Animation loop
     function animate() {
       rafRef.current = requestAnimationFrame(animate);
-      tRef.current += 0.01;
 
-      if (!isDraggingRef.current && autoRotateRef.current && !isPanelOpenRef.current) {
-        targetRotYRef.current += 0.003;
-      }
-      rotYRef.current += (targetRotYRef.current - rotYRef.current) * 0.05;
-      rotXRef.current += (targetRotXRef.current - rotXRef.current) * 0.05;
-      zoomRef.current += (targetZoomRef.current - zoomRef.current) * 0.05;
-
-      const phi = rotXRef.current;
-      const theta = rotYRef.current;
-      camera.position.x = zoomRef.current * Math.sin(theta) * Math.cos(phi);
-      camera.position.y = 4 + zoomRef.current * Math.sin(phi);
-      camera.position.z = zoomRef.current * Math.cos(theta) * Math.cos(phi);
-      camera.lookAt(0, 1, 0);
-
-      // Pulse rings
-      scene.children.forEach(obj => {
-        if (obj.userData.ring) {
-          const s = 1 + 0.3 * Math.sin(tRef.current * 2);
-          obj.scale.set(s, s, 1);
-          if (obj instanceof THREE.Mesh) {
-            (obj.material as THREE.MeshBasicMaterial).opacity =
-              0.4 - 0.3 * Math.abs(Math.sin(tRef.current * 2));
-          }
-          obj.lookAt(camera.position);
+      // Fly-to animation
+      if (isFlyingRef.current) {
+        const cam = activeCameraRef.current!;
+        cam.position.lerp(flyTargetPosRef.current, 0.05);
+        controls.target.lerp(flyTargetLookAtRef.current, 0.05);
+        if (cam.position.distanceTo(flyTargetPosRef.current) < 0.005) {
+          cam.position.copy(flyTargetPosRef.current);
+          controls.target.copy(flyTargetLookAtRef.current);
+          isFlyingRef.current = false;
         }
-      });
+      }
 
-      // Hotspot screen positions (direct DOM)
-      data.hotspots.forEach(h => {
-        const el = hotspotLabelRefs.current[h.id];
-        if (!el) return;
-        const v = new THREE.Vector3(h.worldPos.x, h.worldPos.y, h.worldPos.z);
-        v.project(camera);
-        el.style.left = `${(v.x * 0.5 + 0.5) * window.innerWidth}px`;
-        el.style.top = `${(-v.y * 0.5 + 0.5) * window.innerHeight}px`;
-        el.style.display = v.z < 1 ? "block" : "none";
-      });
+      // Floor pop-in / pop-out
+      for (let i = buildingGroup.children.length - 1; i >= 0; i--) {
+        const fg = buildingGroup.children[i];
+        if (fg.userData.targetScaleY === undefined) continue;
 
-      // Coords (direct DOM)
-      if (coordXRef.current) coordXRef.current.textContent = camera.position.x.toFixed(1);
-      if (coordYRef.current) coordYRef.current.textContent = camera.position.y.toFixed(1);
-      if (coordZRef.current) coordZRef.current.textContent = camera.position.z.toFixed(1);
-      if (coordAzRef.current)
-        coordAzRef.current.textContent = `${((rotYRef.current * 180) / Math.PI % 360).toFixed(0)}°`;
-      if (coordElRef.current)
-        coordElRef.current.textContent = `${((rotXRef.current * 180) / Math.PI).toFixed(0)}°`;
+        fg.scale.y += (fg.userData.targetScaleY - fg.scale.y) * 0.15;
 
-      renderer.render(scene, camera);
+        if (fg.userData.isRemoving && fg.scale.y < 0.01) {
+          const inter = intersectedRef.current;
+          if (inter && (inter.parent === fg || !floorsRef.current.includes(inter))) {
+            intersectedRef.current = null;
+            if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
+            setCodeHtml(DEFAULT_CODE_HTML);
+          }
+          fg.traverse(child => {
+            if (child instanceof THREE.Mesh || child instanceof THREE.LineSegments) {
+              child.geometry?.dispose();
+              if (Array.isArray(child.material)) {
+                child.material.forEach(m => m.dispose());
+              } else {
+                child.material?.dispose();
+              }
+            }
+          });
+          buildingGroup.remove(fg);
+          const idx = floorsRef.current.findIndex(m => m.parent === fg);
+          if (idx > -1) floorsRef.current.splice(idx, 1);
+        }
+      }
+
+      controls.update();
+
+      // Si el hover apuntaba a un mesh ya eliminado, limpiar UI sin tocar materiales
+      {
+        const stale = intersectedRef.current;
+        if (stale && !floorsRef.current.includes(stale)) {
+          intersectedRef.current = null;
+          if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
+          setCodeHtml(DEFAULT_CODE_HTML);
+        }
+      }
+
+      // Raycasting hover: recursive=true (default) pega en los bordes LineSegments, sin userData
+      raycasterRef.current.setFromCamera(mouseRef.current, activeCameraRef.current!);
+      const intersects = raycasterRef.current.intersectObjects(floorsRef.current, false);
+
+      if (intersects.length > 0) {
+        const obj = intersects[0].object as THREE.Mesh;
+        if (intersectedRef.current !== obj) {
+          if (intersectedRef.current) resetFloorHighlight(intersectedRef.current);
+          intersectedRef.current = obj;
+          highlightFloor(obj);
+
+          const d = obj.userData as FloorUserData;
+          if (tooltipRef.current) {
+            tooltipRef.current.innerHTML = `&lt;${d.id} /&gt;`;
+            tooltipRef.current.style.opacity = "1";
+          }
+          setCodeHtml(buildFloorCodeHtml(d));
+        }
+      } else if (intersectedRef.current) {
+        resetFloorHighlight(intersectedRef.current);
+        intersectedRef.current = null;
+        if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
+        setCodeHtml(DEFAULT_CODE_HTML);
+      }
+
+      renderer.render(scene, activeCameraRef.current!);
     }
+
     animate();
 
-    // ── Events ──────────────────────────────────────────────────────────────
-    function onMouseDown(e: MouseEvent) {
-      isDraggingRef.current = true;
-      autoRotateRef.current = false;
-      lastMouseXRef.current = e.clientX;
-      lastMouseYRef.current = e.clientY;
-    }
-
-    function onMouseUp() {
-      isDraggingRef.current = false;
-      if (!isPanelOpenRef.current) {
-        setTimeout(() => { autoRotateRef.current = true; }, 2000);
-      }
-    }
+    // ── Events ────────────────────────────────────────────────────────────
 
     function onMouseMove(e: MouseEvent) {
-      if (isDraggingRef.current) {
-        const dx = e.clientX - lastMouseXRef.current;
-        const dy = e.clientY - lastMouseYRef.current;
-        targetRotYRef.current += dx * 0.008;
-        targetRotXRef.current -= dy * 0.008;
-        targetRotXRef.current = Math.max(-0.5, Math.min(0.8, targetRotXRef.current));
-        lastMouseXRef.current = e.clientX;
-        lastMouseYRef.current = e.clientY;
+      mouseRef.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseRef.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      if (tooltipRef.current) {
+        tooltipRef.current.style.left = `${e.clientX}px`;
+        tooltipRef.current.style.top = `${e.clientY}px`;
       }
-
-      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-      raycaster.setFromCamera(mouse, camera);
-      const hits = raycaster.intersectObjects(buildingMeshesRef.current, false);
-
-      if (hits.length > 0 && hits[0].object.userData.hotspot) {
-        canvas.style.cursor = "pointer";
-        const found = data.hotspots.find(h => h.id === hits[0].object.userData.hotspot);
-        if (sbHoverRef.current)
-          sbHoverRef.current.textContent = `↗ Click: ${found?.label ?? ""}`;
-      } else {
-        canvas.style.cursor = isDraggingRef.current ? "grabbing" : "grab";
-        if (sbHoverRef.current)
-          sbHoverRef.current.textContent = "Hover a component to explore ↗";
-      }
-    }
-
-    function onClick(e: MouseEvent) {
-      if (Math.abs(e.clientX - lastMouseXRef.current) > 3) return;
-      mouse.x = (e.clientX / window.innerWidth) * 2 - 1;
-      mouse.y = -(e.clientY / window.innerHeight) * 2 + 1;
-      raycaster.setFromCamera(mouse, camera);
-      const hits = raycaster.intersectObjects(buildingMeshesRef.current, false);
-      if (hits.length > 0 && hits[0].object.userData.hotspot) {
-        const id = hits[0].object.userData.hotspot as string;
-        const h = data.hotspots.find(x => x.id === id);
-        if (h) {
-          autoRotateRef.current = false;
-          isPanelOpenRef.current = true;
-          setSelectedHotspot(h);
-          setIsPanelOpen(true);
-        }
-      }
-    }
-
-    function onWheel(e: WheelEvent) {
-      targetZoomRef.current += e.deltaY * 0.02;
-      targetZoomRef.current = Math.max(6, Math.min(22, targetZoomRef.current));
-    }
-
-    let lastTouchX = 0;
-    let lastTouchY = 0;
-    let lastPinchDist = 0;
-
-    function onTouchStart(e: TouchEvent) {
-      if (e.touches.length === 1) {
-        lastTouchX = e.touches[0].clientX;
-        lastTouchY = e.touches[0].clientY;
-        isDraggingRef.current = true;
-        autoRotateRef.current = false;
-      } else if (e.touches.length === 2) {
-        lastPinchDist = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-      }
-    }
-
-    function onTouchMove(e: TouchEvent) {
-      e.preventDefault();
-      if (e.touches.length === 1 && isDraggingRef.current) {
-        const dx = e.touches[0].clientX - lastTouchX;
-        const dy = e.touches[0].clientY - lastTouchY;
-        targetRotYRef.current += dx * 0.01;
-        targetRotXRef.current -= dy * 0.01;
-        lastTouchX = e.touches[0].clientX;
-        lastTouchY = e.touches[0].clientY;
-      } else if (e.touches.length === 2) {
-        const d = Math.hypot(
-          e.touches[0].clientX - e.touches[1].clientX,
-          e.touches[0].clientY - e.touches[1].clientY
-        );
-        targetZoomRef.current -= (d - lastPinchDist) * 0.05;
-        targetZoomRef.current = Math.max(6, Math.min(22, targetZoomRef.current));
-        lastPinchDist = d;
-      }
-    }
-
-    function onTouchEnd() {
-      isDraggingRef.current = false;
-      setTimeout(() => { autoRotateRef.current = true; }, 2000);
     }
 
     function onResize() {
       const nW = window.innerWidth;
       const nH = window.innerHeight;
+      const nAspect = nW / nH;
+      const newBX = nW > 768 ? DESKTOP_OFFSET_X : 0;
+
+      if (cameraPerspRef.current) {
+        cameraPerspRef.current.aspect = nAspect;
+        cameraPerspRef.current.updateProjectionMatrix();
+      }
+      if (cameraOrthoRef.current) {
+        cameraOrthoRef.current.left = (-FRUSTUM_SIZE * nAspect) / 2;
+        cameraOrthoRef.current.right = (FRUSTUM_SIZE * nAspect) / 2;
+        cameraOrthoRef.current.top = FRUSTUM_SIZE / 2;
+        cameraOrthoRef.current.bottom = -FRUSTUM_SIZE / 2;
+        cameraOrthoRef.current.updateProjectionMatrix();
+      }
+
       renderer.setSize(nW, nH);
-      camera.aspect = nW / nH;
-      camera.updateProjectionMatrix();
+      buildingGroup.position.x = newBX;
+      controls.target.setX(newBX);
     }
 
-    canvas.addEventListener("mousedown", onMouseDown);
-    window.addEventListener("mouseup", onMouseUp);
-    window.addEventListener("mousemove", onMouseMove);
-    canvas.addEventListener("click", onClick);
-    canvas.addEventListener("wheel", onWheel);
-    canvas.addEventListener("touchstart", onTouchStart);
-    canvas.addEventListener("touchmove", onTouchMove, { passive: false });
-    canvas.addEventListener("touchend", onTouchEnd);
+    controls.addEventListener("start", () => {
+      isFlyingRef.current = false;
+      autoRotateRef.current = false;
+      controls.autoRotate = false;
+      setAutoRotate(false);
+      activeViewRef.current = null;
+      setActiveView(null);
+    });
+
+    document.addEventListener("mousemove", onMouseMove);
     window.addEventListener("resize", onResize);
 
-    // Loading simulation
     simulateLoad(
       p => setLoadProgress(p),
       msg => setLoadText(msg),
@@ -334,107 +388,147 @@ export function PortfolioScene({ data }: Props) {
 
     return () => {
       cancelAnimationFrame(rafRef.current);
+      controls.dispose();
       renderer.dispose();
-      canvas.removeEventListener("mousedown", onMouseDown);
-      window.removeEventListener("mouseup", onMouseUp);
-      window.removeEventListener("mousemove", onMouseMove);
-      canvas.removeEventListener("click", onClick);
-      canvas.removeEventListener("wheel", onWheel);
-      canvas.removeEventListener("touchstart", onTouchStart);
-      canvas.removeEventListener("touchmove", onTouchMove);
-      canvas.removeEventListener("touchend", onTouchEnd);
+      document.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", onResize);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Render ─────────────────────────────────────────────────────────────
 
   return (
     <>
       <LoadingScreen progress={loadProgress} text={loadText} hidden={loadHidden} />
 
       <canvas ref={canvasRef} id="three-canvas" />
+      <div id="tooltip" ref={tooltipRef} />
 
-      <div className="grid-overlay" />
-      <div className="vignette" />
-
-      <StatusBar data={data.status} sbHoverRef={sbHoverRef} />
-
-      <Navbar
-        logo={data.nav.logo}
-        links={data.nav.links}
-        cta={data.nav.cta}
-        activeNav={activeNav}
-        onNavClick={setActiveNav}
-        onCtaClick={() => openHotspotPanel("about")}
-      />
-
+      <Navbar brand={data.nav.brand} links={data.nav.links} />
+      <NodeInspector codeHtml={codeHtml} />
       <HeroText data={data} />
 
-      {/* Hotspot floating labels */}
-      <div id="hotspots">
-        {data.hotspots.map(h => (
-          <div
-            key={h.id}
-            ref={el => {
-              hotspotLabelRefs.current[h.id] = el;
-            }}
-            className="hotspot-label"
-            style={{ display: "none" }}
-            onClick={() => openHotspotPanel(h.id)}
-          >
-            <div
-              className="hl-inner"
-              style={{
-                border: `1px solid ${h.color}55`,
-                boxShadow: `0 0 20px ${h.color}15`
-              }}
-            >
-              <div className="hl-cat" style={{ color: h.color }}>
-                {h.cat}
-              </div>
-              <div className="hl-name">{h.label}</div>
-            </div>
-            <div
-              className="hl-line"
-              style={{
-                background: `linear-gradient(to bottom, ${h.color}88, transparent)`
-              }}
-            />
-            <div
-              className="hl-dot"
-              style={{
-                background: h.color,
-                boxShadow: `0 0 0 3px ${h.color}33, 0 0 12px ${h.color}44`
-              }}
-            />
-          </div>
-        ))}
+      <div className="controls-wrapper">
+        <ViewControls
+          activeView={activeView}
+          isOrtho={isOrtho}
+          autoRotate={autoRotate}
+          onViewClick={handleViewClick}
+          onToggleCamera={handleToggleCamera}
+          onToggleAuto={handleToggleAuto}
+        />
+        <div className="hint">
+          <kbd>Click</kbd> Orbitar &nbsp;
+          <kbd>Click Der</kbd> Pan &nbsp;
+          <kbd>Scroll</kbd> Zoom
+        </div>
       </div>
 
-      {/* Coordinates */}
-      <div className="coords">
-        // <span ref={coordXRef}>0.0</span>,&nbsp;
-        <span ref={coordYRef}>0.0</span>,&nbsp;
-        <span ref={coordZRef}>0.0</span>
-        <br />θ <span ref={coordAzRef}>0°</span> · φ&nbsp;
-        <span ref={coordElRef}>0°</span>
-      </div>
-
-      {/* Viewer info */}
-      <div className="viewer-info">
-        <span>// {data.meta.modelFile}</span>
-        <br />
-        Drag · Scroll · Click
-      </div>
-
-      <ViewControls
-        viewMode={viewMode}
-        xray={xray}
-        onSetViewMode={handleSetViewMode}
-        onToggleXray={handleToggleXray}
-        onReset={handleResetCamera}
+      <LevelControls
+        floorCount={floorCount}
+        onAdd={handleAddFloor}
+        onRemove={handleRemoveFloor}
       />
-
-      <SidePanel hotspot={selectedHotspot} isOpen={isPanelOpen} onClose={closePanel} />
     </>
+  );
+}
+
+// ── Helpers ──────────────────────────────────────────────────────────────────
+
+/**
+ * Nunca asume `THREE.Color` bien formado; tras `dispose` u objetos híbridos, `.setHex` puede faltar.
+ */
+function safeColorSetHex(
+  c: { setHex?: (hex: number) => void } | null | undefined,
+  hex: number
+): void {
+  if (c == null || typeof c.setHex !== "function") return;
+  try {
+    c.setHex(hex);
+  } catch {
+    /* color invalidado o material bajo destrucción */
+  }
+}
+
+function forEachLineBasicMaterial(
+  m: THREE.Material | THREE.Material[] | null | undefined,
+  fn: (mat: THREE.LineBasicMaterial) => void
+): void {
+  if (m == null) return;
+  if (Array.isArray(m)) {
+    m.forEach(mat => {
+      if (mat != null && mat instanceof THREE.LineBasicMaterial) fn(mat);
+    });
+  } else if (m instanceof THREE.LineBasicMaterial) {
+    fn(m);
+  }
+}
+
+function forEachMeshStandardMaterial(
+  m: THREE.Material | THREE.Material[] | null | undefined,
+  fn: (mat: THREE.MeshStandardMaterial) => void
+): void {
+  if (m == null) return;
+  if (Array.isArray(m)) {
+    m.forEach(mat => {
+      if (mat != null && mat instanceof THREE.MeshStandardMaterial) fn(mat);
+    });
+  } else if (m instanceof THREE.MeshStandardMaterial) {
+    fn(m);
+  }
+}
+
+function highlightFloor(mesh: THREE.Mesh): void {
+  try {
+    if (!mesh.material) return;
+    forEachMeshStandardMaterial(mesh.material, mat => {
+      safeColorSetHex(mat.color, 0x002244);
+      safeColorSetHex(mat.emissive, 0x0044aa);
+      mat.emissiveIntensity = 0.5;
+    });
+    const line = mesh.children[0];
+    if (line instanceof THREE.LineSegments) {
+      forEachLineBasicMaterial(line.material, mat => {
+        safeColorSetHex(mat.color, 0x00e5ff);
+      });
+    }
+  } catch {
+    /* material u objeto invalidado tras dispose */
+  }
+}
+
+function resetFloorHighlight(mesh: THREE.Mesh): void {
+  try {
+    if (!mesh.material) return;
+    forEachMeshStandardMaterial(mesh.material, mat => {
+      safeColorSetHex(mat.color, 0x111111);
+      safeColorSetHex(mat.emissive, 0x000000);
+      mat.emissiveIntensity = 0;
+    });
+    const line = mesh.children[0];
+    if (line instanceof THREE.LineSegments) {
+      forEachLineBasicMaterial(line.material, mat => {
+        safeColorSetHex(mat.color, 0x333333);
+      });
+    }
+  } catch {
+    /* material u objeto invalidado tras dispose */
+  }
+}
+
+function buildFloorCodeHtml(d: FloorUserData): string {
+  return (
+    `<span class="p">&lt;</span><span class="nc">FloorNode</span><br>` +
+    `&nbsp;&nbsp;<span class="na">guid</span><span class="p">=</span><span class="s">"${d.id}"</span><br>` +
+    `&nbsp;&nbsp;<span class="na">level</span><span class="p">={</span><span class="m">${d.level}</span><span class="p">}</span><br>` +
+    `&nbsp;&nbsp;<span class="na">elevation</span><span class="p">={</span><span class="m">${d.elevation}</span><span class="p">}</span><br>` +
+    `&nbsp;&nbsp;<span class="na">properties</span><span class="p">={{</span><br>` +
+    `&nbsp;&nbsp;&nbsp;&nbsp;<span class="na">area_m2</span><span class="p">:</span> <span class="m">${d.area}</span><span class="p">,</span><br>` +
+    `&nbsp;&nbsp;&nbsp;&nbsp;<span class="na">material</span><span class="p">:</span> <span class="s">"${d.material}"</span><br>` +
+    `&nbsp;&nbsp;<span class="p">}}</span><br>` +
+    `<span class="p">/&gt;</span><br><br>` +
+    `<span class="cm">// JSON Query Response</span><br>` +
+    `<span class="kd">status</span>: <span class="s">"200 OK"</span><br>` +
+    `<span class="kd">sync</span>: <span class="s">"realtime"</span>`
   );
 }

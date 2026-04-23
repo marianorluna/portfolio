@@ -1,0 +1,235 @@
+{
+  "meta": {
+    "title": "Mariano Luna",
+    "badge": "Disponible",
+    "location": "Barcelona",
+    "hint": "Haz clic en cualquier componente",
+    "modelFile": "portfolio_building_v3.ifc"
+  },
+  "nav": {
+    "logo": "Mariano Luna",
+    "links": [
+      { "id": "all", "label": "All" },
+      { "id": "bim", "label": "BIM" },
+      { "id": "code", "label": "Code" },
+      { "id": "about", "label": "About" }
+    ],
+    "cta": "Hablemos →"
+  },
+  "hero": {
+    "titleLines": ["ARQ", "&&", "Dev"],
+    "accentWord": "&&",
+    "descriptionLines": [
+      "Arquitecto especializado en BIM",
+      "y Fullstack Developer.",
+      "Explora el edificio — cada parte",
+      "es un proyecto real."
+    ]
+  },
+  "status": {
+    "engine": "Three.js r128 + web-ifc",
+    "model": "portfolio_building_v3.frag",
+    "elements": "3,847",
+    "lod": "400"
+  },
+  "hotspots": [
+    {
+      "id": "bim-structure",
+      "label": "Structural System",
+      "cat": "BIM · Revit API",
+      "color": "#4a9eff",
+      "worldPos": { "x": 0, "y": 3.5, "z": 0 },
+      "panel": {
+        "type": "// bim_project",
+        "title": "Torre Diagonal Complex",
+        "sections": [
+          {
+            "label": "Overview",
+            "desc": "Modelo de coordinación para torre mixta de 32 plantas. Full MEP clash detection con más de 120.000 elementos IFC. Entregado en plazo con 0 RFIs por interferencias."
+          },
+          {
+            "label": "Metrics",
+            "metrics": [
+              { "v": "32", "l": "Plants" },
+              { "v": "LOD 400", "l": "Detail" },
+              { "v": "3,847", "l": "Elements" }
+            ]
+          },
+          {
+            "label": "Technologies",
+            "tags": ["Revit", "IFC 4.3", "Navisworks", "Dynamo", "Revit API", "Python"]
+          },
+          {
+            "label": "Code highlight",
+            "codeHtml": "<span class=\"cs-kw\">from</span> ifcopenshell <span class=\"cs-kw\">import</span> api\n<span class=\"cs-cm\"># Auto-clash detection script</span>\nmodel = ifcopenshell.open(<span class=\"cs-str\">\"torre.ifc\"</span>)\nwalls = model.by_type(<span class=\"cs-str\">\"IfcWall\"</span>)\n<span class=\"cs-fn\">run</span>(<span class=\"cs-str\">\"clash.detect\"</span>, model, walls)"
+          },
+          {
+            "label": "Repository",
+            "links": [{ "icon": "gh", "text": "github.com/tu/revit-clash-detector", "url": "#" }]
+          }
+        ]
+      }
+    },
+    {
+      "id": "dashboard-app",
+      "label": "BIM Dashboard",
+      "cat": "Fullstack · React",
+      "color": "#8b5cf6",
+      "worldPos": { "x": -2.5, "y": 1.5, "z": 1.5 },
+      "panel": {
+        "type": "// fullstack_app",
+        "title": "BIM Analytics Dashboard",
+        "sections": [
+          {
+            "label": "Overview",
+            "desc": "Plataforma web para visualizar métricas de proyectos BIM en tiempo real. Extrae datos del modelo IFC y los muestra en un dashboard interactivo. React + FastAPI + PostgreSQL."
+          },
+          {
+            "label": "Metrics",
+            "metrics": [
+              { "v": "23k", "l": "Models/day" },
+              { "v": "<80ms", "l": "Load time" },
+              { "v": "99.9%", "l": "Uptime" }
+            ]
+          },
+          {
+            "label": "Stack",
+            "tags": [
+              { "t": "React" },
+              { "t": "FastAPI", "c": "purple" },
+              { "t": "PostgreSQL", "c": "purple" },
+              { "t": "IFC.js", "c": "green" },
+              { "t": "Three.js", "c": "green" },
+              { "t": "Docker" }
+            ]
+          },
+          {
+            "label": "Code highlight",
+            "codeHtml": "<span class=\"cs-kw\">import</span> { <span class=\"cs-fn\">IfcLoader</span> } <span class=\"cs-kw\">from</span> <span class=\"cs-str\">'@thatopen/components'</span>\n<span class=\"cs-cm\">// Load &amp; query IFC properties</span>\n<span class=\"cs-kw\">const</span> loader = world.<span class=\"cs-fn\">get</span>(<span class=\"cs-fn\">OBC.IfcLoader</span>)\n<span class=\"cs-kw\">await</span> loader.<span class=\"cs-fn\">setup</span>({ wasm: { path: wasmUrl }})\n<span class=\"cs-kw\">const</span> model = <span class=\"cs-kw\">await</span> loader.<span class=\"cs-fn\">load</span>(buffer)"
+          },
+          {
+            "label": "Links",
+            "links": [
+              { "icon": "gh", "text": "github.com/tu/bim-dashboard", "url": "#" },
+              { "icon": "ext", "text": "Live demo → bim-dashboard.vercel.app", "url": "#" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "ifc-api",
+      "label": "IFC Extractor API",
+      "cat": "Open Source · Python",
+      "color": "#34d399",
+      "worldPos": { "x": 2.5, "y": 0.5, "z": -1 },
+      "panel": {
+        "type": "// open_source",
+        "title": "IFC Parameter Extractor",
+        "sections": [
+          {
+            "label": "Overview",
+            "desc": "CLI + REST API para extraer, filtrar y exportar parámetros de cualquier modelo IFC a escala. Compatible con IFC 2x3 e IFC4. Más de 200 stars en GitHub."
+          },
+          {
+            "label": "Metrics",
+            "metrics": [
+              { "v": "200+", "l": "GitHub Stars" },
+              { "v": "IFC 4.3", "l": "Support" },
+              { "v": "MIT", "l": "License" }
+            ]
+          },
+          {
+            "label": "Technologies",
+            "tags": ["Python", "IfcOpenShell", "FastAPI", "Click CLI", "Docker", "GitHub Actions"]
+          },
+          {
+            "label": "Code highlight",
+            "codeHtml": "<span class=\"cs-cm\"># Extract all walls with properties</span>\n$ ifc-extract walls project.ifc \\\n  --props Type,Height,Material \\\n  --format json \\\n  --output walls.json\n<span class=\"cs-fn\">✓</span> <span class=\"cs-str\">Extracted 847 elements</span>"
+          },
+          {
+            "label": "Repository",
+            "links": [{ "icon": "gh", "text": "github.com/tu/ifc-extractor", "url": "#" }]
+          }
+        ]
+      }
+    },
+    {
+      "id": "facade",
+      "label": "Parametric Façade",
+      "cat": "BIM + Three.js",
+      "color": "#f59e0b",
+      "worldPos": { "x": 0, "y": -0.5, "z": 3.2 },
+      "panel": {
+        "type": "// bim_dev_hybrid",
+        "title": "Parametric Façade System",
+        "sections": [
+          {
+            "label": "Overview",
+            "desc": "Sistema de fachada paramétrica que conecta Grasshopper con Three.js vía API. Genera geometría procedural en Rhino, la exporta a IFC y la renderiza en web en tiempo real."
+          },
+          {
+            "label": "Metrics",
+            "metrics": [
+              { "v": "4,200", "l": "Panels" },
+              { "v": "<1s", "l": "Web load" },
+              { "v": "IFC+GLTF", "l": "Export" }
+            ]
+          },
+          {
+            "label": "Technologies",
+            "tags": ["Grasshopper", "Rhino", "Three.js", "Python", "Node.js", "IFC"]
+          },
+          {
+            "label": "Code highlight",
+            "codeHtml": "<span class=\"cs-cm\">// Procedural panel generation</span>\n<span class=\"cs-kw\">const</span> panels = facade.<span class=\"cs-fn\">generate</span>({\n  width: <span class=\"cs-str\">42</span>, height: <span class=\"cs-str\">120</span>,\n  pattern: <span class=\"cs-str\">'hexagonal'</span>,\n  variation: <span class=\"cs-str\">0.15</span>,\n  material: <span class=\"cs-str\">'glass-aluminum'</span>\n})"
+          },
+          {
+            "label": "Links",
+            "links": [
+              { "icon": "gh", "text": "github.com/tu/parametric-facade", "url": "#" },
+              { "icon": "ext", "text": "Live preview → facade.demo.app", "url": "#" }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "id": "about",
+      "label": "About me",
+      "cat": "// personal",
+      "color": "#c8d8f0",
+      "worldPos": { "x": -1, "y": 5, "z": -0.5 },
+      "panel": {
+        "type": "// about_me",
+        "title": "Hola, soy Adrià",
+        "sections": [
+          {
+            "label": "Bio",
+            "desc": "Arquitecto por la ETSAB y desarrollador fullstack autodidacta. Llevo 8 años en proyectos BIM de gran escala y 4 años desarrollando software para el sector AEC. Actualmente disponible para proyectos remotos o híbridos desde Barcelona."
+          },
+          {
+            "label": "Experiencia",
+            "metrics": [
+              { "v": "8", "l": "Años BIM" },
+              { "v": "4", "l": "Años Dev" },
+              { "v": "47", "l": "Proyectos" }
+            ]
+          },
+          {
+            "label": "Core skills",
+            "tags": ["Revit", "IFC 4.3", "React", "Python", "Three.js", "FastAPI", "PostgreSQL", "Docker", "Dynamo", "Grasshopper", "TypeScript", "Node.js"]
+          },
+          {
+            "label": "Contact",
+            "links": [
+              { "icon": "ext", "text": "hola@tunombre.com", "url": "mailto:hola@tunombre.com" },
+              { "icon": "gh", "text": "github.com/tunombre", "url": "#" },
+              { "icon": "ext", "text": "linkedin.com/in/tunombre", "url": "#" }
+            ]
+          }
+        ]
+      }
+    }
+  ]
+}

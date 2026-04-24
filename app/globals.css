@@ -16,6 +16,188 @@
   --content-row-top: 24px;
 }
 
+html[data-theme="light"] {
+  --accent-blue:   #0d6efd;
+  --accent-cyan:   #0369a1;
+  --text-main:     #0f172a;
+  --text-muted:    #475569;
+  --panel-bg:      rgba(241, 245, 249, 0.88);
+  --panel-border:  rgba(15, 23, 42, 0.12);
+  --bg-color:      #e8eaed;
+  --loading-bg:    #f1f2f4;
+}
+
+/* Rail y flyout — modo claro: fondo blanco‑grisáceo */
+html[data-theme="light"] .nav-rail {
+  background: linear-gradient(180deg, rgba(241, 245, 249, 0.97) 0%, rgba(226, 232, 240, 0.95) 100%);
+  border-right-color: rgba(15, 23, 42, 0.1);
+  box-shadow: 4px 0 32px rgba(0, 0, 0, 0.12);
+}
+
+html[data-theme="light"] .nav-rail__brand--action {
+  border-bottom-color: rgba(15, 23, 42, 0.1);
+}
+
+html[data-theme="light"] .nav-rail__brand-mark {
+  color: var(--accent-cyan);
+  background: rgba(3, 105, 161, 0.1);
+  border-color: rgba(3, 105, 161, 0.25);
+}
+
+html[data-theme="light"] .nav-rail__icon-btn {
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+html[data-theme="light"] .nav-rail__icon-btn:hover {
+  color: var(--text-main);
+  background: rgba(0, 0, 0, 0.06);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+html[data-theme="light"] .nav-rail__icon-btn.is-active {
+  color: var(--accent-cyan);
+  background: rgba(3, 105, 161, 0.1);
+  border-color: rgba(3, 105, 161, 0.3);
+  box-shadow: 0 0 0 1px rgba(3, 105, 161, 0.15);
+}
+
+html[data-theme="light"] .nav-rail__flyout {
+  background: linear-gradient(180deg, rgba(241, 245, 249, 0.97) 0%, rgba(226, 232, 240, 0.95) 100%);
+  border-right-color: rgba(15, 23, 42, 0.1);
+  box-shadow: 8px 0 48px rgba(0, 0, 0, 0.12);
+}
+
+/* Paneles data / controles — modo claro */
+html[data-theme="light"] .data-panel,
+html[data-theme="light"] .view-controls,
+html[data-theme="light"] .level-controls {
+  background: rgba(241, 245, 249, 0.9);
+  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+html[data-theme="light"] .panel-header {
+  background: rgba(148, 163, 184, 0.16);
+  border-bottom-color: rgba(15, 23, 42, 0.1);
+}
+
+html[data-theme="light"] .panel-title-text {
+  color: #475569;
+}
+
+html[data-theme="light"] .data-panel .code-block {
+  color: #334155;
+}
+
+html[data-theme="light"] .data-panel .kd {
+  color: #1d4ed8;
+}
+
+html[data-theme="light"] .data-panel .nc {
+  color: #0f766e;
+}
+
+html[data-theme="light"] .data-panel .s {
+  color: #b45309;
+}
+
+html[data-theme="light"] .data-panel .na {
+  color: #0369a1;
+}
+
+html[data-theme="light"] .data-panel .m {
+  color: #4d7c0f;
+}
+
+html[data-theme="light"] .data-panel .p {
+  color: #ca8a04;
+}
+
+html[data-theme="light"] .data-panel .cm {
+  color: #3f6212;
+}
+
+html[data-theme="light"] .badge {
+  border-color: rgba(15, 23, 42, 0.12);
+  background: rgba(0, 0, 0, 0.03);
+}
+
+html[data-theme="light"] .badge .dot {
+  background-color: var(--accent-cyan);
+  box-shadow: 0 0 10px var(--accent-cyan);
+}
+
+html[data-theme="light"] h1 {
+  background: linear-gradient(180deg, #0f172a 0%, #334155 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+html[data-theme="light"] .code-block {
+  color: #1e293b;
+}
+
+html[data-theme="light"] .btn-primary {
+  background: var(--text-main);
+  color: #f8fafc;
+}
+
+html[data-theme="light"] .btn-secondary {
+  color: var(--text-main);
+  border-color: rgba(15, 23, 42, 0.2);
+}
+
+html[data-theme="light"] .btn-secondary:hover {
+  background: rgba(0, 0, 0, 0.05);
+}
+
+html[data-theme="light"] .view-btn:hover,
+html[data-theme="light"] .view-btn.active {
+  color: var(--accent-cyan);
+  background: rgba(3, 105, 161, 0.08);
+  border-color: rgba(3, 105, 161, 0.25);
+}
+
+html[data-theme="light"] .lvl-btn:hover {
+  background: rgba(3, 105, 161, 0.1);
+  color: var(--accent-cyan);
+  border-color: rgba(3, 105, 161, 0.3);
+}
+
+html[data-theme="light"] .lvl-value,
+html[data-theme="light"] .status-indicator {
+  color: var(--accent-cyan);
+}
+
+html[data-theme="light"] #loading {
+  background: var(--loading-bg);
+}
+
+html[data-theme="light"] .nav-settings-option {
+  background: rgba(0, 0, 0, 0.04);
+  border-color: rgba(15, 23, 42, 0.1);
+}
+
+html[data-theme="light"] .theme-toggle {
+  background: rgba(0, 0, 0, 0.08);
+  border-color: rgba(15, 23, 42, 0.15);
+}
+
+html[data-theme="light"] .theme-toggle.is-light {
+  background: rgba(3, 105, 161, 0.2);
+  border-color: rgba(3, 105, 161, 0.5);
+}
+
+html[data-theme="light"] .theme-toggle__thumb {
+  background: #0f172a;
+}
+
+html[data-theme="light"] .theme-toggle.is-light .theme-toggle__thumb {
+  background: #0369a1;
+}
+
 .visually-hidden {
   position: absolute;
   width: 1px;
@@ -147,6 +329,10 @@ html, body {
   justify-content: center;
 }
 
+.nav-rail__settings-btn {
+  margin-top: auto;
+}
+
 .nav-rail__icon-btn {
   position: relative;
   display: flex;
@@ -269,6 +455,81 @@ html, body {
   color: var(--text-muted);
   font-weight: 400;
   font-family: 'Inter', sans-serif;
+}
+
+.nav-settings-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  margin-top: 8px;
+  padding: 12px;
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--panel-border);
+}
+
+.nav-settings-option__copy {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.nav-settings-option__title {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-main);
+}
+
+.nav-settings-option__desc {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text-muted);
+}
+
+.theme-toggle {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: flex-start;
+  flex: 0 0 auto;
+  box-sizing: border-box;
+  padding: 3px;
+  width: 52px;
+  height: 30px;
+  appearance: none;
+  -webkit-appearance: none;
+  border: 1px solid var(--panel-border);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  cursor: pointer;
+  transition: background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-toggle.is-light {
+  background: rgba(2, 132, 199, 0.24);
+  border-color: rgba(2, 132, 199, 0.5);
+}
+
+.theme-toggle__thumb {
+  position: absolute;
+  top: 50%;
+  left: 3px;
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: #ffffff;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.25);
+  transform: translateY(-50%);
+  transition: transform 0.2s ease, background 0.2s ease;
+}
+
+.theme-toggle.is-light .theme-toggle__thumb {
+  transform: translate(22px, -50%);
+  background: #f8fafc;
 }
 
 /* Marca: misma voz que hero (Inter, escala, jerarquía) + contraste título / rol */

@@ -1,11 +1,14 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
+import { MOUSE } from "three";
 import type { PortfolioData } from "@/types/portfolio";
 import { setupScene } from "@/utils/three-scene";
-import { SCENE_BACKGROUND } from "@/config/scene-theme";
+import type { SceneLights } from "@/utils/three-scene";
+import { SCENE_BACKGROUND, SCENE_COLORS } from "@/config/scene-theme";
+import type { SceneTheme } from "@/config/scene-theme";
 import {
   createFloor,
   createBaseMaterial,
@@ -13,6 +16,7 @@ import {
   type FloorUserData,
 } from "@/utils/building-model";
 import { getViewTarget, type ViewPreset } from "@/utils/view-variants";
+import { HERO_VARIANTS, pickHeroVariant, type HeroStartupVariant } from "@/utils/hero-variants";
 import { simulateLoad } from "@/utils/simulate-load";
 import { LoadingScreen } from "./LoadingScreen";
 import { Navbar } from "./Navbar";
@@ -36,6 +40,19 @@ const CAMERA_COLLISION_MARGIN = 1.2;
 const TARGET_COLLISION_MARGIN = 0.9;
 const MIN_ORTHO_ZOOM = 0.7;
 const MAX_ORTHO_ZOOM = 3.2;
+/**
+ * En cámara ortográfica (excepto alzado fijo mira horizontal), el arco polar se
+ * limita al hemisferio "por encima" del plano horizontal del target: se evita orbitar
+ * bajo y=0 y ver el modelo desde debajo de la rejilla.
+ */
+const ORTHO_ORBIT_MAX_POLAR = Math.PI / 2 - 0.05;
+/**
+ * Umbral del componente Y de la dirección de cámara para considerar que
+ * la ortográfica apunta "en horizontal" (alzado). |dir.y| < threshold → alzado.
+ * ISO tiene |dir.y| ≈ 0.34 (34°), alzado tiene |dir.y| ≈ 0.
+ */
+const ORTHO_HORIZONTAL_THRESHOLD = 0.28;
+const _clampCamDir = new THREE.Vector3();
 const ROTATE_SPEED_MIN = 1;
 const ROTATE_SPEED_MAX = 10;
 const ROTATE_SPEED_FACTOR = 0.3;
@@ -59,16 +76,20 @@ function clampOrbitToGround(
   activeView: ViewPreset | null
 ): void {
   if (camera instanceof THREE.OrthographicCamera) {
-    // El clamp vertical orto solo aplica en alzado (frustum vertical mirando horizontal):
-    // evita que el borde inferior del frustum muestre por debajo de y=0.
-    // En planta (frustum cenital) o en libre, el clamp no tiene sentido y causaría
-    // un snap brusco al acabar el fly-to hacia esa vista.
-    if (activeView === "front") {
+    // Planta cenital: no hace falta clamp de pan vertical.
+    if (activeView === "top") return;
+    // Detectar si la cámara mira casi en horizontal (alzado / front), incluso cuando
+    // activeView es null (el usuario ya ha empezado a interactuar y la ref se pone a null).
+    // Esto evita que un pan hacia abajo saque la rejilla del encuadre inferior.
+    _clampCamDir.set(0, 0, -1).applyQuaternion(camera.quaternion);
+    if (Math.abs(_clampCamDir.y) < ORTHO_HORIZONTAL_THRESHOLD) {
       const minTargetY = (FRUSTUM_SIZE / 2) / camera.zoom;
       if (controls.target.y < minTargetY) {
         controls.target.y = minTargetY;
       }
     }
+    // Cámara inclinada (ISO): la rejilla sigue visible por los rayos diagonales;
+    // no se necesita clamp extra de pan.
     return;
   }
   if (camera.position.y < MIN_ORBIT_EYE_Y) {
@@ -94,7 +115,10 @@ function snapFrontToGround(
   controls.update();
 }
 
-/** Bloquea φ = 90° solo en alzado + ortográfica; en el resto libera el arco polar completo. */
+/**
+ * Ajusta límites polares: alzado+orto = fijo horizontal; otras orto = encima del plano
+ * del suelo; perspectiva = giro completo.
+ */
 function applyOrbitPolarLock(
   controls: OrbitControls,
   activeView: ViewPreset | null,
@@ -103,10 +127,90 @@ function applyOrbitPolarLock(
   if (activeView === "front" && isOrtho) {
     controls.minPolarAngle = Math.PI / 2;
     controls.maxPolarAngle = Math.PI / 2;
+  } else if (isOrtho) {
+    controls.minPolarAngle = 0;
+    controls.maxPolarAngle = ORTHO_ORBIT_MAX_POLAR;
   } else {
     controls.minPolarAngle = 0;
     controls.maxPolarAngle = Math.PI;
   }
+}
+
+/**
+ * Alinea cámaras y OrbitControls con una variante de hero (mismo criterio que
+ * al cargar y al pulsar Inicio). Patrón: extracción de "estrategia" de encuadre
+ * reutilizable para no bifurcar init vs reset.
+ */
+function applyHeroVariantToCameras(
+  heroVariant: HeroStartupVariant,
+  bX: number,
+  stackFloors: number,
+  cameraPersp: THREE.PerspectiveCamera,
+  cameraOrtho: THREE.OrthographicCamera,
+  controls: OrbitControls,
+  activeCameraRef: MutableRefObject<THREE.Camera | null>,
+  isOrthoRef: MutableRefObject<boolean>
+): { activeView: ViewPreset | null; autoRotateLevel: number; isOrtho: boolean } {
+  const viewOpts = { stackFloors } as const;
+  const { position: startPos, lookAt: startLookAt } = heroVariant.getCamera
+    ? heroVariant.getCamera(bX, stackFloors)
+    : getViewTarget(heroVariant.view ?? "iso", bX, viewOpts);
+
+  cameraPersp.position.copy(startPos);
+  cameraPersp.lookAt(startLookAt);
+  cameraPersp.zoom = 1;
+  cameraPersp.updateProjectionMatrix();
+  cameraPersp.updateMatrixWorld();
+
+  cameraOrtho.position.copy(startPos);
+  cameraOrtho.quaternion.copy(cameraPersp.quaternion);
+  cameraOrtho.zoom = 1;
+  cameraOrtho.updateProjectionMatrix();
+  cameraOrtho.updateMatrixWorld();
+
+  controls.maxPolarAngle = heroVariant.getCamera ? Math.PI : ORTHO_ORBIT_MAX_POLAR;
+  controls.target.copy(startLookAt);
+  controls.autoRotateSpeed = heroVariant.autoRotateSpeed * ROTATE_SPEED_FACTOR;
+  controls.update();
+
+  isOrthoRef.current = false;
+  activeCameraRef.current = cameraPersp;
+  controls.object = cameraPersp;
+
+  if (heroVariant.cameraMode === "orthographic") {
+    const dist = cameraPersp.position.distanceTo(controls.target);
+    cameraOrtho.position.copy(cameraPersp.position);
+    cameraOrtho.quaternion.copy(cameraPersp.quaternion);
+    const halfHeight = Math.tan(THREE.MathUtils.degToRad(PERSP_FOV / 2)) * dist;
+    cameraOrtho.zoom = (FRUSTUM_SIZE / 2) / halfHeight;
+    cameraOrtho.updateProjectionMatrix();
+    activeCameraRef.current = cameraOrtho;
+    controls.object = cameraOrtho;
+    isOrthoRef.current = true;
+
+    if (heroVariant.view === "front") {
+      applyOrbitPolarLock(controls, "front", true);
+      const halfH = (FRUSTUM_SIZE / 2) / cameraOrtho.zoom;
+      controls.target.y = halfH;
+      cameraOrtho.position.y = halfH;
+    } else {
+      applyOrbitPolarLock(controls, heroVariant.view, true);
+    }
+    controls.update();
+  } else if (heroVariant.getCamera) {
+    applyOrbitPolarLock(controls, null, false);
+    controls.update();
+  } else {
+    controls.minPolarAngle = 0;
+    controls.maxPolarAngle = ORTHO_ORBIT_MAX_POLAR;
+    controls.update();
+  }
+
+  return {
+    activeView: heroVariant.view,
+    autoRotateLevel: heroVariant.autoRotateSpeed,
+    isOrtho: heroVariant.cameraMode === "orthographic",
+  };
 }
 
 type Props = { data: PortfolioData };
@@ -136,6 +240,17 @@ export function PortfolioScene({ data }: Props) {
   const targetViewDirRef = useRef(new THREE.Vector3());
   const safeTargetPosRef = useRef(new THREE.Vector3());
 
+  // Lights + grid refs (para actualizar tema en caliente)
+  const sceneLightsRef    = useRef<SceneLights | null>(null);
+  const setGridColorsRef  = useRef<((major: number, minor: number, fog: number) => void) | null>(null);
+  // Inicializado desde localStorage para que los handlers del loop tengan el valor correcto
+  // desde el primer frame, antes de que useEffect([theme]) haya corrido.
+  const themeRef = useRef<SceneTheme>(
+    typeof window !== "undefined"
+      ? ((window.localStorage.getItem("portfolio-theme") as SceneTheme) ?? "dark")
+      : "dark"
+  );
+
   // Animation state refs
   const isFlyingRef = useRef(false);
   const flyTargetPosRef = useRef(new THREE.Vector3());
@@ -148,6 +263,13 @@ export function PortfolioScene({ data }: Props) {
   const buildingOffsetXRef = useRef(0);
   const interactionCursorRef = useRef<InteractionCursorState>("idle");
   const hasUserInteractedRef = useRef(false);
+  const heroVariantRef = useRef<HeroStartupVariant | null>(null);
+
+  // Tema: inicializado desde localStorage para evitar flash
+  const [theme, setTheme] = useState<SceneTheme>(() => {
+    if (typeof window === "undefined") return "dark";
+    return (window.localStorage.getItem("portfolio-theme") as SceneTheme) ?? "dark";
+  });
 
   // React UI state
   const [loadProgress, setLoadProgress] = useState(0);
@@ -321,36 +443,30 @@ export function PortfolioScene({ data }: Props) {
     floorCountRef.current = INITIAL_FLOORS;
     setFloorCount(INITIAL_FLOORS);
 
-    // Reset camera mode, view and auto-rotation defaults.
+    // Cámara / vista: misma variante de hero que al cargar (ver `heroVariantRef` en el init de Three).
     const bX = window.innerWidth > 768 ? DESKTOP_OFFSET_X : 0;
     buildingOffsetXRef.current = bX;
     buildingGroup.position.x = bX;
-    const initialTarget = getViewTarget("iso", bX, { stackFloors: INITIAL_FLOORS });
-    cameraPersp.position.copy(initialTarget.position);
-    cameraPersp.lookAt(initialTarget.lookAt);
-    cameraPersp.zoom = 1;
-    cameraPersp.updateProjectionMatrix();
-    cameraPersp.updateMatrixWorld();
-    cameraOrtho.position.copy(initialTarget.position);
-    cameraOrtho.quaternion.copy(cameraPersp.quaternion);
-    cameraOrtho.zoom = 1;
-    cameraOrtho.updateProjectionMatrix();
-    cameraOrtho.updateMatrixWorld();
+    const variant = heroVariantRef.current ?? HERO_VARIANTS[0];
+    const applied = applyHeroVariantToCameras(
+      variant,
+      bX,
+      INITIAL_FLOORS,
+      cameraPersp,
+      cameraOrtho,
+      controls,
+      activeCameraRef,
+      isOrthoRef
+    );
+    setIsOrtho(applied.isOrtho);
+    setActiveView(applied.activeView);
+    setRotateSpeedLevel(applied.autoRotateLevel);
+    activeViewRef.current = applied.activeView;
 
-    isOrthoRef.current = false;
-    setIsOrtho(false);
-    activeCameraRef.current = cameraPersp;
-    controls.object = cameraPersp;
-    controls.target.copy(initialTarget.lookAt);
-    applyOrbitPolarLock(controls, "iso", false);
     controls.enableDamping = true;
     autoRotateRef.current = true;
     controls.autoRotate = true;
     setAutoRotate(true);
-    controls.autoRotateSpeed = DEFAULT_ROTATE_SPEED_LEVEL * ROTATE_SPEED_FACTOR;
-    setRotateSpeedLevel(DEFAULT_ROTATE_SPEED_LEVEL);
-    activeViewRef.current = "iso";
-    setActiveView("iso");
     controls.update();
   }, []);
 
@@ -403,6 +519,14 @@ export function PortfolioScene({ data }: Props) {
     controls.update();
   }, []);
 
+  const handleThemeToggle = useCallback(() => {
+    setTheme(prev => {
+      const next: SceneTheme = prev === "dark" ? "light" : "dark";
+      window.localStorage.setItem("portfolio-theme", next);
+      return next;
+    });
+  }, []);
+
   // ── Three.js Setup ────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -414,17 +538,19 @@ export function PortfolioScene({ data }: Props) {
     const isDesk = W > 768;
     const bX = isDesk ? DESKTOP_OFFSET_X : 0;
     buildingOffsetXRef.current = bX;
-    const viewOpts = { stackFloors: INITIAL_FLOORS } as const;
 
     // Scene
-    const { scene, updateInfiniteGrid, disposeInfiniteGrid } = setupScene();
-    sceneRef.current = scene;
+    const { scene, lights, updateInfiniteGrid, setGridColors, disposeInfiniteGrid } = setupScene();
+    sceneRef.current      = scene;
+    sceneLightsRef.current    = lights;
+    setGridColorsRef.current  = setGridColors;
 
-    // Cameras — posición y mirada alineadas con la vista ISO (mismo origen que el botón Iso)
-    const { position: isoPos, lookAt: isoLookAt } = getViewTarget("iso", bX, viewOpts);
+    // ── Hero Variant: elegida una vez por sesión (Inicio reutiliza esta ref) ─
+    const heroVariant = pickHeroVariant();
+    heroVariantRef.current = heroVariant;
+
+    // Cameras — se configuran con `applyHeroVariantToCameras` tras crear controls
     const cameraPersp = new THREE.PerspectiveCamera(PERSP_FOV, aspect, 1, 1000);
-    cameraPersp.position.copy(isoPos);
-    cameraPersp.lookAt(isoLookAt);
     cameraPerspRef.current = cameraPersp;
 
     const cameraOrtho = new THREE.OrthographicCamera(
@@ -434,10 +560,7 @@ export function PortfolioScene({ data }: Props) {
       FRUSTUM_SIZE / -2,
       1, 1000
     );
-    cameraOrtho.position.copy(isoPos);
-    cameraOrtho.quaternion.copy(cameraPersp.quaternion);
     cameraOrthoRef.current = cameraOrtho;
-    activeCameraRef.current = cameraPersp;
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
@@ -450,15 +573,31 @@ export function PortfolioScene({ data }: Props) {
     const controls = new OrbitControls(cameraPersp, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+    controls.mouseButtons = {
+      LEFT: MOUSE.PAN,
+      MIDDLE: MOUSE.DOLLY,
+      RIGHT: MOUSE.ROTATE,
+    };
     controls.minDistance = MIN_ZOOM_DISTANCE;
     controls.maxDistance = MAX_ZOOM_DISTANCE;
     controls.minZoom = MIN_ORTHO_ZOOM;
     controls.maxZoom = MAX_ORTHO_ZOOM;
-    controls.maxPolarAngle = Math.PI / 2 - 0.05;
-    controls.target.copy(isoLookAt);
+
+    const applied = applyHeroVariantToCameras(
+      heroVariant,
+      bX,
+      INITIAL_FLOORS,
+      cameraPersp,
+      cameraOrtho,
+      controls,
+      activeCameraRef,
+      isOrthoRef
+    );
+    setIsOrtho(applied.isOrtho);
+    activeViewRef.current = applied.activeView;
+    setActiveView(applied.activeView);
+    setRotateSpeedLevel(applied.autoRotateLevel);
     controls.autoRotate = true;
-    controls.autoRotateSpeed = DEFAULT_ROTATE_SPEED_LEVEL * ROTATE_SPEED_FACTOR;
-    controls.update();
     controlsRef.current = controls;
 
     const setCanvasCursor = (state: InteractionCursorState) => {
@@ -476,9 +615,9 @@ export function PortfolioScene({ data }: Props) {
 
     const resolveCursorStateFromPointer = (e: PointerEvent): InteractionCursorState => {
       if (e.button === 2 || ((e.ctrlKey || e.metaKey || e.shiftKey) && e.button === 0)) {
-        return "pan";
+        return "orbit";
       }
-      if (e.button === 0) return "orbit";
+      if (e.button === 0) return "pan";
       return "idle";
     };
 
@@ -491,10 +630,15 @@ export function PortfolioScene({ data }: Props) {
       setCanvasCursor("idle");
     };
 
+    const onContextMenu = (e: MouseEvent) => {
+      e.preventDefault();
+    };
+
     canvas.style.cursor = "crosshair";
     canvas.addEventListener("pointerdown", onPointerDown);
     canvas.addEventListener("pointerup", onPointerUp);
     canvas.addEventListener("pointercancel", onPointerUp);
+    canvas.addEventListener("contextmenu", onContextMenu);
 
     // Building group
     const buildingGroup = new THREE.Group();
@@ -630,7 +774,10 @@ export function PortfolioScene({ data }: Props) {
       if (intersects.length > 0) {
         const obj = intersects[0].object as THREE.Mesh;
         if (intersectedRef.current !== obj) {
-          if (intersectedRef.current) resetFloorHighlight(intersectedRef.current);
+          if (intersectedRef.current) {
+            const tc = SCENE_COLORS[themeRef.current];
+            resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
+          }
           intersectedRef.current = obj;
           highlightFloor(obj);
 
@@ -642,7 +789,8 @@ export function PortfolioScene({ data }: Props) {
           setCodeHtml(buildFloorCodeHtml(d));
         }
       } else if (intersectedRef.current) {
-        resetFloorHighlight(intersectedRef.current);
+        const tc = SCENE_COLORS[themeRef.current];
+        resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
         intersectedRef.current = null;
         if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
         setCodeHtml(DEFAULT_CODE_HTML);
@@ -722,8 +870,86 @@ export function PortfolioScene({ data }: Props) {
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointerup", onPointerUp);
       canvas.removeEventListener("pointercancel", onPointerUp);
+      canvas.removeEventListener("contextmenu", onContextMenu);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Theme (declarado DESPUÉS del init para que las refs 3D ya estén listas) ──
+
+  useEffect(() => {
+    themeRef.current = theme;
+    const colors   = SCENE_COLORS[theme];
+    const scene    = sceneRef.current;
+    const renderer = rendererRef.current;
+
+    // CSS variables (sobreescribe el valor inline del layout)
+    document.documentElement.style.setProperty("--bg-color", colors.backgroundCSS);
+    document.documentElement.setAttribute("data-theme", theme);
+
+    if (!scene || !renderer) return;
+
+    // Fondo + niebla
+    const bg = new THREE.Color(colors.background);
+    scene.background = bg;
+    if (scene.fog instanceof THREE.FogExp2) scene.fog.color.copy(bg);
+    renderer.setClearColor(colors.background, 1);
+
+    // Rejilla
+    setGridColorsRef.current?.(colors.gridMajor, colors.gridMinor, colors.background);
+
+    // Luces
+    const lt = sceneLightsRef.current;
+    if (lt) {
+      lt.dir1.color.setHex(colors.dirLight1.color);   lt.dir1.intensity = colors.dirLight1.intensity;
+      lt.dir2.color.setHex(colors.dirLight2.color);   lt.dir2.intensity = colors.dirLight2.intensity;
+      lt.dir3.color.setHex(colors.dirLight3.color);   lt.dir3.intensity = colors.dirLight3.intensity;
+      lt.fillA.color.setHex(colors.fillA.color);      lt.fillA.intensity = colors.fillA.intensity;
+      lt.fillB.color.setHex(colors.fillB.color);      lt.fillB.intensity = colors.fillB.intensity;
+    }
+
+    // Materiales del edificio (meshes clonados por piso)
+    buildingGroupRef.current?.traverse(obj => {
+      if (obj instanceof THREE.Mesh) {
+        const mat = obj.material;
+        if (mat instanceof THREE.MeshPhysicalMaterial) {
+          mat.color.setHex(colors.buildingBase);
+          mat.metalness        = colors.buildingMetalness;
+          mat.roughness        = colors.buildingRoughness;
+          mat.opacity          = colors.buildingBaseOpacity;
+          mat.emissive.setHex(0x000000);
+          mat.emissiveIntensity = 0;
+          mat.needsUpdate      = true;
+        } else if (mat instanceof THREE.MeshBasicMaterial) {
+          mat.color.setHex(colors.buildingCore);
+          mat.needsUpdate = true;
+        }
+      }
+      if (obj instanceof THREE.LineSegments) {
+        const mat = obj.material;
+        if (mat instanceof THREE.LineBasicMaterial) {
+          mat.color.setHex(colors.buildingLines);
+          mat.opacity          = colors.buildingLinesOpacity;
+          mat.needsUpdate      = true;
+        }
+      }
+    });
+
+    // Material plantilla (para pisos que se añadan después)
+    const bm = baseMaterialRef.current;
+    if (bm) {
+      bm.color.setHex(colors.buildingBase);
+      bm.metalness  = colors.buildingMetalness;
+      bm.roughness  = colors.buildingRoughness;
+      bm.opacity    = colors.buildingBaseOpacity;
+      bm.needsUpdate = true;
+    }
+    const lm = lineMaterialRef.current;
+    if (lm) {
+      lm.color.setHex(colors.buildingLines);
+      lm.opacity    = colors.buildingLinesOpacity;
+      lm.needsUpdate = true;
+    }
+  }, [theme]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Render ─────────────────────────────────────────────────────────────
 
@@ -734,7 +960,12 @@ export function PortfolioScene({ data }: Props) {
       <canvas ref={canvasRef} id="three-canvas" />
       <div id="tooltip" ref={tooltipRef} />
 
-      <Navbar brand={data.nav.brand} links={data.nav.links} />
+      <Navbar
+        brand={data.nav.brand}
+        links={data.nav.links}
+        theme={theme}
+        onThemeToggle={handleThemeToggle}
+      />
       <NodeInspector codeHtml={codeHtml} />
       <HeroText data={data} />
 
@@ -749,8 +980,8 @@ export function PortfolioScene({ data }: Props) {
           onToggleAuto={handleToggleAuto}
         />
         <div className="hint">
-          <kbd>Click</kbd> Orbitar &nbsp;
-          <kbd>Click Der</kbd> Pan &nbsp;
+          <kbd>Click</kbd> Pan &nbsp;
+          <kbd>Click Der</kbd> Orbitar &nbsp;
           <kbd>Scroll</kbd> Zoom
         </div>
       </div>
@@ -835,18 +1066,22 @@ function highlightFloor(mesh: THREE.Mesh): void {
   }
 }
 
-function resetFloorHighlight(mesh: THREE.Mesh): void {
+function resetFloorHighlight(
+  mesh: THREE.Mesh,
+  baseColor = 0x111111,
+  lineColor = 0x333333
+): void {
   try {
     if (!mesh.material) return;
     forEachMeshStandardMaterial(mesh.material, mat => {
-      safeColorSetHex(mat.color, 0x111111);
+      safeColorSetHex(mat.color, baseColor);
       safeColorSetHex(mat.emissive, 0x000000);
       mat.emissiveIntensity = 0;
     });
     const line = mesh.children[0];
     if (line instanceof THREE.LineSegments) {
       forEachLineBasicMaterial(line.material, mat => {
-        safeColorSetHex(mat.color, 0x333333);
+        safeColorSetHex(mat.color, lineColor);
       });
     }
   } catch {

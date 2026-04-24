@@ -4,18 +4,24 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { NavBrand, NavLink } from "@/types/portfolio";
 import { NavIcon } from "./NavIcon";
+import type { SceneTheme } from "@/config/scene-theme";
 
 type Props = {
-  brand: NavBrand;
-  links: NavLink[];
+  brand:          NavBrand;
+  links:          NavLink[];
+  theme:          SceneTheme;
+  onThemeToggle:  () => void;
 };
 
-export function Navbar({ brand, links }: Props) {
+export function Navbar({ brand, links, theme, onThemeToggle }: Props) {
   const railRef = useRef<HTMLElement | null>(null);
   const [activePanel, setActivePanel] = useState<"brand" | string | null>(null);
 
-  const isBrandOpen = activePanel === "brand";
-  const openLink = activePanel && activePanel !== "brand" ? links.find(l => l.id === activePanel) : undefined;
+  const isBrandOpen   = activePanel === "brand";
+  const isSettingsOpen = activePanel === "settings";
+  const openLink = activePanel && activePanel !== "brand" && activePanel !== "settings"
+    ? links.find(l => l.id === activePanel)
+    : undefined;
 
   useEffect(() => {
     if (activePanel == null) return;
@@ -32,9 +38,11 @@ export function Navbar({ brand, links }: Props) {
   const flyoutLabel =
     isBrandOpen
       ? "Marca del sitio"
-      : openLink
-        ? openLink.label
-        : "Panel";
+      : isSettingsOpen
+        ? "Configuraciones"
+        : openLink
+          ? openLink.label
+          : "Panel";
 
   return (
     <aside className="nav-rail" ref={railRef} aria-label="Navegación">
@@ -51,6 +59,7 @@ export function Navbar({ brand, links }: Props) {
         </span>
         <span className="visually-hidden">Marca: {fullNameA11y}</span>
       </button>
+
       <nav className="nav-rail__tabs" aria-label="Secciones">
         {links.map(link => {
           const isOpen = activePanel === link.id;
@@ -70,6 +79,32 @@ export function Navbar({ brand, links }: Props) {
           );
         })}
       </nav>
+
+      {/* Botón de configuración — ancla al fondo del rail */}
+      <button
+        type="button"
+        className={`nav-rail__icon-btn nav-rail__settings-btn${isSettingsOpen ? " is-active" : ""}`}
+        onClick={() => setActivePanel(p => (p === "settings" ? null : "settings"))}
+        aria-expanded={isSettingsOpen}
+        aria-controls="nav-flyout"
+        title="Configuraciones"
+      >
+        <span className="nav-rail__icon-pill" aria-hidden />
+        <svg
+          width="22"
+          height="22"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="1.6"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          aria-hidden
+        >
+          <circle cx="12" cy="12" r="3.1" />
+          <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1.5 1.5 0 1 1-2.1 2.1l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V19a1.5 1.5 0 1 1-3 0v-.1a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a1.5 1.5 0 1 1-2.1-2.1l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H5a1.5 1.5 0 1 1 0-3h.1a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a1.5 1.5 0 1 1 2.1-2.1l.1.1a1 1 0 0 0 1.1.2h0a1 1 0 0 0 .6-.9V5a1.5 1.5 0 1 1 3 0v.1a1 1 0 0 0 .6.9h0a1 1 0 0 0 1.1-.2l.1-.1a1.5 1.5 0 1 1 2.1 2.1l-.1.1a1 1 0 0 0-.2 1.1v0a1 1 0 0 0 .9.6H19a1.5 1.5 0 1 1 0 3h-.1a1 1 0 0 0-.9.6Z" />
+        </svg>
+      </button>
 
       <div
         id="nav-flyout"
@@ -101,6 +136,28 @@ export function Navbar({ brand, links }: Props) {
             <p className="nav-rail__flyout-kicker">Sección</p>
             <h2 className="nav-rail__flyout-title">{openLink.label}</h2>
             <p className="nav-rail__flyout-desc">{openLink.description}</p>
+          </div>
+        )}
+        {isSettingsOpen && (
+          <div className="nav-rail__flyout-inner">
+            <p className="nav-rail__flyout-kicker">Preferencias</p>
+            <h2 className="nav-rail__flyout-title">Configuración</h2>
+            <div className="nav-settings-option">
+              <div className="nav-settings-option__copy">
+                <p className="nav-settings-option__title">Tema</p>
+                <p className="nav-settings-option__desc">
+                  Cambia entre tema oscuro y claro.
+                </p>
+              </div>
+              <button
+                type="button"
+                className={`theme-toggle${theme === "light" ? " is-light" : ""}`}
+                onClick={onThemeToggle}
+                aria-label={`Cambiar a tema ${theme === "dark" ? "claro" : "oscuro"}`}
+              >
+                <span className="theme-toggle__thumb" />
+              </button>
+            </div>
           </div>
         )}
       </div>

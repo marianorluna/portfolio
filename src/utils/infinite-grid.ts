@@ -16,26 +16,33 @@ void main() {
 const fragmentShader = /* glsl */ `
 #include <common>
 #include <fog_pars_fragment>
-#define TAU 6.28318530718
 uniform vec3 uColorMajor;
 uniform vec3 uColorMinor;
 uniform float uCell;
 varying vec3 vWorldPos;
 
+// Distancia a la frontera de celda [0, 0.5]; fwidth de tm escala el suavizado a espacio de pantalla.
+float gridLineMask(vec2 tm, float wx, float wz) {
+	float dX = min(fract(tm.x), 1.0 - fract(tm.x));
+	float dY = min(fract(tm.y), 1.0 - fract(tm.y));
+	float aX = 1.0 - smoothstep(0.0, 2.0 * wx, dX);
+	float aY = 1.0 - smoothstep(0.0, 2.0 * wz, dY);
+	return max(aX, aY);
+}
+
 void main() {
 	vec2 p = vWorldPos.xz;
 	float c = uCell;
 	float cMaj = c * 5.0;
-	float gcx = abs(sin(p.x * TAU / c));
-	float gcy = abs(sin(p.y * TAU / c));
-	float gmx = abs(sin(p.x * TAU / cMaj));
-	float gmy = abs(sin(p.y * TAU / cMaj));
-	float tmi = 1.0 - min(gcx, gcy);
-	float tma = 1.0 - min(gmx, gmy);
-
-	// Rejilla tradicional: líneas menores finas y líneas mayores más marcadas.
-	float lineMinor = smoothstep(0.965, 0.992, tmi);
-	float lineMajor = smoothstep(0.90, 0.975, tma);
+	vec2 tm = p / c;
+	vec2 tM = p / cMaj;
+	// fwidth: grosor de línea coherente al rotar (evita moiré/aliasing a lo lejos).
+	float wxM = fwidth(tm.x) + 1e-5;
+	float wzM = fwidth(tm.y) + 1e-5;
+	float wMxM = fwidth(tM.x) + 1e-5;
+	float wMzM = fwidth(tM.y) + 1e-5;
+	float lineMinor = gridLineMask(tm, wxM, wzM);
+	float lineMajor = gridLineMask(tM, wMxM, wMzM);
 	float alpha = max(lineMinor * 0.55, lineMajor);
 	if (alpha < 0.01) discard;
 
@@ -77,6 +84,7 @@ export function createInfiniteGrid(options: {
   mesh: THREE.Mesh;
   horizon: THREE.Line;
   update: (camera: THREE.Camera, opts?: Partial<InfiniteGridUpdateOptions>) => void;
+  setColors: (major: number, minor: number, fog: number) => void;
   dispose: () => void;
 } {
   const uCell = options.cellSize ?? 2.0;
@@ -84,7 +92,7 @@ export function createInfiniteGrid(options: {
   const geom = new THREE.PlaneGeometry(PLANE_SIZE, PLANE_SIZE, 1, 1);
   const mat = new THREE.ShaderMaterial({
     fog: true,
-    transparent: false,
+    transparent: true,
     depthWrite: true,
     depthTest: true,
     // ShaderMaterial no hereda UniformsLib: hace falta lo que pide `refreshFogUniforms` (r180).
@@ -130,6 +138,12 @@ export function createInfiniteGrid(options: {
   return {
     mesh,
     horizon,
+    setColors(major: number, minor: number, fog: number) {
+      mat.uniforms.uColorMajor.value.setHex(major);
+      mat.uniforms.uColorMinor.value.setHex(minor);
+      mat.uniforms.fogColor.value.setHex(fog);
+      (horizonMat as THREE.LineBasicMaterial).color.setHex(major);
+    },
     update(camera, opts) {
       const o = { ...defaultGridUpdate, ...opts };
       if (o.frontElevationOrtho) {

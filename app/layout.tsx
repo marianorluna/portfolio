@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import type { CSSProperties } from "react";
 import { SCENE_BACKGROUND_CSS } from "@/config/scene-theme";
+import { LOADING_BACKGROUND } from "@/config/ui-theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -11,8 +12,9 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
-  const rootStyle: CSSProperties & { "--bg-color": string } = {
+  const rootStyle: CSSProperties & { "--bg-color": string; "--loading-bg": string } = {
     "--bg-color": SCENE_BACKGROUND_CSS,
+    "--loading-bg": LOADING_BACKGROUND,
   };
 
   return (

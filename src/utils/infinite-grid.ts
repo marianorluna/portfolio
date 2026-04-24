@@ -32,10 +32,15 @@ void main() {
 	float gmy = abs(sin(p.y * TAU / cMaj));
 	float tmi = 1.0 - min(gcx, gcy);
 	float tma = 1.0 - min(gmx, gmy);
-	if (tma < 0.12 && tmi < 0.12) discard;
-	bool isMaj = tma > 0.2;
-	vec3 col = isMaj ? uColorMajor : uColorMinor;
-	gl_FragColor = vec4(col, 1.0);
+
+	// Rejilla tradicional: líneas menores finas y líneas mayores más marcadas.
+	float lineMinor = smoothstep(0.965, 0.992, tmi);
+	float lineMajor = smoothstep(0.90, 0.975, tma);
+	float alpha = max(lineMinor * 0.55, lineMajor);
+	if (alpha < 0.01) discard;
+
+	vec3 col = mix(uColorMinor, uColorMajor, lineMajor);
+	gl_FragColor = vec4(col, alpha);
 	#include <fog_fragment>
 }
 `;

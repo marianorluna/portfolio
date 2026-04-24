@@ -10,7 +10,6 @@ import {
   createFloor,
   createBaseMaterial,
   createLineMaterial,
-  FLOOR_HEIGHT,
   type FloorUserData,
 } from "@/utils/building-model";
 import { getViewTarget, type ViewPreset } from "@/utils/view-variants";
@@ -31,6 +30,19 @@ const DESKTOP_OFFSET_X = 10;
 /** Cota y=0 = base del edificio; el pan no debe cruzar el suelo. */
 const MIN_PAN_TARGET_Y = 0;
 const MIN_ORBIT_EYE_Y = 0.22;
+const MIN_ZOOM_DISTANCE = 18;
+const MAX_ZOOM_DISTANCE = 120;
+const CAMERA_COLLISION_MARGIN = 1.2;
+const TARGET_COLLISION_MARGIN = 0.9;
+const MIN_ORTHO_ZOOM = 0.7;
+const MAX_ORTHO_ZOOM = 3.2;
+const ROTATE_SPEED_MIN = 1;
+const ROTATE_SPEED_MAX = 10;
+const ROTATE_SPEED_FACTOR = 0.3;
+const DEFAULT_ROTATE_SPEED_LEVEL = 4;
+type InteractionCursorState = "idle" | "orbit" | "pan";
+const ORBIT_CURSOR_URL =
+  "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%23d8f7ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='16' cy='16' r='8.5'/%3E%3Cpath d='M16 4.5l-2.5 2.5M16 4.5l2.5 2.5'/%3E%3Cpath d='M27.5 16l-2.5-2.5M27.5 16l-2.5 2.5'/%3E%3Cpath d='M16 27.5l-2.5-2.5M16 27.5l2.5-2.5'/%3E%3Cpath d='M4.5 16l2.5-2.5M4.5 16l2.5 2.5'/%3E%3C/g%3E%3C/svg%3E\") 16 16, grab";
 
 const DEFAULT_CODE_HTML =
   `<span class="kd">const</span> <span class="na">BuildingModel</span> <span class="p">=</span> () <span class="kd">=&gt;</span> {<br>` +
@@ -41,13 +53,21 @@ const DEFAULT_CODE_HTML =
   `&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">&lt;/</span><span class="nc">IFCContainer</span><span class="p">&gt;</span><br>` +
   `&nbsp;&nbsp;);<br>};`;
 
-function clampOrbitToGround(controls: OrbitControls, camera: THREE.Camera): void {
+function clampOrbitToGround(
+  controls: OrbitControls,
+  camera: THREE.Camera,
+  activeView: ViewPreset | null
+): void {
   if (camera instanceof THREE.OrthographicCamera) {
-    // En ortográfico el borde inferior del frustum (mundo) = target.y - halfFrustum/zoom.
-    // Forzamos target.y >= halfFrustum/zoom para que y=0 nunca se vea por debajo.
-    const minTargetY = (FRUSTUM_SIZE / 2) / camera.zoom;
-    if (controls.target.y < minTargetY) {
-      controls.target.y = minTargetY;
+    // El clamp vertical orto solo aplica en alzado (frustum vertical mirando horizontal):
+    // evita que el borde inferior del frustum muestre por debajo de y=0.
+    // En planta (frustum cenital) o en libre, el clamp no tiene sentido y causaría
+    // un snap brusco al acabar el fly-to hacia esa vista.
+    if (activeView === "front") {
+      const minTargetY = (FRUSTUM_SIZE / 2) / camera.zoom;
+      if (controls.target.y < minTargetY) {
+        controls.target.y = minTargetY;
+      }
     }
     return;
   }
@@ -74,7 +94,7 @@ function snapFrontToGround(
   controls.update();
 }
 
-/** En alzado + orto el plano de suelo y la cámara deben quedar al mismo nivel: φ = 90°. */
+/** Bloquea φ = 90° solo en alzado + ortográfica; en el resto libera el arco polar completo. */
 function applyOrbitPolarLock(
   controls: OrbitControls,
   activeView: ViewPreset | null,
@@ -85,7 +105,7 @@ function applyOrbitPolarLock(
     controls.maxPolarAngle = Math.PI / 2;
   } else {
     controls.minPolarAngle = 0;
-    controls.maxPolarAngle = Math.PI / 2 - 0.05;
+    controls.maxPolarAngle = Math.PI;
   }
 }
 
@@ -109,6 +129,12 @@ export function PortfolioScene({ data }: Props) {
   const intersectedRef = useRef<THREE.Mesh | null>(null);
   const mouseRef = useRef(new THREE.Vector2());
   const raycasterRef = useRef(new THREE.Raycaster());
+  const cameraCollisionRaycasterRef = useRef(new THREE.Raycaster());
+  const targetCollisionRaycasterRef = useRef(new THREE.Raycaster());
+  const cameraToTargetDirRef = useRef(new THREE.Vector3());
+  const safeCameraPosRef = useRef(new THREE.Vector3());
+  const targetViewDirRef = useRef(new THREE.Vector3());
+  const safeTargetPosRef = useRef(new THREE.Vector3());
 
   // Animation state refs
   const isFlyingRef = useRef(false);
@@ -120,6 +146,8 @@ export function PortfolioScene({ data }: Props) {
   const floorCountRef = useRef(INITIAL_FLOORS);
   const rafRef = useRef(0);
   const buildingOffsetXRef = useRef(0);
+  const interactionCursorRef = useRef<InteractionCursorState>("idle");
+  const hasUserInteractedRef = useRef(false);
 
   // React UI state
   const [loadProgress, setLoadProgress] = useState(0);
@@ -130,6 +158,7 @@ export function PortfolioScene({ data }: Props) {
   const [isOrtho, setIsOrtho] = useState(false);
   const [activeView, setActiveView] = useState<ViewPreset | null>("iso");
   const [autoRotate, setAutoRotate] = useState(true);
+  const [rotateSpeedLevel, setRotateSpeedLevel] = useState(DEFAULT_ROTATE_SPEED_LEVEL);
 
   // ── UI Handlers ──────────────────────────────────────────────────────────
 
@@ -175,15 +204,45 @@ export function PortfolioScene({ data }: Props) {
     const camera = activeCameraRef.current;
     if (!controls || !camera) return;
 
+    // Liberar restricciones polares de la vista anterior ANTES de iniciar el vuelo.
+    // Si no se hace aquí, controls.update() mantiene la restricción PI/2 (alzado+orto)
+    // y pelea con la animación de lerp, impidiendo llegar al destino.
+    applyOrbitPolarLock(controls, view, isOrthoRef.current);
+
     const bX = window.innerWidth > 768 ? DESKTOP_OFFSET_X : 0;
     const target = getViewTarget(view, bX, { stackFloors: floorCountRef.current });
     flyTargetPosRef.current.copy(target.position);
     flyTargetLookAtRef.current.copy(target.lookAt);
+
+    if (view === "top") {
+      // Preservar el azimut actual: solo subir la cámara a Y=80 sin forzar orientación XZ.
+      // Sin este ajuste, el offset 0.001Z del preset fuerza phi=0 y resetea los ejes a V/H.
+      const lx = target.lookAt.x;
+      const lz = target.lookAt.z;
+      const dx = camera.position.x - lx;
+      const dz = camera.position.z - lz;
+      const flatDist = Math.hypot(dx, dz);
+      const TINY = 0.001;
+      flyTargetPosRef.current.x = flatDist > TINY ? lx + (dx / flatDist) * TINY : lx;
+      flyTargetPosRef.current.y = 80;
+      flyTargetPosRef.current.z = flatDist > TINY ? lz + (dz / flatDist) * TINY : lz + TINY;
+    }
+
+    // Para alzado+orto, bake del ajuste de suelo directamente en el destino del fly.
+    // Sin esto, snapFrontToGround se aplica al final del vuelo como un snap instantáneo.
+    if (view === "front" && isOrthoRef.current && cameraOrthoRef.current) {
+      const halfH = (FRUSTUM_SIZE / 2) / cameraOrthoRef.current.zoom;
+      flyTargetPosRef.current.y = halfH;
+      flyTargetLookAtRef.current.y = halfH;
+    }
+
+    // Durante el vuelo: desactivar damping (elimina velocidad residual del usuario)
+    // y suspender autoRotate temporalmente para que la cámara no orbite mientras vuela.
+    // La preferencia real del usuario (autoRotateRef) NO se toca aquí; se restaura al aterrizar.
+    controls.enableDamping = false;
+    controls.autoRotate = false;
     isFlyingRef.current = true;
 
-    autoRotateRef.current = false;
-    controls.autoRotate = false;
-    setAutoRotate(false);
     activeViewRef.current = view;
     setActiveView(view);
   }, []);
@@ -195,6 +254,104 @@ export function PortfolioScene({ data }: Props) {
     autoRotateRef.current = next;
     controls.autoRotate = next;
     setAutoRotate(next);
+  }, []);
+
+  const handleRotateSpeedChange = useCallback((nextLevel: number) => {
+    const controls = controlsRef.current;
+    const clamped = Math.min(ROTATE_SPEED_MAX, Math.max(ROTATE_SPEED_MIN, Math.round(nextLevel)));
+    setRotateSpeedLevel(clamped);
+    if (!controls) return;
+    controls.autoRotateSpeed = clamped * ROTATE_SPEED_FACTOR;
+  }, []);
+
+  const handleIncreaseRotateSpeed = useCallback(() => {
+    handleRotateSpeedChange(rotateSpeedLevel + 1);
+  }, [handleRotateSpeedChange, rotateSpeedLevel]);
+
+  const handleDecreaseRotateSpeed = useCallback(() => {
+    handleRotateSpeedChange(rotateSpeedLevel - 1);
+  }, [handleRotateSpeedChange, rotateSpeedLevel]);
+
+  const handleResetScene = useCallback(() => {
+    const controls = controlsRef.current;
+    const cameraPersp = cameraPerspRef.current;
+    const cameraOrtho = cameraOrthoRef.current;
+    const buildingGroup = buildingGroupRef.current;
+    const baseMat = baseMaterialRef.current;
+    const lineMat = lineMaterialRef.current;
+    if (!controls || !cameraPersp || !cameraOrtho || !buildingGroup || !baseMat || !lineMat) return;
+
+    // Reset interaction and UI overlays.
+    isFlyingRef.current = false;
+    hasUserInteractedRef.current = false;
+    intersectedRef.current = null;
+    if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
+    setCodeHtml(DEFAULT_CODE_HTML);
+
+    // Reset floor stack to initial amount.
+    if (floorCountRef.current < INITIAL_FLOORS) {
+      for (let i = floorCountRef.current; i < INITIAL_FLOORS; i++) {
+        const { group, mesh } = createFloor(i, baseMat, lineMat);
+        group.scale.y = 1;
+        group.userData.targetScaleY = 1;
+        buildingGroup.add(group);
+        floorsRef.current.push(mesh);
+      }
+    } else if (floorCountRef.current > INITIAL_FLOORS) {
+      for (let i = floorCountRef.current - 1; i >= INITIAL_FLOORS; i--) {
+        const topFloor = buildingGroup.getObjectByName(`floor_${i}`);
+        if (!(topFloor instanceof THREE.Group)) continue;
+        const mesh = topFloor.children.find(child => child instanceof THREE.Mesh);
+        if (mesh instanceof THREE.Mesh) {
+          floorsRef.current = floorsRef.current.filter(existing => existing !== mesh);
+        }
+        topFloor.traverse(child => {
+          if (child instanceof THREE.Mesh || child instanceof THREE.LineSegments) {
+            child.geometry?.dispose();
+            if (Array.isArray(child.material)) {
+              child.material.forEach(m => m.dispose());
+            } else {
+              child.material?.dispose();
+            }
+          }
+        });
+        buildingGroup.remove(topFloor);
+      }
+    }
+    floorCountRef.current = INITIAL_FLOORS;
+    setFloorCount(INITIAL_FLOORS);
+
+    // Reset camera mode, view and auto-rotation defaults.
+    const bX = window.innerWidth > 768 ? DESKTOP_OFFSET_X : 0;
+    buildingOffsetXRef.current = bX;
+    buildingGroup.position.x = bX;
+    const initialTarget = getViewTarget("iso", bX, { stackFloors: INITIAL_FLOORS });
+    cameraPersp.position.copy(initialTarget.position);
+    cameraPersp.lookAt(initialTarget.lookAt);
+    cameraPersp.zoom = 1;
+    cameraPersp.updateProjectionMatrix();
+    cameraPersp.updateMatrixWorld();
+    cameraOrtho.position.copy(initialTarget.position);
+    cameraOrtho.quaternion.copy(cameraPersp.quaternion);
+    cameraOrtho.zoom = 1;
+    cameraOrtho.updateProjectionMatrix();
+    cameraOrtho.updateMatrixWorld();
+
+    isOrthoRef.current = false;
+    setIsOrtho(false);
+    activeCameraRef.current = cameraPersp;
+    controls.object = cameraPersp;
+    controls.target.copy(initialTarget.lookAt);
+    applyOrbitPolarLock(controls, "iso", false);
+    controls.enableDamping = true;
+    autoRotateRef.current = true;
+    controls.autoRotate = true;
+    setAutoRotate(true);
+    controls.autoRotateSpeed = DEFAULT_ROTATE_SPEED_LEVEL * ROTATE_SPEED_FACTOR;
+    setRotateSpeedLevel(DEFAULT_ROTATE_SPEED_LEVEL);
+    activeViewRef.current = "iso";
+    setActiveView("iso");
+    controls.update();
   }, []);
 
   const handleToggleCamera = useCallback(() => {
@@ -217,7 +374,16 @@ export function PortfolioScene({ data }: Props) {
       activeCameraRef.current = cameraOrtho;
       controls.object = cameraOrtho;
       if (activeViewRef.current === "front") {
-        snapFrontToGround(cameraOrtho, controls);
+        // Mini fly suave al plano base: evita el snap brusco que provocaba
+        // el salto visible al activar ortogonal estando en la vista alzado.
+        const halfH = (FRUSTUM_SIZE / 2) / cameraOrtho.zoom;
+        flyTargetPosRef.current.copy(cameraOrtho.position);
+        flyTargetPosRef.current.y = halfH;
+        flyTargetLookAtRef.current.copy(controls.target);
+        flyTargetLookAtRef.current.y = halfH;
+        controls.enableDamping = false;
+        controls.autoRotate = false;
+        isFlyingRef.current = true;
       }
     } else {
       const halfHeight = (FRUSTUM_SIZE / 2) / cameraOrtho.zoom;
@@ -284,12 +450,51 @@ export function PortfolioScene({ data }: Props) {
     const controls = new OrbitControls(cameraPersp, renderer.domElement);
     controls.enableDamping = true;
     controls.dampingFactor = 0.05;
+    controls.minDistance = MIN_ZOOM_DISTANCE;
+    controls.maxDistance = MAX_ZOOM_DISTANCE;
+    controls.minZoom = MIN_ORTHO_ZOOM;
+    controls.maxZoom = MAX_ORTHO_ZOOM;
     controls.maxPolarAngle = Math.PI / 2 - 0.05;
     controls.target.copy(isoLookAt);
     controls.autoRotate = true;
-    controls.autoRotateSpeed = 0.8;
+    controls.autoRotateSpeed = DEFAULT_ROTATE_SPEED_LEVEL * ROTATE_SPEED_FACTOR;
     controls.update();
     controlsRef.current = controls;
+
+    const setCanvasCursor = (state: InteractionCursorState) => {
+      interactionCursorRef.current = state;
+      if (state === "pan") {
+        canvas.style.cursor = "grab";
+        return;
+      }
+      if (state === "orbit") {
+        canvas.style.cursor = ORBIT_CURSOR_URL;
+        return;
+      }
+      canvas.style.cursor = "crosshair";
+    };
+
+    const resolveCursorStateFromPointer = (e: PointerEvent): InteractionCursorState => {
+      if (e.button === 2 || ((e.ctrlKey || e.metaKey || e.shiftKey) && e.button === 0)) {
+        return "pan";
+      }
+      if (e.button === 0) return "orbit";
+      return "idle";
+    };
+
+    const onPointerDown = (e: PointerEvent) => {
+      hasUserInteractedRef.current = true;
+      setCanvasCursor(resolveCursorStateFromPointer(e));
+    };
+
+    const onPointerUp = () => {
+      setCanvasCursor("idle");
+    };
+
+    canvas.style.cursor = "crosshair";
+    canvas.addEventListener("pointerdown", onPointerDown);
+    canvas.addEventListener("pointerup", onPointerUp);
+    canvas.addEventListener("pointercancel", onPointerUp);
 
     // Building group
     const buildingGroup = new THREE.Group();
@@ -324,6 +529,9 @@ export function PortfolioScene({ data }: Props) {
           cam.position.copy(flyTargetPosRef.current);
           controls.target.copy(flyTargetLookAtRef.current);
           isFlyingRef.current = false;
+          controls.enableDamping = true;
+          // Restaurar la preferencia de rotación del usuario (no se alteró al cambiar vista).
+          controls.autoRotate = autoRotateRef.current;
           applyOrbitPolarLock(controls, activeViewRef.current, isOrthoRef.current);
           if (activeViewRef.current === "front" && isOrthoRef.current) {
             const ortho = cameraOrthoRef.current;
@@ -363,10 +571,39 @@ export function PortfolioScene({ data }: Props) {
       }
 
       controls.update();
-      clampOrbitToGround(controls, activeCameraRef.current!);
+      // Colisión target/cámara en perspectiva: evita orbitar o acercar el foco dentro del volumen.
+      if (!isFlyingRef.current && hasUserInteractedRef.current) {
+        const targetAdjusted = preventPerspectiveTargetPenetration(
+          controls,
+          activeCameraRef.current!,
+          floorsRef.current,
+          targetCollisionRaycasterRef.current,
+          targetViewDirRef.current,
+          safeTargetPosRef.current
+        );
+        const cameraAdjusted = preventPerspectiveCameraPenetration(
+          controls,
+          activeCameraRef.current!,
+          floorsRef.current,
+          cameraCollisionRaycasterRef.current,
+          cameraToTargetDirRef.current,
+          safeCameraPosRef.current
+        );
+        if (targetAdjusted || cameraAdjusted) {
+          controls.update();
+        }
+      }
+      // No aplicar el clamp durante vuelos programáticos: el clamp orto forzaría
+      // target.y >= FRUSTUM_SIZE/2/zoom (~14) impidiendo alcanzar lookAt.y=10 (planta).
+      if (!isFlyingRef.current) {
+        clampOrbitToGround(controls, activeCameraRef.current!, activeViewRef.current);
+      }
       {
         const cam = activeCameraRef.current!;
+        // La grid solo cambia a modo elevación al terminar el fly, no durante él,
+        // para evitar el salto visual mientras la cámara todavía está en tránsito.
         const frontElOrtho =
+          !isFlyingRef.current &&
           activeViewRef.current === "front" &&
           isOrthoRef.current &&
           cam instanceof THREE.OrthographicCamera;
@@ -452,13 +689,18 @@ export function PortfolioScene({ data }: Props) {
     }
 
     controls.addEventListener("start", () => {
+      hasUserInteractedRef.current = true;
       isFlyingRef.current = false;
-      autoRotateRef.current = false;
-      controls.autoRotate = false;
-      setAutoRotate(false);
       activeViewRef.current = null;
       setActiveView(null);
       applyOrbitPolarLock(controls, null, isOrthoRef.current);
+      if (interactionCursorRef.current === "idle") {
+        setCanvasCursor("orbit");
+      }
+    });
+
+    controls.addEventListener("end", () => {
+      setCanvasCursor("idle");
     });
 
     document.addEventListener("mousemove", onMouseMove);
@@ -477,6 +719,9 @@ export function PortfolioScene({ data }: Props) {
       renderer.dispose();
       document.removeEventListener("mousemove", onMouseMove);
       window.removeEventListener("resize", onResize);
+      canvas.removeEventListener("pointerdown", onPointerDown);
+      canvas.removeEventListener("pointerup", onPointerUp);
+      canvas.removeEventListener("pointercancel", onPointerUp);
     };
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
@@ -498,6 +743,7 @@ export function PortfolioScene({ data }: Props) {
           activeView={activeView}
           isOrtho={isOrtho}
           autoRotate={autoRotate}
+          onReset={handleResetScene}
           onViewClick={handleViewClick}
           onToggleCamera={handleToggleCamera}
           onToggleAuto={handleToggleAuto}
@@ -514,6 +760,13 @@ export function PortfolioScene({ data }: Props) {
         onAdd={handleAddFloor}
         onRemove={handleRemoveFloor}
       />
+
+      <div className="level-controls rotation-controls">
+        <button className="lvl-btn" onClick={handleIncreaseRotateSpeed} type="button">+</button>
+        <span className="lvl-value">{rotateSpeedLevel}</span>
+        <button className="lvl-btn" onClick={handleDecreaseRotateSpeed} type="button">−</button>
+        <span className="lvl-label">ROT</span>
+      </div>
     </>
   );
 }
@@ -616,4 +869,77 @@ function buildFloorCodeHtml(d: FloorUserData): string {
     `<span class="kd">status</span>: <span class="s">"200 OK"</span><br>` +
     `<span class="kd">sync</span>: <span class="s">"realtime"</span>`
   );
+}
+
+/**
+ * Evita que la cámara de perspectiva atraviese el edificio.
+ * Traza un rayo desde el target hacia la cámara actual y recorta la distancia
+ * cuando encuentra una intersección antes de llegar al ojo.
+ */
+function preventPerspectiveCameraPenetration(
+  controls: OrbitControls,
+  camera: THREE.Camera,
+  floors: THREE.Mesh[],
+  raycaster: THREE.Raycaster,
+  tmpDir: THREE.Vector3,
+  tmpSafePos: THREE.Vector3
+): boolean {
+  if (!(camera instanceof THREE.PerspectiveCamera)) return false;
+  if (floors.length === 0) return false;
+
+  tmpDir.subVectors(camera.position, controls.target);
+  const eyeDistance = tmpDir.length();
+  if (eyeDistance <= 0.0001) return false;
+  tmpDir.normalize();
+
+  raycaster.set(controls.target, tmpDir);
+  raycaster.far = eyeDistance;
+  const hits = raycaster.intersectObjects(floors, false);
+  if (hits.length === 0) return false;
+
+  const nearestHitDistance = hits[0].distance;
+  const safeDistance = Math.max(
+    MIN_ZOOM_DISTANCE,
+    nearestHitDistance + CAMERA_COLLISION_MARGIN
+  );
+  if (eyeDistance >= safeDistance) return false;
+
+  tmpSafePos.copy(controls.target).addScaledVector(tmpDir, safeDistance);
+  camera.position.copy(tmpSafePos);
+  camera.updateMatrixWorld();
+  return true;
+}
+
+/**
+ * Evita que el target de órbita quede dentro del edificio cuando se rota/manualmente.
+ * Si hay intersección entre cámara y target, el target se recoloca justo antes del impacto.
+ */
+function preventPerspectiveTargetPenetration(
+  controls: OrbitControls,
+  camera: THREE.Camera,
+  floors: THREE.Mesh[],
+  raycaster: THREE.Raycaster,
+  tmpDir: THREE.Vector3,
+  tmpSafePos: THREE.Vector3
+): boolean {
+  if (!(camera instanceof THREE.PerspectiveCamera)) return false;
+  if (floors.length === 0) return false;
+
+  tmpDir.subVectors(controls.target, camera.position);
+  const targetDistance = tmpDir.length();
+  if (targetDistance <= 0.0001) return false;
+  tmpDir.normalize();
+
+  raycaster.set(camera.position, tmpDir);
+  raycaster.far = targetDistance;
+  const hits = raycaster.intersectObjects(floors, false);
+  if (hits.length === 0) return false;
+
+  const nearestHitDistance = hits[0].distance;
+  const safeDistance = Math.max(0, nearestHitDistance - TARGET_COLLISION_MARGIN);
+  if (targetDistance <= safeDistance) return false;
+
+  tmpSafePos.copy(camera.position).addScaledVector(tmpDir, safeDistance);
+  controls.target.copy(tmpSafePos);
+  return true;
 }

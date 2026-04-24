@@ -32,5 +32,18 @@ export function setupScene(): {
   dirLight2.position.set(-20, 20, 20);
   scene.add(dirLight2);
 
+  const dirLight3 = new THREE.DirectionalLight(0x00e5ff, 1.1);
+  dirLight3.position.set(20, 20, -20);
+  scene.add(dirLight3);
+
+  // Fill lights más difusos: menor intensidad y más laterales/traseros para evitar bandas frontales.
+  const fillLightA = new THREE.DirectionalLight(0xaedbff, 0.25);
+  fillLightA.position.set(-45, 32, -50);
+  scene.add(fillLightA);
+
+  const fillLightB = new THREE.DirectionalLight(0xaedbff, 0.20);
+  fillLightB.position.set(45, 30, 50);
+  scene.add(fillLightB);
+
   return { scene, updateInfiniteGrid, disposeInfiniteGrid };
 }

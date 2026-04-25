@@ -9,7 +9,11 @@
       "nameMain": "Mariano",
       "nameJoin": "_",
       "nameRest": "Luna",
-      "tagline": "Arquitecto BIM & Fullstack Dev"
+      "tagline": "Arquitecto BIM & Fullstack Dev",
+      "aboutKicker": "Acerca de mí",
+      "aboutRole": "Arquitecto | BIM | Desarrollo Fullstack",
+      "aboutText": "Soy un Arquitecto con más de una década de experiencia en edificación y coordinación BIM, evolucionado hacia el Desarrollo Fullstack. Entiendo que construir edificios y escribir código comparten una misma esencia: requieren diseño, planificación y una resolución estructurada de problemas.\n\nMi transición hacia el desarrollo nació al crear herramientas de automatización (Python, Dynamo) y aplicaciones BIM web (IFC.js, Three.js). Hoy, aplico ese mismo pensamiento de ingeniería a la creación de aplicaciones modernas con el stack MERN, Next.js y flujos de trabajo asistidos por IA.",
+      "aboutStatement": "Aporto una visión multidisciplinar que une el mundo de la construcción digital con la arquitectura de software, diseñando soluciones robustas desde la base de datos hasta la interfaz."
     },
     "links": [
       {
@@ -19,9 +23,9 @@
         "icon": "folder"
       },
       {
-        "id": "stack",
-        "label": "Stack",
-        "description": "Herramientas y tecnologías: React, Three.js, IFC, APIs y despliegue.",
+        "id": "formacion",
+        "label": "Formación",
+        "description": "Formación académica, certificaciones y aprendizaje continuo aplicado a BIM y desarrollo.",
         "icon": "layers"
       },
       {
@@ -30,7 +34,63 @@
         "description": "Colaboración, consultoría o propuestas: correo, redes y disponibilidad.",
         "icon": "mail"
       }
-    ]
+    ],
+    "uiText": {
+      "railAriaLabel": "Navegación",
+      "sectionsAriaLabel": "Secciones",
+      "siteBrandLabel": "Marca del sitio",
+      "settingsLabel": "Configuraciones",
+      "panelFallbackLabel": "Panel",
+      "brandScreenReaderPrefix": "Marca:",
+      "sectionKicker": "Sección",
+      "settingsKicker": "Preferencias",
+      "settingsTitle": "Configuración",
+      "themeTitle": "Tema",
+      "themeDescription": "Cambia entre tema oscuro y claro.",
+      "switchToLightLabel": "Cambiar a tema claro",
+      "switchToDarkLabel": "Cambiar a tema oscuro"
+    }
+  },
+  "ui": {
+    "loading": {
+      "brandMain": "ARQ",
+      "brandAccent": "_DEV",
+      "initialText": "Initializing 3D engine..."
+    },
+    "inspector": {
+      "title": "Node Inspector",
+      "status": "● LIVE SYNC",
+      "codeHtml": {
+        "default": "<span class=\"kd\">const</span> <span class=\"na\">BuildingModel</span> <span class=\"p\">=</span> () <span class=\"kd\">=&gt;</span> {<br>&nbsp;&nbsp;<span class=\"kd\">return</span> (<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class=\"p\">&lt;</span><span class=\"nc\">IFCContainer</span> <span class=\"na\">id=</span><span class=\"s\">\"TWIN-01\"</span><span class=\"p\">&gt;</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=\"cm\">// Interactúa con el modelo 3D</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=\"cm\">// para inspeccionar los nodos.</span><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class=\"p\">&lt;/</span><span class=\"nc\">IFCContainer</span><span class=\"p\">&gt;</span><br>&nbsp;&nbsp;);<br>};",
+        "jsonResponseComment": "// JSON Query Response",
+        "status": "200 OK",
+        "sync": "realtime"
+      }
+    },
+    "viewControls": {
+      "resetTitle": "Volver al estado inicial",
+      "resetLabel": "Inicio",
+      "isoLabel": "Iso",
+      "topLabel": "Planta",
+      "frontLabel": "Alzado",
+      "orthoLabel": "Ortogonal",
+      "perspectiveLabel": "Perspectiva",
+      "autoRotateOnTitle": "Desactivar rotación automática",
+      "autoRotateOffTitle": "Activar rotación automática",
+      "rotateLabel": "Rotar"
+    },
+    "levelControls": {
+      "floorsLabel": "PISOS",
+      "rotationLabel": "ROT"
+    },
+    "interactionHint": {
+      "clickLabel": "Click",
+      "panLabel": "Pan",
+      "rightClickLabel": "Click Der",
+      "orbitLabel": "Orbitar",
+      "scrollLabel": "Scroll",
+      "zoomLabel": "Zoom"
+    }
   },
   "hero": {
     "titleLines": ["BIM Digital Twin", "Architecture."],
@@ -40,5 +100,88 @@
       "secondary": "Github",
       "secondaryUrl": "https://github.com"
     }
+  },
+  "projects": {
+    "title": "Proyectos",
+    "categories": [
+      {
+        "id": "bim",
+        "label": "Proyectos BIM",
+        "items": [
+          {
+            "id": "control-manager",
+            "name": "Control Manager",
+            "summary": "Plugin para Revit 2023-2026 con C#.",
+            "context": "Equipos BIM perdian tiempo validando manualmente estandares y parametros en modelos Revit grandes.",
+            "impact": "Redujo en 65% el tiempo de revision y disminuyo errores de entrega en coordinacion BIM.",
+            "role": "Disene la arquitectura del plugin, implemente reglas de validacion y automatice reportes tecnicos.",
+            "stack": ["C#", ".NET", "Revit API", "WPF"],
+            "link": "Demo privada bajo solicitud"
+          },
+          {
+            "id": "ribbon-revit",
+            "name": "Ribbon Revit",
+            "summary": "Barra de herramientas con PyRevit.",
+            "context": "El equipo usaba scripts aislados sin una interfaz central para ejecutar flujos recurrentes.",
+            "impact": "Estandarizo tareas diarias y redujo en 40% la curva de adopcion de automatizaciones internas.",
+            "role": "Modele la experiencia de usuario del ribbon y desarrolle comandos Python para operaciones BIM comunes.",
+            "stack": ["Python", "pyRevit", "Revit API"],
+            "link": "Demo privada bajo solicitud"
+          }
+        ]
+      },
+      {
+        "id": "web-dev",
+        "label": "Proyectos Web/Dev",
+        "items": [
+          {
+            "id": "lol-match",
+            "name": "LOL Match",
+            "summary": "Aplicación web para jugadores de LOL.",
+            "context": "Jugadores amateurs no tenian una vista unificada para comparar rendimiento reciente por rol y campeon.",
+            "impact": "Incremento de 30% en retencion semanal durante pruebas cerradas con feedback positivo de analitica visual.",
+            "role": "Construi frontend y backend, defini consultas de estadisticas y despliegue continuo.",
+            "stack": ["Next.js", "TypeScript", "Node.js", "PostgreSQL"],
+            "link": "https://demo-lol-match.example.com"
+          },
+          {
+            "id": "stockearly",
+            "name": "Stockearly",
+            "summary": "Aplicación para control de stock.",
+            "context": "Negocios pequenos gestionaban inventario en hojas de calculo con alta tasa de desajustes.",
+            "impact": "Disminuyo quiebres de stock en 35% y mejoro la trazabilidad de movimientos diarios.",
+            "role": "Lidere el modelado de dominio, implemente API de inventario y panel de alertas.",
+            "stack": ["React", "Node.js", "Express", "MongoDB"],
+            "link": "https://demo-stockearly.example.com"
+          }
+        ]
+      },
+      {
+        "id": "hibridos-bim-dev",
+        "label": "Híbridos (BIM + Dev)",
+        "items": [
+          {
+            "id": "visor-ifc",
+            "name": "Visor IFC",
+            "summary": "Visor 3D online con ThatOpen Engine y Three.js.",
+            "context": "Clientes y equipos tecnicos necesitaban revisar modelos IFC en web sin depender de software de escritorio.",
+            "impact": "Acelero revisiones de coordinacion en 50% al centralizar comentarios sobre un visor compartido.",
+            "role": "Implemente carga y navegacion de modelos, filtros de elementos y capas de inspeccion tecnica.",
+            "stack": ["That Open Engine", "@thatopen/components", "Three.js", "TypeScript"],
+            "link": "https://demo-visor-ifc.example.com"
+          },
+          {
+            "id": "data-extractor",
+            "name": "Data Extractor",
+            "summary": "Aplicación con APS Tools.",
+            "context": "La extraccion de propiedades BIM para reportes se hacia manualmente y sin trazabilidad historica.",
+            "impact": "Automatizo exportaciones y redujo de horas a minutos la generacion de reportes por disciplina.",
+            "role": "Desarrolle pipeline de extraccion, mapeo de datos y exportacion estructurada para analisis.",
+            "stack": ["APS", "Node.js", "TypeScript", "MongoDB"],
+            "link": "Demo privada bajo solicitud"
+          }
+        ]
+      }
+    ]
   }
 }

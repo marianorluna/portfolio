@@ -61,15 +61,6 @@ type InteractionCursorState = "idle" | "orbit" | "pan";
 const ORBIT_CURSOR_URL =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%23d8f7ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='16' cy='16' r='8.5'/%3E%3Cpath d='M16 4.5l-2.5 2.5M16 4.5l2.5 2.5'/%3E%3Cpath d='M27.5 16l-2.5-2.5M27.5 16l-2.5 2.5'/%3E%3Cpath d='M16 27.5l-2.5-2.5M16 27.5l2.5-2.5'/%3E%3Cpath d='M4.5 16l2.5-2.5M4.5 16l2.5 2.5'/%3E%3C/g%3E%3C/svg%3E\") 16 16, grab";
 
-const DEFAULT_CODE_HTML =
-  `<span class="kd">const</span> <span class="na">BuildingModel</span> <span class="p">=</span> () <span class="kd">=&gt;</span> {<br>` +
-  `&nbsp;&nbsp;<span class="kd">return</span> (<br>` +
-  `&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">&lt;</span><span class="nc">IFCContainer</span> <span class="na">id=</span><span class="s">"TWIN-01"</span><span class="p">&gt;</span><br>` +
-  `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// Interactúa con el modelo 3D</span><br>` +
-  `&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="cm">// para inspeccionar los nodos.</span><br>` +
-  `&nbsp;&nbsp;&nbsp;&nbsp;<span class="p">&lt;/</span><span class="nc">IFCContainer</span><span class="p">&gt;</span><br>` +
-  `&nbsp;&nbsp;);<br>};`;
-
 function clampOrbitToGround(
   controls: OrbitControls,
   camera: THREE.Camera,
@@ -214,8 +205,11 @@ function applyHeroVariantToCameras(
 }
 
 type Props = { data: PortfolioData };
+type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][number];
 
 export function PortfolioScene({ data }: Props) {
+  const defaultCodeHtml = data.ui.inspector.codeHtml.default;
+
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
 
@@ -264,6 +258,8 @@ export function PortfolioScene({ data }: Props) {
   const interactionCursorRef = useRef<InteractionCursorState>("idle");
   const hasUserInteractedRef = useRef(false);
   const heroVariantRef = useRef<HeroStartupVariant | null>(null);
+  /** HTML del proyecto "pinned" en el inspector; null = ninguno seleccionado. */
+  const selectedProjectHtmlRef = useRef<string | null>(null);
 
   // Tema: inicializado desde localStorage para evitar flash
   const [theme, setTheme] = useState<SceneTheme>(() => {
@@ -273,10 +269,10 @@ export function PortfolioScene({ data }: Props) {
 
   // React UI state
   const [loadProgress, setLoadProgress] = useState(0);
-  const [loadText, setLoadText] = useState("Initializing 3D engine...");
+  const [loadText, setLoadText] = useState(data.ui.loading.initialText);
   const [loadHidden, setLoadHidden] = useState(false);
   const [floorCount, setFloorCount] = useState(INITIAL_FLOORS);
-  const [codeHtml, setCodeHtml] = useState(DEFAULT_CODE_HTML);
+  const [codeHtml, setCodeHtml] = useState(defaultCodeHtml);
   const [isOrtho, setIsOrtho] = useState(false);
   const [activeView, setActiveView] = useState<ViewPreset | null>("iso");
   const [autoRotate, setAutoRotate] = useState(true);
@@ -316,7 +312,7 @@ export function PortfolioScene({ data }: Props) {
         // No tocar materiales: el piso se anima a salida; reset podría chocar con el estado de Three
         intersectedRef.current = null;
         if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
-        setCodeHtml(DEFAULT_CODE_HTML);
+        setCodeHtml(defaultCodeHtml);
       }
     }
   }, []);
@@ -407,8 +403,9 @@ export function PortfolioScene({ data }: Props) {
     isFlyingRef.current = false;
     hasUserInteractedRef.current = false;
     intersectedRef.current = null;
+    selectedProjectHtmlRef.current = null;
     if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
-    setCodeHtml(DEFAULT_CODE_HTML);
+    setCodeHtml(defaultCodeHtml);
 
     // Reset floor stack to initial amount.
     if (floorCountRef.current < INITIAL_FLOORS) {
@@ -527,6 +524,19 @@ export function PortfolioScene({ data }: Props) {
     });
   }, []);
 
+  const handleProjectSelect = useCallback((project: ProjectItem) => {
+    const html = buildProjectCodeHtml(project);
+    const currentIntersected = intersectedRef.current;
+    if (currentIntersected) {
+      const tc = SCENE_COLORS[themeRef.current];
+      resetFloorHighlight(currentIntersected, tc.buildingBase, tc.buildingLines);
+      intersectedRef.current = null;
+    }
+    if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
+    selectedProjectHtmlRef.current = html;
+    setCodeHtml(html);
+  }, []);
+
   // ── Three.js Setup ────────────────────────────────────────────────────────
 
   useEffect(() => {
@@ -624,6 +634,10 @@ export function PortfolioScene({ data }: Props) {
     const onPointerDown = (e: PointerEvent) => {
       hasUserInteractedRef.current = true;
       setCanvasCursor(resolveCursorStateFromPointer(e));
+      if (selectedProjectHtmlRef.current) {
+        selectedProjectHtmlRef.current = null;
+        setCodeHtml(defaultCodeHtml);
+      }
     };
 
     const onPointerUp = () => {
@@ -696,7 +710,7 @@ export function PortfolioScene({ data }: Props) {
           if (inter && (inter.parent === fg || !floorsRef.current.includes(inter))) {
             intersectedRef.current = null;
             if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
-            setCodeHtml(DEFAULT_CODE_HTML);
+            setCodeHtml(selectedProjectHtmlRef.current ?? defaultCodeHtml);
           }
           fg.traverse(child => {
             if (child instanceof THREE.Mesh || child instanceof THREE.LineSegments) {
@@ -757,13 +771,25 @@ export function PortfolioScene({ data }: Props) {
         });
       }
 
+      // Mientras haya un proyecto fijado en el inspector, bloquear hover/raycast 3D.
+      if (selectedProjectHtmlRef.current) {
+        if (intersectedRef.current) {
+          const tc = SCENE_COLORS[themeRef.current];
+          resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
+          intersectedRef.current = null;
+        }
+        if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
+        renderer.render(scene, activeCameraRef.current!);
+        return;
+      }
+
       // Si el hover apuntaba a un mesh ya eliminado, limpiar UI sin tocar materiales
       {
         const stale = intersectedRef.current;
         if (stale && !floorsRef.current.includes(stale)) {
           intersectedRef.current = null;
           if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
-          setCodeHtml(DEFAULT_CODE_HTML);
+          setCodeHtml(selectedProjectHtmlRef.current ?? defaultCodeHtml);
         }
       }
 
@@ -786,14 +812,14 @@ export function PortfolioScene({ data }: Props) {
             tooltipRef.current.innerHTML = `&lt;${d.id} /&gt;`;
             tooltipRef.current.style.opacity = "1";
           }
-          setCodeHtml(buildFloorCodeHtml(d));
+          setCodeHtml(buildFloorCodeHtml(d, data.ui.inspector.codeHtml));
         }
       } else if (intersectedRef.current) {
         const tc = SCENE_COLORS[themeRef.current];
         resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
         intersectedRef.current = null;
         if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
-        setCodeHtml(DEFAULT_CODE_HTML);
+        setCodeHtml(selectedProjectHtmlRef.current ?? defaultCodeHtml);
       }
 
       renderer.render(scene, activeCameraRef.current!);
@@ -851,7 +877,15 @@ export function PortfolioScene({ data }: Props) {
       setCanvasCursor("idle");
     });
 
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape" && selectedProjectHtmlRef.current) {
+        selectedProjectHtmlRef.current = null;
+        setCodeHtml(defaultCodeHtml);
+      }
+    }
+
     document.addEventListener("mousemove", onMouseMove);
+    document.addEventListener("keydown", onKeyDown);
     window.addEventListener("resize", onResize);
 
     simulateLoad(
@@ -866,6 +900,7 @@ export function PortfolioScene({ data }: Props) {
       controls.dispose();
       renderer.dispose();
       document.removeEventListener("mousemove", onMouseMove);
+      document.removeEventListener("keydown", onKeyDown);
       window.removeEventListener("resize", onResize);
       canvas.removeEventListener("pointerdown", onPointerDown);
       canvas.removeEventListener("pointerup", onPointerUp);
@@ -955,7 +990,13 @@ export function PortfolioScene({ data }: Props) {
 
   return (
     <>
-      <LoadingScreen progress={loadProgress} text={loadText} hidden={loadHidden} />
+      <LoadingScreen
+        progress={loadProgress}
+        text={loadText}
+        hidden={loadHidden}
+        brandMain={data.ui.loading.brandMain}
+        brandAccent={data.ui.loading.brandAccent}
+      />
 
       <canvas ref={canvasRef} id="three-canvas" />
       <div id="tooltip" ref={tooltipRef} />
@@ -963,10 +1004,17 @@ export function PortfolioScene({ data }: Props) {
       <Navbar
         brand={data.nav.brand}
         links={data.nav.links}
+        projects={data.projects}
+        uiText={data.nav.uiText}
         theme={theme}
         onThemeToggle={handleThemeToggle}
+        onProjectSelect={handleProjectSelect}
       />
-      <NodeInspector codeHtml={codeHtml} />
+      <NodeInspector
+        codeHtml={codeHtml}
+        title={data.ui.inspector.title}
+        status={data.ui.inspector.status}
+      />
       <HeroText data={data} />
 
       <div className="controls-wrapper">
@@ -978,11 +1026,12 @@ export function PortfolioScene({ data }: Props) {
           onViewClick={handleViewClick}
           onToggleCamera={handleToggleCamera}
           onToggleAuto={handleToggleAuto}
+          labels={data.ui.viewControls}
         />
         <div className="hint">
-          <kbd>Click</kbd> Pan &nbsp;
-          <kbd>Click Der</kbd> Orbitar &nbsp;
-          <kbd>Scroll</kbd> Zoom
+          <kbd>{data.ui.interactionHint.clickLabel}</kbd> {data.ui.interactionHint.panLabel} &nbsp;
+          <kbd>{data.ui.interactionHint.rightClickLabel}</kbd> {data.ui.interactionHint.orbitLabel} &nbsp;
+          <kbd>{data.ui.interactionHint.scrollLabel}</kbd> {data.ui.interactionHint.zoomLabel}
         </div>
       </div>
 
@@ -990,13 +1039,14 @@ export function PortfolioScene({ data }: Props) {
         floorCount={floorCount}
         onAdd={handleAddFloor}
         onRemove={handleRemoveFloor}
+        floorsLabel={data.ui.levelControls.floorsLabel}
       />
 
       <div className="level-controls rotation-controls">
         <button className="lvl-btn" onClick={handleIncreaseRotateSpeed} type="button">+</button>
         <span className="lvl-value">{rotateSpeedLevel}</span>
         <button className="lvl-btn" onClick={handleDecreaseRotateSpeed} type="button">−</button>
-        <span className="lvl-label">ROT</span>
+        <span className="lvl-label">{data.ui.levelControls.rotationLabel}</span>
       </div>
     </>
   );
@@ -1089,7 +1139,14 @@ function resetFloorHighlight(
   }
 }
 
-function buildFloorCodeHtml(d: FloorUserData): string {
+function buildFloorCodeHtml(
+  d: FloorUserData,
+  codeHtmlText: {
+    jsonResponseComment: string;
+    status: string;
+    sync: string;
+  }
+): string {
   return (
     `<span class="p">&lt;</span><span class="nc">FloorNode</span><br>` +
     `&nbsp;&nbsp;<span class="na">guid</span><span class="p">=</span><span class="s">"${d.id}"</span><br>` +
@@ -1100,9 +1157,101 @@ function buildFloorCodeHtml(d: FloorUserData): string {
     `&nbsp;&nbsp;&nbsp;&nbsp;<span class="na">material</span><span class="p">:</span> <span class="s">"${d.material}"</span><br>` +
     `&nbsp;&nbsp;<span class="p">}}</span><br>` +
     `<span class="p">/&gt;</span><br><br>` +
-    `<span class="cm">// JSON Query Response</span><br>` +
-    `<span class="kd">status</span>: <span class="s">"200 OK"</span><br>` +
-    `<span class="kd">sync</span>: <span class="s">"realtime"</span>`
+    `<span class="cm">${codeHtmlText.jsonResponseComment}</span><br>` +
+    `<span class="kd">status</span>: <span class="s">"${codeHtmlText.status}"</span><br>` +
+    `<span class="kd">sync</span>: <span class="s">"${codeHtmlText.sync}"</span>`
+  );
+}
+
+function sanitizeCodeValue(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;")
+    .replaceAll("\"", "&quot;");
+}
+
+/** "Control Manager" → "ControlManager" */
+function toPascalCase(name: string): string {
+  return name
+    .split(/\s+/)
+    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
+    .join("");
+}
+
+/** Convierte texto largo en dos líneas si supera `maxLen` caracteres. */
+function wrapAttr(
+  attr: string,
+  value: string,
+  indent: string,
+  maxLen = 34
+): string {
+  const safe = sanitizeCodeValue(value);
+  const attrHtml =
+    `${indent}<span class="na">${attr}</span>` +
+    `<span class="p">=</span>` +
+    `<span class="s">"${safe}"</span>`;
+
+  if (value.length <= maxLen) return attrHtml + "<br>";
+
+  const breakAt = value.lastIndexOf(" ", maxLen) > 12
+    ? value.lastIndexOf(" ", maxLen)
+    : maxLen;
+  const safeA = sanitizeCodeValue(value.slice(0, breakAt));
+  const safeB = sanitizeCodeValue(value.slice(breakAt).trimStart());
+  return (
+    `${indent}<span class="na">${attr}</span>` +
+    `<span class="p">=</span>` +
+    `<span class="s">"${safeA}</span><br>` +
+    `${indent}&nbsp;&nbsp;<span class="s">${safeB}"</span><br>`
+  );
+}
+
+function buildProjectCodeHtml(project: ProjectItem): string {
+  const componentName = toPascalCase(project.name);
+  const i1 = "&nbsp;&nbsp;";
+  const i2 = "&nbsp;&nbsp;&nbsp;&nbsp;";
+
+  const stackItems = project.stack
+    .map(t => `<span class="s">"${sanitizeCodeValue(t)}"</span>`)
+    .join(`<span class="p">,</span> `);
+
+  return (
+    // Comentario de cabecera
+    `<span class="cm">// → ${sanitizeCodeValue(project.name)}</span><br>` +
+    // Declaración const ComponentName = () => (
+    `<span class="kd">const</span> ` +
+    `<span class="nc">${componentName}</span> ` +
+    `<span class="p">=</span> ` +
+    `<span class="p">()</span> ` +
+    `<span class="kd">=&gt;</span> ` +
+    `<span class="p">(</span><br>` +
+    // Apertura <ProjectNode
+    `${i1}<span class="p">&lt;</span><span class="nc">ProjectNode</span><br>` +
+    // Contexto
+    `${i2}<span class="cm">// Contexto: problema real</span><br>` +
+    wrapAttr("contexto", project.context, i2) +
+    // Impacto
+    `${i2}<span class="cm">// Impacto: resultado medible</span><br>` +
+    wrapAttr("impacto", project.impact, i2) +
+    // Rol
+    `${i2}<span class="cm">// Rol exacto</span><br>` +
+    wrapAttr("rol", project.role, i2) +
+    // Stack como array
+    `${i2}<span class="na">stack</span>` +
+    `<span class="p">={[</span>${stackItems}<span class="p">]}</span><br>` +
+    // Cierre del tag de apertura
+    `${i1}<span class="p">&gt;</span><br>` +
+    // Link como comentario JSX
+    `${i2}<span class="p">{/*</span> ` +
+    `<span class="cm">→ ${sanitizeCodeValue(project.link)}</span> ` +
+    `<span class="p">*/}</span><br>` +
+    // Cierre </ProjectNode>
+    `${i1}<span class="p">&lt;/</span>` +
+    `<span class="nc">ProjectNode</span>` +
+    `<span class="p">&gt;</span><br>` +
+    // Cierre );
+    `<span class="p">);</span>`
   );
 }
 

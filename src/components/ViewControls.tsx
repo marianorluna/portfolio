@@ -8,6 +8,18 @@ type Props = {
   onViewClick: (view: ViewPreset) => void;
   onToggleCamera: () => void;
   onToggleAuto: () => void;
+  labels: {
+    resetTitle: string;
+    resetLabel: string;
+    isoLabel: string;
+    topLabel: string;
+    frontLabel: string;
+    orthoLabel: string;
+    perspectiveLabel: string;
+    autoRotateOnTitle: string;
+    autoRotateOffTitle: string;
+    rotateLabel: string;
+  };
 };
 
 export function ViewControls({
@@ -18,11 +30,12 @@ export function ViewControls({
   onViewClick,
   onToggleCamera,
   onToggleAuto,
+  labels,
 }: Props) {
   return (
     <div className="view-controls">
-      <button className="view-btn" onClick={onReset} type="button" title="Volver al estado inicial">
-        Inicio
+      <button className="view-btn" onClick={onReset} type="button" title={labels.resetTitle}>
+        {labels.resetLabel}
       </button>
       <div className="view-sep" />
       <button
@@ -30,21 +43,21 @@ export function ViewControls({
         onClick={() => onViewClick("iso")}
         type="button"
       >
-        Iso
+        {labels.isoLabel}
       </button>
       <button
         className={`view-btn${activeView === "top" ? " active" : ""}`}
         onClick={() => onViewClick("top")}
         type="button"
       >
-        Planta
+        {labels.topLabel}
       </button>
       <button
         className={`view-btn${activeView === "front" ? " active" : ""}`}
         onClick={() => onViewClick("front")}
         type="button"
       >
-        Alzado
+        {labels.frontLabel}
       </button>
       <div className="view-sep" />
       <button
@@ -52,7 +65,7 @@ export function ViewControls({
         onClick={onToggleCamera}
         type="button"
       >
-        {isOrtho ? "Ortogonal" : "Perspectiva"}
+        {isOrtho ? labels.orthoLabel : labels.perspectiveLabel}
       </button>
       <div className="view-sep" />
       <button
@@ -60,9 +73,9 @@ export function ViewControls({
         onClick={onToggleAuto}
         type="button"
         aria-pressed={autoRotate}
-        title={autoRotate ? "Desactivar rotación automática" : "Activar rotación automática"}
+        title={autoRotate ? labels.autoRotateOnTitle : labels.autoRotateOffTitle}
       >
-        Rotar
+        {labels.rotateLabel}
       </button>
     </div>
   );

@@ -112,11 +112,14 @@ export type PortfolioData = {
         id: string;
         name: string;
         summary: string;
+        description: string;
         context: string;
         impact: string;
         role: string;
         stack: string[];
         link: string;
+        github: string;
+        demo: string;
       }[];
     }[];
   };

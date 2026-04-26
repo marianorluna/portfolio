@@ -31,21 +31,21 @@ export const HERO_VARIANTS: readonly HeroStartupVariant[] = [
     id: 0,
     cameraMode: "perspective",
     view: "iso",
-    autoRotateSpeed: 4,
+    autoRotateSpeed: 2,
   },
   // ── 1: Ortográfica alzado (frontal), rotando ──────────────────────────────
   {
     id: 1,
     cameraMode: "orthographic",
     view: "front",
-    autoRotateSpeed: 6,
+    autoRotateSpeed: 5,
   },
   // ── 2: Ortográfica planta (top-down), rotando ─────────────────────────────
   {
     id: 2,
     cameraMode: "orthographic",
     view: "top",
-    autoRotateSpeed: 2,
+    autoRotateSpeed: 1,
     getCamera: (bX, _stackFloors) => {
       const lookAt = new THREE.Vector3(bX, 10, 0);
       return {
@@ -59,7 +59,7 @@ export const HERO_VARIANTS: readonly HeroStartupVariant[] = [
     id: 3,
     cameraMode: "perspective",
     view: null,
-    autoRotateSpeed: 4,
+    autoRotateSpeed: 3,
     getCamera: (bX: number, stackFloors: number) => {
       const midY = (stackFloors * FLOOR_HEIGHT) / 2;
       const position = new THREE.Vector3(bX + 5, 4, 22);

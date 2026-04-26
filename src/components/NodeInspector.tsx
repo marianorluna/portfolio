@@ -4,9 +4,11 @@ type Props = {
   codeHtml: string;
   title: string;
   status: string;
+  /** true cuando hay hover sobre el modelo 3D o un proyecto fijado en el inspector. */
+  liveSync: boolean;
 };
 
-export function NodeInspector({ codeHtml, title, status }: Props) {
+export function NodeInspector({ codeHtml, title, status, liveSync }: Props) {
   const [isCollapsed, setIsCollapsed] = useState(false);
 
   return (
@@ -20,7 +22,7 @@ export function NodeInspector({ codeHtml, title, status }: Props) {
       >
         <span className="panel-title-text">{title}</span>
         <span className="panel-header-right">
-          <span className="status-indicator">{status}</span>
+          <span className={`status-indicator ${liveSync ? "is-live" : ""}`}>{status}</span>
           <span className={`panel-chevron ${isCollapsed ? "is-collapsed" : ""}`} aria-hidden>
             ▾
           </span>

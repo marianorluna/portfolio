@@ -1,7 +1,7 @@
 {
   "meta": {
     "title": "Mariano Luna — Portfolio 3D",
-    "badge": "Open to Work"
+    "badge": "Barcelona"
   },
   "nav": {
     "brand": {
@@ -81,7 +81,7 @@
     },
     "levelControls": {
       "floorsLabel": "PISOS",
-      "rotationLabel": "ROT"
+      "rotationLabel": "GIRO"
     },
     "interactionHint": {
       "clickLabel": "Click",
@@ -93,8 +93,8 @@
     }
   },
   "hero": {
-    "titleLines": ["BIM Digital Twin", "Architecture."],
-    "subtitle": "Desarrollo Fullstack especializado en entornos AEC (Arquitectura, Ingeniería y Construcción). Transformando datos geométricos complejos en experiencias web interactivas.",
+    "titleLines": ["Arquitectura", "BIM & Desarrollo", "Fullstack"],
+    "subtitle": "Mi enfoque combina un perfil analítico con una fuerte orientación a lo digital. Abordo los proyectos desde su concepción espacial hasta el modelado, gestión y automatización. Me especializo en el ecosistema AECO y el desarrollo de herramientas con impacto tangible en la toma de decisiones y optimización del tiempo. No soy programador, en el sentido estricto: Soy un profesional que emplea la programación para desarrollar soluciones que integren diseño, datos, digitalización y IA.",
     "cta": {
       "primary": "Ver Proyectos",
       "secondary": "Github",
@@ -111,22 +111,28 @@
           {
             "id": "control-manager",
             "name": "Control Manager",
-            "summary": "Plugin para Revit 2023-2026 con C#.",
+            "summary": "Plugin para Revit 2023-2026 con C#",
+            "description": "Plugin de escritorio para Revit que centraliza reglas de validación (estándares y parámetros de proyecto), ejecuta comprobaciones en lote y genera reportes técnicos listos para el repaso de coordinación, con interfaz WPF para revisar resultados sin salir del entorno BIM.",
             "context": "Equipos BIM perdian tiempo validando manualmente estandares y parametros en modelos Revit grandes.",
             "impact": "Redujo en 65% el tiempo de revision y disminuyo errores de entrega en coordinacion BIM.",
             "role": "Disene la arquitectura del plugin, implemente reglas de validacion y automatice reportes tecnicos.",
             "stack": ["C#", ".NET", "Revit API", "WPF"],
-            "link": "Demo privada bajo solicitud"
+            "link": "https://arqfi.com",
+            "github": "https://github.com/marianorluna/",
+            "demo": "https://arqfi.com"
           },
           {
             "id": "ribbon-revit",
             "name": "Ribbon Revit",
-            "summary": "Barra de herramientas con PyRevit.",
+            "summary": "Barra de herramientas con PyRevit",
+            "description": "Cinta de comandos en PyRevit que agrupa scripts de modelado, documentación y QA en un solo lugar. Los flujos comparten convenciones de proyecto y mensajes de feedback en Revit, alineando al equipo y reduciendo el uso de scripts sueltos y poco trazables.",
             "context": "El equipo usaba scripts aislados sin una interfaz central para ejecutar flujos recurrentes.",
             "impact": "Estandarizo tareas diarias y redujo en 40% la curva de adopcion de automatizaciones internas.",
             "role": "Modele la experiencia de usuario del ribbon y desarrolle comandos Python para operaciones BIM comunes.",
             "stack": ["Python", "pyRevit", "Revit API"],
-            "link": "Demo privada bajo solicitud"
+            "link": "https://arqfi.com",
+            "github": "https://github.com/marianorluna/",
+            "demo": "https://arqfi.com"
           }
         ]
       },
@@ -137,22 +143,28 @@
           {
             "id": "lol-match",
             "name": "LOL Match",
-            "summary": "Aplicación web para jugadores de LOL.",
+            "summary": "Aplicación web para jugadores de LOL",
+            "description": "Aplicación fullstack que unifica el historial reciente, métricas por campeón y comparativas por rol en una sola vista. Incluye visualizaciones para entender tendencias y apoyar decisiones de pique y de estilo de juego, con despliegue y datos alineados a un entorno de pruebas controlado.",
             "context": "Jugadores amateurs no tenian una vista unificada para comparar rendimiento reciente por rol y campeon.",
             "impact": "Incremento de 30% en retencion semanal durante pruebas cerradas con feedback positivo de analitica visual.",
             "role": "Construi frontend y backend, defini consultas de estadisticas y despliegue continuo.",
             "stack": ["Next.js", "TypeScript", "Node.js", "PostgreSQL"],
-            "link": "https://demo-lol-match.example.com"
+            "link": "https://arqfi.com",
+            "github": "https://github.com/marianorluna/",
+            "demo": "https://arqfi.com"
           },
           {
             "id": "stockearly",
             "name": "Stockearly",
-            "summary": "Aplicación para control de stock.",
+            "summary": "Aplicación para control de stock",
+            "description": "Sistema de inventario con movimientos, umbrales, alertas y trazabilidad de entradas y salidas. Sustituye hojas de cálculo dispersas por un modelo de dominio claro, API estable y un panel operativo accesible desde el navegador.",
             "context": "Negocios pequenos gestionaban inventario en hojas de calculo con alta tasa de desajustes.",
             "impact": "Disminuyo quiebres de stock en 35% y mejoro la trazabilidad de movimientos diarios.",
             "role": "Lidere el modelado de dominio, implemente API de inventario y panel de alertas.",
             "stack": ["React", "Node.js", "Express", "MongoDB"],
-            "link": "https://demo-stockearly.example.com"
+            "link": "https://arqfi.com",
+            "github": "https://github.com/marianorluna/",
+            "demo": "https://arqfi.com"
           }
         ]
       },
@@ -163,22 +175,28 @@
           {
             "id": "visor-ifc",
             "name": "Visor IFC",
-            "summary": "Visor 3D online con ThatOpen Engine y Three.js.",
+            "summary": "Visor 3D online con ThatOpen Engine y Three.js",
+            "description": "Visor web que carga modelos IFC, orbita y enfoca el edificio, aplica visibilidad y selección, y añade capas de inspección para revisión en equipo. Construido con ThatOpen Engine y Three.js para coordinación remota sin instalar visores de escritorio.",
             "context": "Clientes y equipos tecnicos necesitaban revisar modelos IFC en web sin depender de software de escritorio.",
             "impact": "Acelero revisiones de coordinacion en 50% al centralizar comentarios sobre un visor compartido.",
             "role": "Implemente carga y navegacion de modelos, filtros de elementos y capas de inspeccion tecnica.",
             "stack": ["That Open Engine", "@thatopen/components", "Three.js", "TypeScript"],
-            "link": "https://demo-visor-ifc.example.com"
+            "link": "https://arqfi.com",
+            "github": "https://github.com/marianorluna/",
+            "demo": "https://arqfi.com"
           },
           {
             "id": "data-extractor",
             "name": "Data Extractor",
-            "summary": "Aplicación con APS Tools.",
+            "summary": "Aplicación con APS Tools",
+            "description": "Pipeline sobre Autodesk Platform Services que extrae propiedades y geometría ligera de modelos en la nube, normaliza el esquema y exporta a formatos estructurados para reportes, BI o almacenamiento, con trazas por disciplina y versión de modelo.",
             "context": "La extraccion de propiedades BIM para reportes se hacia manualmente y sin trazabilidad historica.",
             "impact": "Automatizo exportaciones y redujo de horas a minutos la generacion de reportes por disciplina.",
             "role": "Desarrolle pipeline de extraccion, mapeo de datos y exportacion estructurada para analisis.",
             "stack": ["APS", "Node.js", "TypeScript", "MongoDB"],
-            "link": "Demo privada bajo solicitud"
+            "link": "https://arqfi.com",
+            "github": "https://github.com/marianorluna/",
+            "demo": "https://arqfi.com"
           }
         ]
       }

@@ -13,7 +13,10 @@ type Props = {
   uiText:         NavUiText;
   theme:          SceneTheme;
   onThemeToggle:  () => void;
-  onProjectSelect: (project: PortfolioData["projects"]["categories"][number]["items"][number]) => void;
+  onProjectSelect: (
+    project: PortfolioData["projects"]["categories"][number]["items"][number],
+    categoryLabel: string
+  ) => void;
 };
 
 export function Navbar({ brand, links, projects, uiText, theme, onThemeToggle, onProjectSelect }: Props) {
@@ -166,7 +169,7 @@ export function Navbar({ brand, links, projects, uiText, theme, onThemeToggle, o
                           <button
                             type="button"
                             className="nav-projects__item-btn"
-                            onClick={() => { onProjectSelect(item); setActivePanel(null); }}
+                            onClick={() => { onProjectSelect(item, category.label); setActivePanel(null); }}
                           >
                             <p className="nav-projects__item-name">{item.name}</p>
                             <p className="nav-projects__item-summary">{item.summary}</p>

@@ -261,6 +261,18 @@ export function PortfolioScene({ data }: Props) {
   /** HTML del proyecto "pinned" en el inspector; null = ninguno seleccionado. */
   const selectedProjectHtmlRef = useRef<string | null>(null);
 
+  const [heroSelection, setHeroSelection] = useState<{
+    categoryLabel: string;
+    project: ProjectItem;
+  } | null>(null);
+  const setHeroSelectionRef = useRef(setHeroSelection);
+  setHeroSelectionRef.current = setHeroSelection;
+
+  const [liveSync, setLiveSync] = useState(false);
+  const setLiveSyncRef = useRef(setLiveSync);
+  setLiveSyncRef.current = setLiveSync;
+  const prevLiveSyncRef = useRef(false);
+
   // Tema: inicializado desde localStorage para evitar flash
   const [theme, setTheme] = useState<SceneTheme>(() => {
     if (typeof window === "undefined") return "dark";
@@ -404,6 +416,7 @@ export function PortfolioScene({ data }: Props) {
     hasUserInteractedRef.current = false;
     intersectedRef.current = null;
     selectedProjectHtmlRef.current = null;
+    setHeroSelection(null);
     if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
     setCodeHtml(defaultCodeHtml);
 
@@ -524,18 +537,22 @@ export function PortfolioScene({ data }: Props) {
     });
   }, []);
 
-  const handleProjectSelect = useCallback((project: ProjectItem) => {
-    const html = buildProjectCodeHtml(project);
-    const currentIntersected = intersectedRef.current;
-    if (currentIntersected) {
-      const tc = SCENE_COLORS[themeRef.current];
-      resetFloorHighlight(currentIntersected, tc.buildingBase, tc.buildingLines);
-      intersectedRef.current = null;
-    }
-    if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
-    selectedProjectHtmlRef.current = html;
-    setCodeHtml(html);
-  }, []);
+  const handleProjectSelect = useCallback(
+    (project: ProjectItem, categoryLabel: string) => {
+      const html = buildProjectCodeHtml(project);
+      const currentIntersected = intersectedRef.current;
+      if (currentIntersected) {
+        const tc = SCENE_COLORS[themeRef.current];
+        resetFloorHighlight(currentIntersected, tc.buildingBase, tc.buildingLines);
+        intersectedRef.current = null;
+      }
+      if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
+      selectedProjectHtmlRef.current = html;
+      setCodeHtml(html);
+      setHeroSelection({ project, categoryLabel });
+    },
+    []
+  );
 
   // ── Three.js Setup ────────────────────────────────────────────────────────
 
@@ -636,6 +653,7 @@ export function PortfolioScene({ data }: Props) {
       setCanvasCursor(resolveCursorStateFromPointer(e));
       if (selectedProjectHtmlRef.current) {
         selectedProjectHtmlRef.current = null;
+        setHeroSelectionRef.current(null);
         setCodeHtml(defaultCodeHtml);
       }
     };
@@ -674,6 +692,15 @@ export function PortfolioScene({ data }: Props) {
     floorsRef.current = floors;
 
     // ── Animation Loop ────────────────────────────────────────────────────
+
+    function commitLiveSync() {
+      const next =
+        selectedProjectHtmlRef.current != null || intersectedRef.current != null;
+      if (next !== prevLiveSyncRef.current) {
+        prevLiveSyncRef.current = next;
+        setLiveSyncRef.current(next);
+      }
+    }
 
     function animate() {
       rafRef.current = requestAnimationFrame(animate);
@@ -779,6 +806,7 @@ export function PortfolioScene({ data }: Props) {
           intersectedRef.current = null;
         }
         if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
+        commitLiveSync();
         renderer.render(scene, activeCameraRef.current!);
         return;
       }
@@ -822,6 +850,7 @@ export function PortfolioScene({ data }: Props) {
         setCodeHtml(selectedProjectHtmlRef.current ?? defaultCodeHtml);
       }
 
+      commitLiveSync();
       renderer.render(scene, activeCameraRef.current!);
     }
 
@@ -880,6 +909,7 @@ export function PortfolioScene({ data }: Props) {
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape" && selectedProjectHtmlRef.current) {
         selectedProjectHtmlRef.current = null;
+        setHeroSelectionRef.current(null);
         setCodeHtml(defaultCodeHtml);
       }
     }
@@ -1014,8 +1044,9 @@ export function PortfolioScene({ data }: Props) {
         codeHtml={codeHtml}
         title={data.ui.inspector.title}
         status={data.ui.inspector.status}
+        liveSync={liveSync}
       />
-      <HeroText data={data} />
+      <HeroText data={data} selection={heroSelection} />
 
       <div className="controls-wrapper">
         <ViewControls
@@ -1242,10 +1273,11 @@ function buildProjectCodeHtml(project: ProjectItem): string {
     `<span class="p">={[</span>${stackItems}<span class="p">]}</span><br>` +
     // Cierre del tag de apertura
     `${i1}<span class="p">&gt;</span><br>` +
-    // Link como comentario JSX
-    `${i2}<span class="p">{/*</span> ` +
-    `<span class="cm">→ ${sanitizeCodeValue(project.link)}</span> ` +
-    `<span class="p">*/}</span><br>` +
+    // Enlaces
+    `${i2}<span class="cm">// Enlaces</span><br>` +
+    wrapAttr("link", project.link, i2) +
+    wrapAttr("github", project.github, i2) +
+    wrapAttr("demo", project.demo, i2) +
     // Cierre </ProjectNode>
     `${i1}<span class="p">&lt;/</span>` +
     `<span class="nc">ProjectNode</span>` +

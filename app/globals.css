@@ -16,6 +16,8 @@
   --nav-flyout-dur: 0.32s;
   --ui-inset: 40px;
   --content-row-top: 24px;
+  /* Node inspector (data-panel): base; escritorio = +25 % vía media query */
+  --data-panel-width: 320px;
 }
 
 html[data-theme="light"] {
@@ -118,6 +120,28 @@ html[data-theme="light"] .nav-flyout-about__statement {
   color: #0f172a;
 }
 
+/* Proyectos en el flyout — modo claro: contraste frente al panel gris claro */
+html[data-theme="light"] .nav-projects__category-title {
+  color: var(--accent-cyan);
+}
+
+html[data-theme="light"] .nav-projects__item {
+  background: #ffffff;
+  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] .nav-projects__item:hover,
+html[data-theme="light"] .nav-projects__item:focus-within {
+  border-color: rgba(3, 105, 161, 0.4);
+  background: #f1f5f9;
+  box-shadow: 0 4px 16px rgba(15, 23, 42, 0.1);
+}
+
+html[data-theme="light"] .nav-projects__item-btn:focus-visible {
+  outline-color: rgba(3, 105, 161, 0.85);
+}
+
 /* Paneles data / controles — modo claro */
 html[data-theme="light"] .data-panel,
 html[data-theme="light"] .view-controls,
@@ -216,8 +240,7 @@ html[data-theme="light"] .lvl-btn:hover {
   border-color: rgba(3, 105, 161, 0.3);
 }
 
-html[data-theme="light"] .lvl-value,
-html[data-theme="light"] .status-indicator {
+html[data-theme="light"] .lvl-value {
   color: var(--accent-cyan);
 }
 
@@ -899,6 +922,37 @@ h1 {
   -webkit-text-fill-color: transparent;
 }
 
+/* Mismo degradado que h1 (los hijos no heredan el clip del padre) */
+.hero-title-cursor {
+  display: inline;
+  margin-left: 0.04em;
+  background: linear-gradient(180deg, #fff 0%, #888 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  font-weight: 800;
+  user-select: none;
+  animation: hero-cursor-blink 1s step-end infinite;
+}
+
+html[data-theme="light"] .hero-title-cursor {
+  background: linear-gradient(180deg, #0f172a 0%, #334155 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+@keyframes hero-cursor-blink {
+  0%,
+  49% {
+    opacity: 1;
+  }
+  50%,
+  100% {
+    opacity: 0;
+  }
+}
+
 p.subtitle {
   font-size: 16px;
   color: var(--text-muted);
@@ -945,13 +999,22 @@ p.subtitle {
   background: rgba(255, 255, 255, 0.05);
 }
 
+.btn-hero--static {
+  cursor: default;
+  opacity: 0.7;
+  pointer-events: auto;
+}
+html[data-theme="light"] .btn-hero--static {
+  opacity: 0.75;
+}
+
 /* ─── DATA PANEL (alineado a la malla de contenido) ─── */
 .data-panel {
   position: fixed;
   top: var(--content-row-top);
   right: var(--ui-inset);
-  width: 320px;
-  max-width: min(320px, calc(100vw - var(--nav-rail-width) - var(--ui-inset) * 2 - 8px));
+  width: var(--data-panel-width);
+  max-width: min(var(--data-panel-width), calc(100vw - var(--nav-rail-width) - var(--ui-inset) * 2 - 8px));
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   border-radius: 12px;
@@ -999,6 +1062,19 @@ p.subtitle {
 
 .status-indicator {
   font-size: 10px;
+  color: #f87171;
+  transition: color 0.2s ease;
+}
+
+.status-indicator.is-live {
+  color: var(--accent-cyan);
+}
+
+html[data-theme="light"] .status-indicator {
+  color: #dc2626;
+}
+
+html[data-theme="light"] .status-indicator.is-live {
   color: var(--accent-cyan);
 }
 
@@ -1279,6 +1355,13 @@ p.subtitle {
   0%   { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.4); }
   70%  { opacity: 0.5; box-shadow: 0 0 0 6px rgba(0, 229, 255, 0); }
   100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+}
+
+/* Escritorio: panel inspector un 25 % más ancho (320 → 400 px) */
+@media (min-width: 769px) {
+  :root {
+    --data-panel-width: 400px;
+  }
 }
 
 /* ─── RESPONSIVE ─── */

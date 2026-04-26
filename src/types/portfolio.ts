@@ -1,4 +1,4 @@
-export type NavIconName = "folder" | "layers" | "mail";
+export type NavIconName = "folder" | "layers" | "calendar" | "mail";
 
 export type NavBrand = {
   initials: string;
@@ -43,6 +43,32 @@ export type NavUiText = {
   switchToDarkLabel: string;
 };
 
+export type ContactFormCopy = {
+  formAriaLabel: string;
+  nameLabel: string;
+  emailLabel: string;
+  messageLabel: string;
+  sendLabel: string;
+  sendingLabel: string;
+  newMessageLabel: string;
+  successMessage: string;
+  errorGeneric: string;
+  errorConfig: string;
+  nameRequired: string;
+  nameMax: string;
+  emailInvalid: string;
+  messageMin: string;
+  messageMax: string;
+  /** Etiqueta del campo trampa; oculta a usuarios, visible para scrapers. */
+  honeypotLabel: string;
+  /** Si el usuario envía sin completar el widget. */
+  errorTurnstileRequired: string;
+  /** Token inválido o expirado (403). */
+  errorTurnstile: string;
+  /** Error de cliente p. ej. 110200 — dominio no listado en el widget Turnstile. */
+  errorTurnstileDomain: string;
+};
+
 export type PortfolioData = {
   meta: {
     title: string;
@@ -58,6 +84,7 @@ export type PortfolioData = {
       brandMain: string;
       brandAccent: string;
       initialText: string;
+      messages: string[];
     };
     inspector: {
       title: string;
@@ -93,12 +120,25 @@ export type PortfolioData = {
       scrollLabel: string;
       zoomLabel: string;
     };
+    /** Visor interno al elegir un proyecto (entre rail e inspector; iframe = demo) */
+    projectViewer: {
+      closeLabel: string;
+      openDemoLabel: string;
+      demoUnavailableTitle: string;
+      /** Mensaje en el área del iframe si no hay URL de demo */
+      iframeUnavailableHint: string;
+    };
+    contactForm: ContactFormCopy;
   };
   hero: {
     titleLines: string[];
     subtitle: string;
     cta: {
       primary: string;
+      /** Enlace del CTA primario (p. ej. LinkedIn) cuando no hay proyecto seleccionado. */
+      primaryUrl: string;
+      /** Texto del CTA primario con proyecto (p. ej. Demo). */
+      primaryProject: string;
       secondary: string;
       secondaryUrl: string;
     };
@@ -120,6 +160,25 @@ export type PortfolioData = {
         link: string;
         github: string;
         demo: string;
+        /**
+         * Ruta pública (p. ej. /images/...) para mostrar captura en el visor
+         * cuando el `demo` no puede embeberse (X-Frame-Options, etc.).
+         */
+        demoEmbedFallback?: string;
+      }[];
+    }[];
+  };
+  /** Categorías con ítems en orden cronológico dentro de cada bloque; mismo esquema que `projects` */
+  formacion: {
+    categories: {
+      id: string;
+      label: string;
+      items: {
+        id: string;
+        name: string;
+        /** Institución, periodo, lugar: una línea tipo “Org · 20xx – 20xx · Ciudad” */
+        meta: string;
+        description: string;
       }[];
     }[];
   };

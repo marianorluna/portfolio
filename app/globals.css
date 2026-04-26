@@ -11,7 +11,8 @@
   --nav-rail-icon-size: 48px;
   --nav-rail-pad-x: 6px;
   --nav-rail-width: calc(var(--nav-rail-icon-size) + (var(--nav-rail-pad-x) * 2));
-  --nav-flyout-width: min(300px, 45vw);
+  /* ≥380px: deja sitio al widget Cloudflare Turnstile (~300px) + padding del panel */
+  --nav-flyout-width: min(380px, 50vw);
   /* Misma base para animar el panel y el retraso del contenido (evita “acomodo” de texto) */
   --nav-flyout-dur: 0.32s;
   --ui-inset: 40px;
@@ -33,7 +34,7 @@ html[data-theme="light"] {
 
 /* Rail y flyout — modo claro: fondo blanco‑grisáceo */
 html[data-theme="light"] .nav-rail {
-  background: linear-gradient(180deg, rgba(241, 245, 249, 0.97) 0%, rgba(226, 232, 240, 0.95) 100%);
+  background: linear-gradient(180deg, rgb(241, 245, 249) 0%, rgb(226, 232, 240) 100%);
   border-right-color: rgba(15, 23, 42, 0.1);
   box-shadow: 4px 0 32px rgba(0, 0, 0, 0.12);
 }
@@ -72,7 +73,7 @@ html[data-theme="light"] .nav-rail__icon-btn.is-active {
 }
 
 html[data-theme="light"] .nav-rail__flyout {
-  background: linear-gradient(180deg, rgba(241, 245, 249, 0.97) 0%, rgba(226, 232, 240, 0.95) 100%);
+  background: linear-gradient(180deg, rgb(241, 245, 249) 0%, rgb(226, 232, 240) 100%);
   border-right-color: rgba(15, 23, 42, 0.1);
   box-shadow: 8px 0 48px rgba(0, 0, 0, 0.12);
 }
@@ -98,6 +99,10 @@ html[data-theme="light"] .nav-flyout-about {
   border-top-color: rgba(15, 23, 42, 0.16);
 }
 
+html[data-theme="light"] .nav-projects {
+  border-top-color: rgba(15, 23, 42, 0.16);
+}
+
 html[data-theme="light"] .nav-flyout-about__kicker {
   color: #0369a1;
 }
@@ -115,8 +120,8 @@ html[data-theme="light"] .nav-flyout-about__text {
 }
 
 html[data-theme="light"] .nav-flyout-about__statement {
-  border-color: rgba(3, 105, 161, 0.28);
-  background: rgba(3, 105, 161, 0.09);
+  border-color: rgba(15, 23, 42, 0.1);
+  background: rgba(0, 0, 0, 0.04);
   color: #0f172a;
 }
 
@@ -139,6 +144,71 @@ html[data-theme="light"] .nav-projects__item:focus-within {
 }
 
 html[data-theme="light"] .nav-projects__item-btn:focus-visible {
+  outline-color: rgba(3, 105, 161, 0.85);
+}
+
+html[data-theme="light"] .nav-formacion__desc {
+  border-top-color: rgba(15, 23, 42, 0.1);
+}
+
+html[data-theme="light"] .nav-formacion__summary:focus-visible {
+  outline-color: rgba(3, 105, 161, 0.85);
+}
+
+html[data-theme="light"] .nav-contact {
+  border-top-color: rgba(15, 23, 42, 0.16);
+}
+
+html[data-theme="light"] .nav-cal-embed {
+  border-top-color: rgba(15, 23, 42, 0.16);
+}
+
+html[data-theme="light"] .nav-cal-embed__shell {
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(15, 23, 42, 0.12);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8), 0 1px 3px rgba(15, 23, 42, 0.06);
+}
+
+html[data-theme="light"] .nav-contact__input,
+html[data-theme="light"] .nav-contact__textarea {
+  background: rgba(255, 255, 255, 0.7);
+  border-color: rgba(15, 23, 42, 0.15);
+  color: var(--text-main);
+}
+
+html[data-theme="light"] .nav-contact__input:focus,
+html[data-theme="light"] .nav-contact__textarea:focus {
+  border-color: rgba(3, 105, 161, 0.45);
+  box-shadow: 0 0 0 1px rgba(3, 105, 161, 0.12);
+}
+
+html[data-theme="light"] .nav-contact__btn--primary {
+  color: #0c4a6e;
+  background: linear-gradient(160deg, rgba(3, 105, 161, 0.18) 0%, rgba(3, 105, 161, 0.1) 100%);
+  border-color: rgba(3, 105, 161, 0.45);
+  box-shadow: 0 0 0 1px rgba(3, 105, 161, 0.08) inset, 0 4px 12px rgba(15, 23, 42, 0.08);
+}
+
+html[data-theme="light"] .nav-contact__btn--primary:hover:not(:disabled) {
+  color: #0a3d5c;
+  background: linear-gradient(160deg, rgba(3, 105, 161, 0.28) 0%, rgba(3, 105, 161, 0.16) 100%);
+  border-color: rgba(3, 105, 161, 0.65);
+  box-shadow: 0 0 16px rgba(3, 105, 161, 0.12);
+}
+
+html[data-theme="light"] .nav-contact__btn--secondary {
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.6);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+html[data-theme="light"] .nav-contact__btn--secondary:hover:not(:disabled) {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.9);
+  border-color: rgba(3, 105, 161, 0.3);
+}
+
+html[data-theme="light"] .nav-contact__btn:focus-visible {
   outline-color: rgba(3, 105, 161, 0.85);
 }
 
@@ -321,11 +391,9 @@ html, body {
   height: 100dvh;
   min-height: 100%;
   padding: 16px var(--nav-rail-pad-x) 16px;
-  background: linear-gradient(180deg, rgba(6, 6, 8, 0.97) 0%, rgba(3, 3, 5, 0.95) 100%);
+  background: linear-gradient(180deg, rgb(6, 6, 8) 0%, rgb(3, 3, 5) 100%);
   border-right: 1px solid var(--panel-border);
   box-shadow: 4px 0 32px rgba(0, 0, 0, 0.5);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
   pointer-events: auto;
 }
 
@@ -472,11 +540,9 @@ html, body {
   max-width: var(--nav-flyout-width);
   height: 100dvh;
   overflow: hidden;
-  background: linear-gradient(180deg, rgba(10, 10, 12, 0.96) 0%, rgba(5, 5, 7, 0.94) 100%);
+  background: linear-gradient(180deg, rgb(10, 10, 12) 0%, rgb(5, 5, 7) 100%);
   border-right: 1px solid var(--panel-border);
   box-shadow: 8px 0 48px rgba(0, 0, 0, 0.55);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
   pointer-events: none;
   transition: width var(--nav-flyout-dur) cubic-bezier(0.32, 0.72, 0, 1);
 }
@@ -540,14 +606,52 @@ html, body {
   justify-content: flex-start;
 }
 
-.nav-projects {
-  margin-top: 8px;
+/* Reservas Cal.com: ligeramente más ancho que el resto (calendario embebido) */
+.nav-rail__flyout--booking {
+  --nav-flyout-width: min(400px, 55vw);
+}
+
+/* Cal.com embed (misma separación superior que contacto / listas) */
+.nav-cal-embed {
+  position: relative;
+  margin-top: 0.5rem;
+  padding: 0.75rem 4px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  flex: 1;
+  min-height: 0;
+  overflow: hidden;
+}
+
+.nav-cal-embed__shell {
+  flex: 1;
+  min-height: 420px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  background: rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.nav-cal-embed__cal {
+  width: 100%;
+  height: 100%;
+  min-height: 420px;
+  overflow: auto;
+  background: transparent;
+}
+
+/* Misma regla de separación que .nav-flyout-about (línea bajo el bloque de cabecera) */
+.nav-projects {
+  margin-top: 0.5rem;
+  padding: 0.75rem 4px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
   min-height: 0;
   overflow: auto;
-  padding-right: 4px;
 }
 
 .nav-projects__category {
@@ -620,6 +724,316 @@ html, body {
   color: var(--text-muted);
   font-size: 12px;
   line-height: 1.45;
+}
+
+/* Tarjetas de formación: <details> colapsado por defecto (título + meta; descripción al expandir) */
+.nav-projects__item--static {
+  cursor: default;
+}
+
+.nav-formacion__details {
+  width: 100%;
+  margin: 0;
+  border-radius: 10px;
+}
+
+.nav-formacion__summary {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 6px;
+  width: 100%;
+  margin: 0;
+  padding: 8px 8px 8px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.nav-formacion__summary-text {
+  flex: 1;
+  min-width: 0;
+  display: block;
+  text-align: left;
+}
+
+.nav-formacion__summary-title,
+.nav-formacion__summary-meta {
+  display: block;
+}
+
+.nav-formacion__summary-meta {
+  margin-top: 4px;
+}
+
+.nav-formacion__summary-chevron {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+  color: var(--text-muted);
+  opacity: 0.85;
+}
+
+.nav-formacion__summary-chevron svg {
+  display: block;
+  transition: transform 0.2s ease;
+}
+
+.nav-formacion__details--open .nav-formacion__summary-chevron svg {
+  transform: rotate(90deg);
+}
+
+.nav-formacion__summary:focus {
+  outline: none;
+}
+
+.nav-formacion__summary:focus-visible {
+  outline: 1px solid rgba(0, 229, 255, 0.8);
+  outline-offset: 1px;
+  border-radius: 8px;
+}
+
+.nav-formacion__desc {
+  margin: 0;
+  padding: 0 10px 10px 10px;
+  color: var(--text-muted);
+  font-size: 12px;
+  line-height: 1.5;
+  font-weight: 400;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  padding-top: 8px;
+}
+
+/* Formulario de contacto (flyout, mismo ancho que proyectos/formación) */
+.nav-contact {
+  position: relative;
+  margin-top: 0.5rem;
+  padding: 0.75rem 4px 0 0;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  flex-direction: column;
+  gap: 0.9rem;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+/* Cloudflare Turnstile: «flexible» = misma columna que inputs (100% ancho, barra baja) */
+.nav-contact__turnstile {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  min-height: 68px;
+  box-sizing: border-box;
+  margin: 0.1rem 0 0.15rem;
+  overflow: hidden;
+}
+
+/* El root que renderiza @marsidev/react-turnstile debe poder encogerse bajo 300px */
+.nav-contact__turnstile > div {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+  box-sizing: border-box;
+}
+
+.nav-contact__turnstile--disabled {
+  pointer-events: none;
+  opacity: 0.6;
+  transition: opacity 0.2s ease;
+}
+
+.nav-contact__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.nav-contact__label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-muted);
+}
+
+.nav-contact__input,
+.nav-contact__textarea {
+  width: 100%;
+  box-sizing: border-box;
+  margin: 0;
+  padding: 8px 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  line-height: 1.45;
+  color: var(--text-main);
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.nav-contact__textarea {
+  min-height: 5.5rem;
+  resize: vertical;
+}
+
+.nav-contact__input:focus,
+.nav-contact__textarea:focus {
+  outline: none;
+  border-color: rgba(0, 229, 255, 0.45);
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.12);
+}
+
+.nav-contact__input:disabled,
+.nav-contact__textarea:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.nav-contact__error {
+  margin: 0;
+  font-size: 11px;
+  line-height: 1.4;
+  color: #f87171;
+}
+
+html[data-theme="light"] .nav-contact__error {
+  color: #b91c1c;
+}
+
+.nav-contact__feedback {
+  margin: 0;
+  font-size: 12px;
+  line-height: 1.5;
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.nav-contact__feedback--success {
+  color: #6ee7b7;
+  background: rgba(16, 185, 129, 0.1);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+html[data-theme="light"] .nav-contact__feedback--success {
+  color: #047857;
+  background: rgba(16, 185, 129, 0.12);
+  border-color: rgba(4, 120, 87, 0.3);
+}
+
+.nav-contact__feedback--error {
+  color: #fecaca;
+  background: rgba(239, 68, 68, 0.12);
+  border: 1px solid rgba(248, 113, 113, 0.3);
+}
+
+html[data-theme="light"] .nav-contact__feedback--error {
+  color: #991b1b;
+  background: rgba(252, 165, 165, 0.2);
+  border-color: rgba(220, 38, 38, 0.25);
+}
+
+/* Campo trampa: fuera de pantalla pero seguir siendo rellenable por scripts */
+.nav-contact__hp {
+  position: absolute;
+  left: -10000px;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+.nav-contact__actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 0.1rem;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* Botones del formulario: mismo lenguaje que inputs (radio 8px) y acento cian, no CTA del hero */
+.nav-contact__btn {
+  appearance: none;
+  -webkit-appearance: none;
+  flex: 0 0 auto;
+  font-family: 'Inter', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 10px 18px;
+  border-radius: 8px;
+  cursor: pointer;
+  border: 1px solid transparent;
+  box-sizing: border-box;
+  line-height: 1.3;
+  transition:
+    background 0.18s ease,
+    border-color 0.18s ease,
+    color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+
+.nav-contact__btn:focus-visible {
+  outline: 1px solid rgba(0, 229, 255, 0.8);
+  outline-offset: 2px;
+}
+
+.nav-contact__btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none;
+}
+
+.nav-contact__btn--primary {
+  color: #e6fcff;
+  background: linear-gradient(160deg, rgba(0, 229, 255, 0.2) 0%, rgba(0, 100, 120, 0.28) 100%);
+  border-color: rgba(0, 229, 255, 0.5);
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.06) inset, 0 4px 16px rgba(0, 0, 0, 0.35);
+}
+
+.nav-contact__btn--primary:hover:not(:disabled) {
+  color: #fff;
+  background: linear-gradient(160deg, rgba(0, 229, 255, 0.32) 0%, rgba(0, 130, 150, 0.35) 100%);
+  border-color: rgba(0, 229, 255, 0.75);
+  box-shadow: 0 0 0 1px rgba(0, 229, 255, 0.12) inset, 0 0 20px rgba(0, 229, 255, 0.15);
+}
+
+.nav-contact__btn--secondary {
+  text-transform: none;
+  font-weight: 500;
+  letter-spacing: 0.02em;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border-color: rgba(255, 255, 255, 0.12);
+  padding: 8px 14px;
+}
+
+.nav-contact__btn--secondary:hover:not(:disabled) {
+  color: var(--text-main);
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(0, 229, 255, 0.3);
 }
 
 .nav-settings-option {
@@ -845,17 +1259,18 @@ html, body {
   text-wrap: pretty;
 }
 
+/* Mismo criterio que .nav-settings-option: gris neutro, no tinte cyan */
 .nav-flyout-about__statement {
   margin: 0;
   padding: 0.75rem 0.85rem;
-  border: 1px solid rgba(0, 229, 255, 0.2);
+  border: 1px solid var(--panel-border);
   border-radius: 10px;
-  background: rgba(0, 229, 255, 0.06);
+  background: rgba(255, 255, 255, 0.04);
   font-family: 'Inter', system-ui, sans-serif;
   font-size: 0.84rem;
   font-weight: 500;
   line-height: 1.55;
-  color: rgba(229, 248, 255, 0.95);
+  color: var(--text-main);
   text-wrap: pretty;
 }
 
@@ -870,6 +1285,151 @@ html, body {
 .nav-rail__flyout-inner--settings {
   justify-content: flex-end;
   padding-bottom: 16px;
+}
+
+/* Capa bajo el visor (z-99): captura eventos; todo lo de detrás (≤35–20) queda inaccesible hasta cerrar. */
+.project-viewer-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: transparent;
+  pointer-events: auto;
+  touch-action: none;
+  cursor: default;
+}
+
+/* ─── Visor de proyecto: mismas calles que el margen derecho (ui-inset): rail | calle | modal | calle | inspector | calle viewport ─── */
+.project-viewer {
+  position: fixed;
+  z-index: 100;
+  top: var(--content-row-top);
+  bottom: var(--ui-inset);
+  left: calc(var(--nav-rail-width) + var(--ui-inset));
+  /* panel + margen derecho del panel + calle modal–inspector (= ui-inset) */
+  right: calc(var(--data-panel-width) + var(--ui-inset) * 2);
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  pointer-events: auto;
+  padding: 0;
+  isolation: isolate;
+}
+
+.project-viewer__panel {
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  /* Opaco: mismo fondo que la página, sin transparencia ni blur */
+  background: var(--bg-color);
+  border: 1px solid var(--panel-border);
+  border-radius: 12px;
+  box-shadow: 0 24px 56px rgba(0, 0, 0, 0.55);
+  overflow: hidden;
+}
+
+html[data-theme="light"] .project-viewer__panel {
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.project-viewer__header {
+  flex-shrink: 0;
+  padding: 0.75rem 1rem 0.65rem;
+  border-bottom: 1px solid var(--panel-border);
+  background: var(--bg-color);
+}
+
+.project-viewer__title {
+  font-size: clamp(1rem, 1.8vw, 1.25rem);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin: 0;
+  color: var(--text-main);
+  -webkit-text-fill-color: var(--text-main);
+}
+
+/* Área central: solo iframe (detalle de texto = Node Inspector) */
+.project-viewer__frame {
+  flex: 1;
+  min-height: 0;
+  position: relative;
+  background: var(--bg-color);
+}
+
+.project-viewer__iframe {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  display: block;
+  background: var(--bg-color);
+}
+
+.project-viewer__embed-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem 0.75rem;
+  background: var(--bg-color);
+  overflow: auto;
+}
+
+.project-viewer__fallback-img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  object-position: center top;
+  border-radius: 6px;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.25);
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+html[data-theme="light"] .project-viewer__fallback-img {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12);
+}
+
+.project-viewer__iframe-fallback {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  background: var(--bg-color);
+}
+
+.project-viewer__iframe-fallback-text {
+  margin: 0;
+  max-width: 28rem;
+  text-align: center;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: var(--text-muted);
+}
+
+.project-viewer__footer {
+  flex-shrink: 0;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem 0.9rem;
+  border-top: 1px solid var(--panel-border);
+  background: var(--bg-color);
+}
+
+.project-viewer__btn-close {
+  margin-right: auto;
 }
 
 /* ─── HERO (desplazado respecto al rail) ─── */
@@ -1109,7 +1669,22 @@ html[data-theme="light"] .status-indicator.is-live {
   font-size: 12px;
   line-height: 1.6;
   color: #d4d4d4;
+  overflow-x: auto;
+  width: 100%;
+  box-sizing: border-box;
 }
+
+/* Líneas de “código”: el padding conserva el sangrado al hacer wrap (a diferencia de &nbsp; solo al inicio). */
+.code-block .cl {
+  display: block;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  word-wrap: break-word;
+}
+
+.code-block .cl-i1 { padding-left: 2ch; }
+.code-block .cl-i2 { padding-left: 4ch; }
+.code-block .cl-i3 { padding-left: 6ch; }
 
 .code-block::-webkit-scrollbar { width: 4px; }
 .code-block::-webkit-scrollbar-track { background: transparent; }
@@ -1467,6 +2042,11 @@ html[data-theme="light"] .status-indicator.is-live {
     transition: transform var(--nav-flyout-dur) cubic-bezier(0.32, 0.72, 0, 1);
   }
 
+  /* Reservas: más altura para el calendario embebido en móvil */
+  .nav-rail__flyout--booking {
+    max-height: min(68vh, 520px);
+  }
+
   .nav-rail__flyout.is-open {
     transform: translateY(0);
   }
@@ -1487,6 +2067,17 @@ html[data-theme="light"] .status-indicator.is-live {
     top: var(--content-row-top);
     bottom: auto;
     padding-bottom: 72px;
+  }
+
+  .project-viewer {
+    left: var(--ui-inset);
+    right: var(--ui-inset);
+    padding: 0;
+    bottom: calc(64px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .project-viewer__footer {
+    padding-bottom: calc(0.85rem + env(safe-area-inset-bottom, 0px));
   }
 
   .controls-wrapper {

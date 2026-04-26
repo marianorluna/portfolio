@@ -40,6 +40,16 @@ export function NavIcon({ name, className, title }: Props) {
     );
   }
 
+  if (name === "calendar") {
+    return (
+      <svg {...common} className={className} role="img" aria-label={title}>
+        <rect x="3" y="4" width="18" height="18" rx="2" />
+        <path d="M3 10h18" />
+        <path d="M8 2v4M16 2v4" />
+      </svg>
+    );
+  }
+
   if (name === "mail") {
     return (
       <svg {...common} className={className} role="img" aria-label={title}>

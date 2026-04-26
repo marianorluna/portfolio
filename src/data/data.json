@@ -33,6 +33,12 @@
         "label": "Contacto",
         "description": "Colaboración, consultoría o propuestas: correo, redes y disponibilidad.",
         "icon": "mail"
+      },
+      {
+        "id": "citas",
+        "label": "Citas",
+        "description": "Reserva una reunión en línea según disponibilidad (15, 30 o 60 min).",
+        "icon": "calendar"
       }
     ],
     "uiText": {
@@ -53,15 +59,23 @@
   },
   "ui": {
     "loading": {
-      "brandMain": "ARQ",
-      "brandAccent": "_DEV",
-      "initialText": "Initializing 3D engine..."
+      "brandMain": "MARIANO",
+      "brandAccent": "_LUNA",
+      "initialText": "Inicializando motor 3D...",
+      "messages": [
+        "Inicializando renderizador Three.js...",
+        "Cargando motor de geometría IFC...",
+        "Analizando elementos del edificio...",
+        "Generando datos de fragmentos...",
+        "Configurando hotspots...",
+        "Listo."
+      ]
     },
     "inspector": {
       "title": "Node Inspector",
       "status": "● LIVE SYNC",
       "codeHtml": {
-        "default": "<span class=\"kd\">const</span> <span class=\"na\">BuildingModel</span> <span class=\"p\">=</span> () <span class=\"kd\">=&gt;</span> {<br>&nbsp;&nbsp;<span class=\"kd\">return</span> (<br>&nbsp;&nbsp;&nbsp;&nbsp;<span class=\"p\">&lt;</span><span class=\"nc\">IFCContainer</span> <span class=\"na\">id=</span><span class=\"s\">\"TWIN-01\"</span><span class=\"p\">&gt;</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=\"cm\">// Interactúa con el modelo 3D</span><br>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class=\"cm\">// para inspeccionar los nodos.</span><br>&nbsp;&nbsp;&nbsp;&nbsp;<span class=\"p\">&lt;/</span><span class=\"nc\">IFCContainer</span><span class=\"p\">&gt;</span><br>&nbsp;&nbsp;);<br>};",
+        "default": "<div class=\"cl\"><span class=\"kd\">const</span> <span class=\"na\">BuildingModel</span> <span class=\"p\">=</span> () <span class=\"kd\">=&gt;</span> {</div><div class=\"cl cl-i1\"><span class=\"kd\">return</span> (</div><div class=\"cl cl-i2\"><span class=\"p\">&lt;</span><span class=\"nc\">IFCContainer</span> <span class=\"na\">id=</span><span class=\"s\">\"TWIN-01\"</span><span class=\"p\">&gt;</span></div><div class=\"cl cl-i3\"><span class=\"cm\">// Interactúa con el modelo 3D</span></div><div class=\"cl cl-i3\"><span class=\"cm\">// para inspeccionar los nodos.</span></div><div class=\"cl cl-i2\"><span class=\"p\">&lt;/</span><span class=\"nc\">IFCContainer</span><span class=\"p\">&gt;</span></div><div class=\"cl cl-i1\">);</div><div class=\"cl\">};</div>",
         "jsonResponseComment": "// JSON Query Response",
         "status": "200 OK",
         "sync": "realtime"
@@ -90,15 +104,44 @@
       "orbitLabel": "Orbitar",
       "scrollLabel": "Scroll",
       "zoomLabel": "Zoom"
+    },
+    "projectViewer": {
+      "closeLabel": "Cerrar",
+      "openDemoLabel": "Demo en nueva pestaña",
+      "demoUnavailableTitle": "No hay enlace de demo disponible",
+      "iframeUnavailableHint": "No hay URL de demo configurada. Revisa el panel derecho o el JSON del proyecto."
+    },
+    "contactForm": {
+      "formAriaLabel": "Enviar mensaje de contacto",
+      "nameLabel": "Nombre",
+      "emailLabel": "Correo",
+      "messageLabel": "Mensaje",
+      "sendLabel": "Enviar",
+      "sendingLabel": "Enviando…",
+      "newMessageLabel": "Escribir otro",
+      "successMessage": "Mensaje enviado. Te responderé lo antes posible.",
+      "errorGeneric": "No se pudo enviar. Revisa la conexión o inténtalo más tarde.",
+      "errorConfig": "Falta configurar el servidor (Resend y/o Turnstile). Si eres el propietario del sitio, revisa las variables de entorno.",
+      "nameRequired": "Indica tu nombre.",
+      "nameMax": "Máximo 120 caracteres.",
+      "emailInvalid": "Indica un correo válido.",
+      "messageMin": "Escribe al menos 10 caracteres.",
+      "messageMax": "Máximo 4000 caracteres.",
+      "honeypotLabel": "Empresa (opcional)",
+      "errorTurnstileRequired": "Completa la verificación de seguridad antes de enviar.",
+      "errorTurnstile": "La verificación de seguridad falló o caducó. Recarga e inténtalo de nuevo.",
+      "errorTurnstileDomain": "El dominio actual no está autorizado en Cloudflare Turnstile (error 110200). En el panel de Turnstile → tu widget → Hostname management, añade «localhost» para desarrollo y el dominio de producción (p. ej. ejemplo.com)."
     }
   },
   "hero": {
     "titleLines": ["Arquitectura", "BIM & Desarrollo", "Fullstack"],
     "subtitle": "Mi enfoque combina un perfil analítico con una fuerte orientación a lo digital. Abordo los proyectos desde su concepción espacial hasta el modelado, gestión y automatización. Me especializo en el ecosistema AECO y el desarrollo de herramientas con impacto tangible en la toma de decisiones y optimización del tiempo. No soy programador, en el sentido estricto: Soy un profesional que emplea la programación para desarrollar soluciones que integren diseño, datos, digitalización y IA.",
     "cta": {
-      "primary": "Ver Proyectos",
-      "secondary": "Github",
-      "secondaryUrl": "https://github.com"
+      "primary": "LinkedIn",
+      "primaryUrl": "https://www.linkedin.com/in/marianorluna/",
+      "primaryProject": "Demo",
+      "secondary": "GitHub",
+      "secondaryUrl": "https://github.com/marianorluna/"
     }
   },
   "projects": {
@@ -118,8 +161,9 @@
             "role": "Disene la arquitectura del plugin, implemente reglas de validacion y automatice reportes tecnicos.",
             "stack": ["C#", ".NET", "Revit API", "WPF"],
             "link": "https://arqfi.com",
-            "github": "https://github.com/marianorluna/",
-            "demo": "https://arqfi.com"
+            "github": "https://github.com/marianorluna/revit-control-manager",
+            "demo": "https://apps.autodesk.com/RVT/es/Detail/Index?id=6529215684524589255&appLang=es&os=Win64&mode=preview",
+            "demoEmbedFallback": "/images/screenshot-control-manager.png"
           },
           {
             "id": "ribbon-revit",
@@ -131,8 +175,8 @@
             "role": "Modele la experiencia de usuario del ribbon y desarrolle comandos Python para operaciones BIM comunes.",
             "stack": ["Python", "pyRevit", "Revit API"],
             "link": "https://arqfi.com",
-            "github": "https://github.com/marianorluna/",
-            "demo": "https://arqfi.com"
+            "github": "https://github.com/marianorluna/ribbon-pyrevit",
+            "demo": "https://www.youtube.com/embed/rWGBVo9qDEg?si=feIjLqulLjMs4RA5&amp;controls=0"
           }
         ]
       },
@@ -150,8 +194,8 @@
             "role": "Construi frontend y backend, defini consultas de estadisticas y despliegue continuo.",
             "stack": ["Next.js", "TypeScript", "Node.js", "PostgreSQL"],
             "link": "https://arqfi.com",
-            "github": "https://github.com/marianorluna/",
-            "demo": "https://arqfi.com"
+            "github": "https://github.com/marianorluna/lolmatch-frontend",
+            "demo": "https://lolmatch.online/"
           },
           {
             "id": "stockearly",
@@ -163,8 +207,8 @@
             "role": "Lidere el modelado de dominio, implemente API de inventario y panel de alertas.",
             "stack": ["React", "Node.js", "Express", "MongoDB"],
             "link": "https://arqfi.com",
-            "github": "https://github.com/marianorluna/",
-            "demo": "https://arqfi.com"
+            "github": "https://github.com/marianorluna/stock-app-backend",
+            "demo": "https://www.stockearly.online/"
           }
         ]
       },
@@ -182,8 +226,8 @@
             "role": "Implemente carga y navegacion de modelos, filtros de elementos y capas de inspeccion tecnica.",
             "stack": ["That Open Engine", "@thatopen/components", "Three.js", "TypeScript"],
             "link": "https://arqfi.com",
-            "github": "https://github.com/marianorluna/",
-            "demo": "https://arqfi.com"
+            "github": "https://github.com/marianorluna/ifc-viewer",
+            "demo": "https://viewer.arqfi.com/"
           },
           {
             "id": "data-extractor",
@@ -195,8 +239,60 @@
             "role": "Desarrolle pipeline de extraccion, mapeo de datos y exportacion estructurada para analisis.",
             "stack": ["APS", "Node.js", "TypeScript", "MongoDB"],
             "link": "https://arqfi.com",
-            "github": "https://github.com/marianorluna/",
-            "demo": "https://arqfi.com"
+            "github": "https://github.com/marianorluna/aps-data-extractor",
+            "demo": "https://aps-data.arqfi.com/"
+          }
+        ]
+      }
+    ]
+  },
+  "formacion": {
+    "categories": [
+      {
+        "id": "titulo-de-grado",
+        "label": "Título de Grado",
+        "items": [
+          {
+            "id": "msc-arquitectura-unsj",
+            "name": "MSc. Arquitectura, Diseño e Ingeniería Arquitectónica",
+            "meta": "Universidad Nacional de San Juan, Argentina · 2006 – 2015",
+            "description": "Grado de Arquitecto (6 años): diseño estructural, sistemas constructivos, urbanismo e ingeniería arquitectónica."
+          }
+        ]
+      },
+      {
+        "id": "cursos-formativos",
+        "label": "Cursos Formativos",
+        "items": [
+          {
+            "id": "master-bim-structuralia",
+            "name": "Máster en Programación Orientada a BIM",
+            "meta": "Structuralia · 2019 – 2020",
+            "description": "Modelado ARCH, STR, MEP e IFC. Scripts con Dynamo y Python. Bases de datos. API de Revit."
+          },
+          {
+            "id": "master-bim-software-thatopen",
+            "name": "Máster BIM Software Developer",
+            "meta": "That Open Company · 2023 – 2024",
+            "description": "Desarrollo de aplicaciones BIM web con IFC.js y Three.js. Estándares Open BIM y esquema IFC."
+          },
+          {
+            "id": "curso-pyrevit-learnrevitapi",
+            "name": "Curso PyRevit y API de Revit",
+            "meta": "LearnRevitAPI · 2024",
+            "description": "Desarrollo de herramientas personalizadas y automatizaciones con la API de Revit y el framework PyRevit."
+          }
+        ]
+      },
+      {
+        "id": "especializaciones",
+        "label": "Especializaciones",
+        "items": [
+          {
+            "id": "master-fullstack-nuclio",
+            "name": "Máster en Desarrollo Fullstack",
+            "meta": "Nuclio Digital School · 2025 – 2026 · Barcelona",
+            "description": "Desarrollo web, ingeniería de software, integraciones de IA y automatización (n8n, servidores MCP). Aplicable al desarrollo de herramientas BIM: APIs REST, modelado de bases de datos e interfaces front-end para datos BIM."
           }
         ]
       }

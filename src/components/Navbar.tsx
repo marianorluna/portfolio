@@ -4,12 +4,16 @@ import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import type { NavBrand, NavLink, NavUiText, PortfolioData } from "@/types/portfolio";
 import { NavIcon } from "./NavIcon";
+import { CalBookingEmbed } from "./CalBookingEmbed";
+import { ContactForm } from "./ContactForm";
 import type { SceneTheme } from "@/config/scene-theme";
 
 type Props = {
   brand:          NavBrand;
   links:          NavLink[];
   projects:       PortfolioData["projects"];
+  formacion:      PortfolioData["formacion"];
+  contactForm:    PortfolioData["ui"]["contactForm"];
   uiText:         NavUiText;
   theme:          SceneTheme;
   onThemeToggle:  () => void;
@@ -19,9 +23,10 @@ type Props = {
   ) => void;
 };
 
-export function Navbar({ brand, links, projects, uiText, theme, onThemeToggle, onProjectSelect }: Props) {
+export function Navbar({ brand, links, projects, formacion, contactForm, uiText, theme, onThemeToggle, onProjectSelect }: Props) {
   const railRef = useRef<HTMLElement | null>(null);
   const [activePanel, setActivePanel] = useState<"brand" | string | null>(null);
+  const [openFormationId, setOpenFormationId] = useState<string | null>(null);
   const aboutParagraphs = brand.aboutText
     .split("\n\n")
     .map(p => p.trim())
@@ -44,6 +49,12 @@ export function Navbar({ brand, links, projects, uiText, theme, onThemeToggle, o
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
+  }, [activePanel]);
+
+  useEffect(() => {
+    if (activePanel !== "formacion") {
+      setOpenFormationId(null);
+    }
   }, [activePanel]);
 
   const fullNameA11y = `${brand.nameMain} ${brand.nameRest}`;
@@ -120,7 +131,9 @@ export function Navbar({ brand, links, projects, uiText, theme, onThemeToggle, o
 
       <div
         id="nav-flyout"
-        className={`nav-rail__flyout${activePanel != null ? " is-open" : ""}`}
+        className={`nav-rail__flyout${activePanel != null ? " is-open" : ""}${
+          activePanel === "citas" ? " nav-rail__flyout--booking" : ""
+        }`}
         aria-hidden={activePanel == null}
         role="region"
         aria-label={flyoutLabel}
@@ -154,7 +167,16 @@ export function Navbar({ brand, links, projects, uiText, theme, onThemeToggle, o
           </div>
         )}
         {openLink && (
-          <div className={`nav-rail__flyout-inner${openLink.id === "proyectos" ? " nav-rail__flyout-inner--projects" : ""}`}>
+          <div
+            className={`nav-rail__flyout-inner${
+              openLink.id === "proyectos" ||
+              openLink.id === "formacion" ||
+              openLink.id === "citas" ||
+              openLink.id === "contacto"
+                ? " nav-rail__flyout-inner--projects"
+                : ""
+            }`}
+          >
             <p className="nav-rail__flyout-kicker">{uiText.sectionKicker}</p>
             <h2 className="nav-rail__flyout-title">{openLink.label}</h2>
             <p className="nav-rail__flyout-desc">{openLink.description}</p>
@@ -180,6 +202,58 @@ export function Navbar({ brand, links, projects, uiText, theme, onThemeToggle, o
                   </section>
                 ))}
               </div>
+            )}
+            {openLink.id === "formacion" && (
+              <div className="nav-projects">
+                {formacion.categories.map(category => (
+                  <section key={category.id} className="nav-projects__category" aria-label={category.label}>
+                    <h3 className="nav-projects__category-title">{category.label}</h3>
+                    <ul className="nav-projects__list">
+                      {category.items.map(item => {
+                        const isExpanded = openFormationId === item.id;
+                        const panelId = `formacion-desc-${item.id}`;
+                        return (
+                          <li key={item.id} className="nav-projects__item nav-projects__item--static">
+                            <div
+                              className={`nav-formacion__details${isExpanded ? " nav-formacion__details--open" : ""}`}
+                            >
+                              <button
+                                type="button"
+                                className="nav-formacion__summary"
+                                aria-expanded={isExpanded}
+                                aria-controls={panelId}
+                                id={`formacion-trigger-${item.id}`}
+                                onClick={() => {
+                                  setOpenFormationId(prev => (prev === item.id ? null : item.id));
+                                }}
+                              >
+                                <span className="nav-formacion__summary-text">
+                                  <span className="nav-projects__item-name nav-formacion__summary-title">{item.name}</span>
+                                  <span className="nav-projects__item-summary nav-formacion__summary-meta">{item.meta}</span>
+                                </span>
+                                <span className="nav-formacion__summary-chevron" aria-hidden>
+                                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="m9 18 6-6-6-6" />
+                                  </svg>
+                                </span>
+                              </button>
+                              {isExpanded && (
+                                <p className="nav-formacion__desc" id={panelId} aria-labelledby={`formacion-trigger-${item.id}`}>
+                                  {item.description}
+                                </p>
+                              )}
+                            </div>
+                          </li>
+                        );
+                      })}
+                    </ul>
+                  </section>
+                ))}
+              </div>
+            )}
+            {openLink.id === "citas" && <CalBookingEmbed theme={theme} />}
+            {openLink.id === "contacto" && (
+              <ContactForm copy={contactForm} />
             )}
           </div>
         )}

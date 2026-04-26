@@ -21,6 +21,7 @@ import { simulateLoad } from "@/utils/simulate-load";
 import { LoadingScreen } from "./LoadingScreen";
 import { Navbar } from "./Navbar";
 import { HeroText } from "./HeroText";
+import { ProjectViewerModal } from "./ProjectViewerModal";
 import { NodeInspector } from "./NodeInspector";
 import { ViewControls } from "./ViewControls";
 import { LevelControls } from "./LevelControls";
@@ -265,8 +266,15 @@ export function PortfolioScene({ data }: Props) {
     categoryLabel: string;
     project: ProjectItem;
   } | null>(null);
-  const setHeroSelectionRef = useRef(setHeroSelection);
-  setHeroSelectionRef.current = setHeroSelection;
+
+  const clearProjectSelection = useCallback(() => {
+    selectedProjectHtmlRef.current = null;
+    setHeroSelection(null);
+    setCodeHtml(defaultCodeHtml);
+  }, []);
+
+  const clearProjectSelectionRef = useRef(clearProjectSelection);
+  clearProjectSelectionRef.current = clearProjectSelection;
 
   const [liveSync, setLiveSync] = useState(false);
   const setLiveSyncRef = useRef(setLiveSync);
@@ -415,10 +423,8 @@ export function PortfolioScene({ data }: Props) {
     isFlyingRef.current = false;
     hasUserInteractedRef.current = false;
     intersectedRef.current = null;
-    selectedProjectHtmlRef.current = null;
-    setHeroSelection(null);
+    clearProjectSelection();
     if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
-    setCodeHtml(defaultCodeHtml);
 
     // Reset floor stack to initial amount.
     if (floorCountRef.current < INITIAL_FLOORS) {
@@ -478,7 +484,7 @@ export function PortfolioScene({ data }: Props) {
     controls.autoRotate = true;
     setAutoRotate(true);
     controls.update();
-  }, []);
+  }, [clearProjectSelection]);
 
   const handleToggleCamera = useCallback(() => {
     const controls = controlsRef.current;
@@ -651,11 +657,6 @@ export function PortfolioScene({ data }: Props) {
     const onPointerDown = (e: PointerEvent) => {
       hasUserInteractedRef.current = true;
       setCanvasCursor(resolveCursorStateFromPointer(e));
-      if (selectedProjectHtmlRef.current) {
-        selectedProjectHtmlRef.current = null;
-        setHeroSelectionRef.current(null);
-        setCodeHtml(defaultCodeHtml);
-      }
     };
 
     const onPointerUp = () => {
@@ -908,9 +909,7 @@ export function PortfolioScene({ data }: Props) {
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape" && selectedProjectHtmlRef.current) {
-        selectedProjectHtmlRef.current = null;
-        setHeroSelectionRef.current(null);
-        setCodeHtml(defaultCodeHtml);
+        clearProjectSelectionRef.current();
       }
     }
 
@@ -919,6 +918,7 @@ export function PortfolioScene({ data }: Props) {
     window.addEventListener("resize", onResize);
 
     simulateLoad(
+      data.ui.loading.messages,
       p => setLoadProgress(p),
       msg => setLoadText(msg),
       () => setLoadHidden(true)
@@ -1035,6 +1035,8 @@ export function PortfolioScene({ data }: Props) {
         brand={data.nav.brand}
         links={data.nav.links}
         projects={data.projects}
+        formacion={data.formacion}
+        contactForm={data.ui.contactForm}
         uiText={data.nav.uiText}
         theme={theme}
         onThemeToggle={handleThemeToggle}
@@ -1046,7 +1048,19 @@ export function PortfolioScene({ data }: Props) {
         status={data.ui.inspector.status}
         liveSync={liveSync}
       />
-      <HeroText data={data} selection={heroSelection} />
+      {heroSelection == null && <HeroText data={data} selection={null} />}
+      {heroSelection != null && (
+        <>
+          {/* Bloquea interacción con rail, escena, inspector y controles; el visor (z-100) queda encima. */}
+          <div className="project-viewer-backdrop" aria-hidden tabIndex={-1} />
+          <ProjectViewerModal
+            selection={heroSelection}
+            onClose={clearProjectSelection}
+            openDemoLabel={data.ui.projectViewer.openDemoLabel}
+            projectViewer={data.ui.projectViewer}
+          />
+        </>
+      )}
 
       <div className="controls-wrapper">
         <ViewControls
@@ -1179,18 +1193,36 @@ function buildFloorCodeHtml(
   }
 ): string {
   return (
-    `<span class="p">&lt;</span><span class="nc">FloorNode</span><br>` +
-    `&nbsp;&nbsp;<span class="na">guid</span><span class="p">=</span><span class="s">"${d.id}"</span><br>` +
-    `&nbsp;&nbsp;<span class="na">level</span><span class="p">={</span><span class="m">${d.level}</span><span class="p">}</span><br>` +
-    `&nbsp;&nbsp;<span class="na">elevation</span><span class="p">={</span><span class="m">${d.elevation}</span><span class="p">}</span><br>` +
-    `&nbsp;&nbsp;<span class="na">properties</span><span class="p">={{</span><br>` +
-    `&nbsp;&nbsp;&nbsp;&nbsp;<span class="na">area_m2</span><span class="p">:</span> <span class="m">${d.area}</span><span class="p">,</span><br>` +
-    `&nbsp;&nbsp;&nbsp;&nbsp;<span class="na">material</span><span class="p">:</span> <span class="s">"${d.material}"</span><br>` +
-    `&nbsp;&nbsp;<span class="p">}}</span><br>` +
-    `<span class="p">/&gt;</span><br><br>` +
-    `<span class="cm">${codeHtmlText.jsonResponseComment}</span><br>` +
-    `<span class="kd">status</span>: <span class="s">"${codeHtmlText.status}"</span><br>` +
-    `<span class="kd">sync</span>: <span class="s">"${codeHtmlText.sync}"</span>`
+    `<div class="cl">` +
+    `<span class="p">&lt;</span><span class="nc">FloorNode</span>` +
+    `</div>` +
+    `<div class="cl cl-i1">` +
+    `<span class="na">guid</span><span class="p">=</span><span class="s">"${d.id}"</span>` +
+    `</div>` +
+    `<div class="cl cl-i1">` +
+    `<span class="na">level</span><span class="p">={</span><span class="m">${d.level}</span><span class="p">}</span>` +
+    `</div>` +
+    `<div class="cl cl-i1">` +
+    `<span class="na">elevation</span><span class="p">={</span><span class="m">${d.elevation}</span><span class="p">}</span>` +
+    `</div>` +
+    `<div class="cl cl-i1">` +
+    `<span class="na">properties</span><span class="p">={{</span>` +
+    `</div>` +
+    `<div class="cl cl-i2">` +
+    `<span class="na">area_m2</span><span class="p">:</span> <span class="m">${d.area}</span><span class="p">,</span>` +
+    `</div>` +
+    `<div class="cl cl-i2">` +
+    `<span class="na">material</span><span class="p">:</span> <span class="s">"${d.material}"</span>` +
+    `</div>` +
+    `<div class="cl cl-i1"><span class="p">}}</span></div>` +
+    `<div class="cl"><span class="p">/&gt;</span></div><br><br>` +
+    `<div class="cl"><span class="cm">${codeHtmlText.jsonResponseComment}</span></div>` +
+    `<div class="cl">` +
+    `<span class="kd">status</span>: <span class="s">"${codeHtmlText.status}"</span>` +
+    `</div>` +
+    `<div class="cl">` +
+    `<span class="kd">sync</span>: <span class="s">"${codeHtmlText.sync}"</span>` +
+    `</div>`
   );
 }
 
@@ -1210,20 +1242,29 @@ function toPascalCase(name: string): string {
     .join("");
 }
 
+type CodeLineIndent = "i1" | "i2";
+
 /** Convierte texto largo en dos líneas si supera `maxLen` caracteres. */
 function wrapAttr(
   attr: string,
   value: string,
-  indent: string,
+  indent: CodeLineIndent,
   maxLen = 34
 ): string {
+  const lineClass = `cl cl-${indent}`;
   const safe = sanitizeCodeValue(value);
-  const attrHtml =
-    `${indent}<span class="na">${attr}</span>` +
-    `<span class="p">=</span>` +
-    `<span class="s">"${safe}"</span>`;
+  const nameAndEq =
+    `<span class="na">${attr}</span>` +
+    `<span class="p">=</span>`;
 
-  if (value.length <= maxLen) return attrHtml + "<br>";
+  if (value.length <= maxLen) {
+    return (
+      `<div class="${lineClass}">` +
+      nameAndEq +
+      `<span class="s">"${safe}"</span>` +
+      `</div>`
+    );
+  }
 
   const breakAt = value.lastIndexOf(" ", maxLen) > 12
     ? value.lastIndexOf(" ", maxLen)
@@ -1231,59 +1272,58 @@ function wrapAttr(
   const safeA = sanitizeCodeValue(value.slice(0, breakAt));
   const safeB = sanitizeCodeValue(value.slice(breakAt).trimStart());
   return (
-    `${indent}<span class="na">${attr}</span>` +
-    `<span class="p">=</span>` +
+    `<div class="${lineClass}">` +
+    nameAndEq +
     `<span class="s">"${safeA}</span><br>` +
-    `${indent}&nbsp;&nbsp;<span class="s">${safeB}"</span><br>`
+    `<span class="s">${safeB}"</span>` +
+    `</div>`
   );
 }
 
 function buildProjectCodeHtml(project: ProjectItem): string {
   const componentName = toPascalCase(project.name);
-  const i1 = "&nbsp;&nbsp;";
-  const i2 = "&nbsp;&nbsp;&nbsp;&nbsp;";
 
   const stackItems = project.stack
     .map(t => `<span class="s">"${sanitizeCodeValue(t)}"</span>`)
     .join(`<span class="p">,</span> `);
 
   return (
-    // Comentario de cabecera
-    `<span class="cm">// → ${sanitizeCodeValue(project.name)}</span><br>` +
-    // Declaración const ComponentName = () => (
+    `<div class="cl"><span class="cm">// → ${sanitizeCodeValue(project.name)}</span></div>` +
+    `<div class="cl">` +
     `<span class="kd">const</span> ` +
     `<span class="nc">${componentName}</span> ` +
     `<span class="p">=</span> ` +
     `<span class="p">()</span> ` +
     `<span class="kd">=&gt;</span> ` +
-    `<span class="p">(</span><br>` +
-    // Apertura <ProjectNode
-    `${i1}<span class="p">&lt;</span><span class="nc">ProjectNode</span><br>` +
-    // Contexto
-    `${i2}<span class="cm">// Contexto: problema real</span><br>` +
-    wrapAttr("contexto", project.context, i2) +
-    // Impacto
-    `${i2}<span class="cm">// Impacto: resultado medible</span><br>` +
-    wrapAttr("impacto", project.impact, i2) +
-    // Rol
-    `${i2}<span class="cm">// Rol exacto</span><br>` +
-    wrapAttr("rol", project.role, i2) +
-    // Stack como array
-    `${i2}<span class="na">stack</span>` +
-    `<span class="p">={[</span>${stackItems}<span class="p">]}</span><br>` +
-    // Cierre del tag de apertura
-    `${i1}<span class="p">&gt;</span><br>` +
-    // Enlaces
-    `${i2}<span class="cm">// Enlaces</span><br>` +
-    wrapAttr("link", project.link, i2) +
-    wrapAttr("github", project.github, i2) +
-    wrapAttr("demo", project.demo, i2) +
-    // Cierre </ProjectNode>
-    `${i1}<span class="p">&lt;/</span>` +
+    `<span class="p">(</span>` +
+    `</div>` +
+    `<div class="cl cl-i1">` +
+    `<span class="p">&lt;</span><span class="nc">ProjectNode</span>` +
+    `</div>` +
+    `<div class="cl cl-i2"><span class="cm">// Contexto: problema real</span></div>` +
+    wrapAttr("contexto", project.context, "i2") +
+    `<div class="cl cl-i2"><span class="cm">// Impacto: resultado medible</span></div>` +
+    wrapAttr("impacto", project.impact, "i2") +
+    `<div class="cl cl-i2"><span class="cm">// Rol exacto</span></div>` +
+    wrapAttr("rol", project.role, "i2") +
+    `<div class="cl cl-i2">` +
+    `<span class="na">stack</span>` +
+    `<span class="p">={[</span>${stackItems}<span class="p">]}</span>` +
+    `</div>` +
+    `<div class="cl cl-i1"><span class="p">&gt;</span></div>` +
+    `<div class="cl cl-i2"><span class="cm">// Enlaces</span></div>` +
+    wrapAttr("link", project.link, "i2") +
+    wrapAttr("github", project.github, "i2") +
+    wrapAttr("demo", project.demo, "i2") +
+    (project.demoEmbedFallback
+      ? wrapAttr("demoEmbedFallback", project.demoEmbedFallback, "i2")
+      : "") +
+    `<div class="cl cl-i1">` +
+    `<span class="p">&lt;/</span>` +
     `<span class="nc">ProjectNode</span>` +
-    `<span class="p">&gt;</span><br>` +
-    // Cierre );
-    `<span class="p">);</span>`
+    `<span class="p">&gt;</span>` +
+    `</div>` +
+    `<div class="cl"><span class="p">);</span></div>`
   );
 }
 

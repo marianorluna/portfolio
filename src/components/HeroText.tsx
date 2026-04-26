@@ -13,7 +13,7 @@ type Props = {
   selection: HeroSelection | null;
 };
 
-function isHttpUrlString(value: unknown): boolean {
+function isHttpUrlString(value: unknown): value is string {
   if (typeof value !== "string") return false;
   return value.startsWith("http://") || value.startsWith("https://");
 }
@@ -24,6 +24,8 @@ export function HeroText({ data, selection }: Props) {
   const useProjectLinks = selection != null;
   const demoUrl = useProjectLinks ? selection.project.demo : null;
   const githubUrl = useProjectLinks ? selection.project.github : null;
+  const defaultPrimaryUrl = hero.cta.primaryUrl;
+  const projectPrimaryLabel = hero.cta.primaryProject;
 
   return (
     <div className="hero-content">
@@ -60,7 +62,7 @@ export function HeroText({ data, selection }: Props) {
             target="_blank"
             rel="noreferrer"
           >
-            {hero.cta.primary}
+            {projectPrimaryLabel}
           </a>
         ) : useProjectLinks ? (
           <span
@@ -68,12 +70,25 @@ export function HeroText({ data, selection }: Props) {
             title={demoUrl ?? "Sin enlace de demo"}
             aria-disabled
           >
-            {hero.cta.primary}
+            {projectPrimaryLabel}
           </span>
-        ) : (
-          <a href="#" className="btn btn-primary">
+        ) : isHttpUrlString(defaultPrimaryUrl) ? (
+          <a
+            href={defaultPrimaryUrl}
+            className="btn btn-primary"
+            target="_blank"
+            rel="noreferrer"
+          >
             {hero.cta.primary}
           </a>
+        ) : (
+          <span
+            className="btn btn-primary btn-hero--static"
+            title="Sin enlace de perfil"
+            aria-disabled
+          >
+            {hero.cta.primary}
+          </span>
         )}
         {useProjectLinks && isHttpUrlString(githubUrl) ? (
           <a

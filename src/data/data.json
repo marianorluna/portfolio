@@ -107,7 +107,7 @@
     },
     "projectViewer": {
       "closeLabel": "Cerrar",
-      "openDemoLabel": "Demo en nueva pestaña",
+      "openDemoLabel": "Abrir en navegador",
       "demoUnavailableTitle": "No hay enlace de demo disponible",
       "iframeUnavailableHint": "No hay URL de demo configurada. Revisa el panel derecho o el JSON del proyecto."
     },

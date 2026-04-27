@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useId, useRef } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import type { PortfolioData } from "@/types/portfolio";
 
 type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][number];
@@ -30,16 +30,41 @@ export function ProjectViewerModal({
   const { project } = selection;
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement | null>(null);
+  const loadTimeoutRef = useRef<number | null>(null);
   const demoUrl = isHttpUrlString(project.demo) ? project.demo : null;
   const embedFallback =
     typeof project.demoEmbedFallback === "string" && project.demoEmbedFallback.trim() !== ""
       ? project.demoEmbedFallback.trim()
       : null;
+  const [isPreviewLoading, setIsPreviewLoading] = useState(
+    demoUrl != null || embedFallback != null
+  );
 
   useEffect(() => {
     const el = closeRef.current;
     el?.focus();
   }, [project.id]);
+
+  useEffect(() => {
+    setIsPreviewLoading(demoUrl != null || embedFallback != null);
+  }, [project.id, demoUrl, embedFallback]);
+
+  useEffect(() => {
+    if (!isPreviewLoading) return;
+    if (loadTimeoutRef.current != null) {
+      window.clearTimeout(loadTimeoutRef.current);
+    }
+    // Evita loader infinito si el proveedor externo no completa la carga del iframe.
+    loadTimeoutRef.current = window.setTimeout(() => {
+      setIsPreviewLoading(false);
+    }, 9000);
+    return () => {
+      if (loadTimeoutRef.current != null) {
+        window.clearTimeout(loadTimeoutRef.current);
+        loadTimeoutRef.current = null;
+      }
+    };
+  }, [isPreviewLoading, project.id]);
 
   return (
     <div
@@ -56,6 +81,12 @@ export function ProjectViewerModal({
         </header>
 
         <div className="project-viewer__frame">
+          {isPreviewLoading && (
+            <div className="project-viewer__loading" role="status" aria-live="polite">
+              <span className="project-viewer__spinner" aria-hidden />
+              <p className="project-viewer__loading-text">Cargando vista previa...</p>
+            </div>
+          )}
           {embedFallback != null ? (
             <div className="project-viewer__embed-fallback" role="img" aria-label={project.name}>
               {/* Captura: Autodesk (y similares) suelen bloquear iframe; la demo sigue abriéndose en pestaña */}
@@ -66,6 +97,8 @@ export function ProjectViewerModal({
                 loading="eager"
                 decoding="async"
                 draggable={false}
+                onLoad={() => setIsPreviewLoading(false)}
+                onError={() => setIsPreviewLoading(false)}
               />
             </div>
           ) : demoUrl != null ? (
@@ -77,6 +110,8 @@ export function ProjectViewerModal({
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
               allowFullScreen
               referrerPolicy="no-referrer-when-downgrade"
+              onLoad={() => setIsPreviewLoading(false)}
+              onError={() => setIsPreviewLoading(false)}
             />
           ) : (
             <div className="project-viewer__iframe-fallback" role="status">

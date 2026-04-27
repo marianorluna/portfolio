@@ -39,6 +39,8 @@ export function Navbar({ brand, links, projects, formacion, contactForm, uiText,
   const openLink = activePanel && activePanel !== "brand" && activePanel !== "settings"
     ? links.find(l => l.id === activePanel)
     : undefined;
+  const bookingLink = links.find(l => l.id === "citas");
+  const contactLink = links.find(l => l.id === "contacto");
 
   useEffect(() => {
     if (activePanel == null) return;
@@ -166,13 +168,11 @@ export function Navbar({ brand, links, projects, formacion, contactForm, uiText,
             </div>
           </div>
         )}
-        {openLink && (
+        {openLink && openLink.id !== "citas" && openLink.id !== "contacto" && (
           <div
             className={`nav-rail__flyout-inner${
               openLink.id === "proyectos" ||
-              openLink.id === "formacion" ||
-              openLink.id === "citas" ||
-              openLink.id === "contacto"
+              openLink.id === "formacion"
                 ? " nav-rail__flyout-inner--projects"
                 : ""
             }`}
@@ -251,10 +251,32 @@ export function Navbar({ brand, links, projects, formacion, contactForm, uiText,
                 ))}
               </div>
             )}
-            {openLink.id === "citas" && <CalBookingEmbed theme={theme} />}
-            {openLink.id === "contacto" && (
-              <ContactForm copy={contactForm} />
-            )}
+          </div>
+        )}
+        {contactLink && (
+          <div
+            className="nav-rail__flyout-inner nav-rail__flyout-inner--projects"
+            hidden={activePanel !== "contacto"}
+            aria-hidden={activePanel !== "contacto"}
+            style={{ display: activePanel === "contacto" ? "flex" : "none" }}
+          >
+            <p className="nav-rail__flyout-kicker">{uiText.sectionKicker}</p>
+            <h2 className="nav-rail__flyout-title">{contactLink.label}</h2>
+            <p className="nav-rail__flyout-desc">{contactLink.description}</p>
+            <ContactForm copy={contactForm} />
+          </div>
+        )}
+        {bookingLink && (
+          <div
+            className="nav-rail__flyout-inner nav-rail__flyout-inner--projects"
+            hidden={activePanel !== "citas"}
+            aria-hidden={activePanel !== "citas"}
+            style={{ display: activePanel === "citas" ? "flex" : "none" }}
+          >
+            <p className="nav-rail__flyout-kicker">{uiText.sectionKicker}</p>
+            <h2 className="nav-rail__flyout-title">{bookingLink.label}</h2>
+            <p className="nav-rail__flyout-desc">{bookingLink.description}</p>
+            <CalBookingEmbed theme={theme} />
           </div>
         )}
         {isSettingsOpen && (

@@ -539,6 +539,9 @@ html, body {
   width: 0;
   max-width: var(--nav-flyout-width);
   height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
   overflow: hidden;
   background: linear-gradient(180deg, rgb(10, 10, 12) 0%, rgb(5, 5, 7) 100%);
   border-right: 1px solid var(--panel-border);
@@ -556,7 +559,10 @@ html, body {
 .nav-rail__flyout-inner {
   width: var(--nav-flyout-width);
   min-width: var(--nav-flyout-width);
+  flex: 1 1 auto;
+  min-height: 0;
   height: 100%;
+  max-height: 100%;
   padding: 28px 24px 24px 20px;
   display: flex;
   flex-direction: column;
@@ -606,14 +612,16 @@ html, body {
   justify-content: flex-start;
 }
 
-/* Reservas Cal.com: mantiene clase específica sin cambiar el ancho global del flyout */
-.nav-rail__flyout--booking {
-  --nav-flyout-width: min(380px, 50vw);
+/* Contacto: columna llena el alto; el formulario hace scroll y las redes quedan abajo */
+.nav-rail__flyout-inner--contact {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 /* Refuerzo: el panel de reservas nunca alinea su columna al centro (evita el hueco bajo título) */
 .nav-rail__flyout--booking .nav-rail__flyout-inner {
   justify-content: flex-start;
+  min-height: 0;
 }
 
 /* Cal.com embed (misma separación superior que contacto / listas) */
@@ -636,8 +644,10 @@ html, body {
   flex-direction: column;
   align-items: stretch;
   justify-content: flex-start;
-  flex: 1;
-  min-height: 420px;
+  flex: 1 1 auto;
+  min-height: 0;
+  height: 100%;
+  max-height: 100%;
   border-radius: 12px;
   border: 1px solid var(--panel-border);
   background: rgba(0, 0, 0, 0.2);
@@ -648,9 +658,10 @@ html, body {
 .nav-cal-embed__cal {
   position: relative;
   width: 100%;
-  min-height: 420px;
-  height: 100%;
+  min-height: 0;
   flex: 1 1 auto;
+  height: 100%;
+  max-height: 100%;
   display: flex;
   flex-direction: column;
   align-items: stretch;
@@ -669,13 +680,17 @@ html, body {
   justify-content: flex-start;
   width: 100%;
   min-height: 0;
+  height: 100%;
+  max-height: 100%;
 }
 
 .nav-cal-embed__cal iframe.cal-embed {
   margin: 0 !important;
-  align-self: flex-start;
+  align-self: stretch;
   width: 100% !important;
   max-width: 100%;
+  min-height: 100%;
+  flex: 1 1 auto;
 }
 
 /* Misma regla de separación que .nav-flyout-about (línea bajo el bloque de cabecera) */
@@ -858,6 +873,7 @@ html, body {
   display: flex;
   flex-direction: column;
   gap: 0.9rem;
+  flex: 1 1 auto;
   min-height: 0;
   overflow-x: hidden;
   overflow-y: auto;
@@ -1070,6 +1086,89 @@ html[data-theme="light"] .nav-contact__feedback--error {
   color: var(--text-main);
   background: rgba(255, 255, 255, 0.08);
   border-color: rgba(0, 229, 255, 0.3);
+}
+
+/* Enlaces a redes bajo el formulario de contacto */
+.nav-contact-social {
+  padding-top: 0.9rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  flex: 0 0 auto;
+}
+
+.nav-contact-social__list {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.nav-contact-social__item {
+  margin: 0;
+}
+
+.nav-contact-social__btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 10px;
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  text-decoration: none;
+  box-sizing: border-box;
+  transition:
+    color 0.18s ease,
+    background 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease,
+    transform 0.18s ease;
+}
+
+.nav-contact-social__btn:hover {
+  color: #e6fcff;
+  background: rgba(0, 229, 255, 0.1);
+  border-color: rgba(0, 229, 255, 0.4);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transform: translateY(-1px);
+}
+
+.nav-contact-social__btn:focus-visible {
+  outline: 1px solid rgba(0, 229, 255, 0.8);
+  outline-offset: 2px;
+}
+
+.nav-contact-social__icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 0;
+}
+
+html[data-theme="light"] .nav-contact-social {
+  border-top-color: rgba(15, 23, 42, 0.16);
+}
+
+html[data-theme="light"] .nav-contact-social__btn {
+  color: var(--text-muted);
+  background: rgba(255, 255, 255, 0.65);
+  border-color: rgba(15, 23, 42, 0.12);
+}
+
+html[data-theme="light"] .nav-contact-social__btn:hover {
+  color: #0a3d5c;
+  background: #f1f5f9;
+  border-color: rgba(3, 105, 161, 0.4);
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.1);
+}
+
+html[data-theme="light"] .nav-contact-social__btn:focus-visible {
+  outline-color: rgba(3, 105, 161, 0.85);
 }
 
 .nav-settings-option {
@@ -2114,9 +2213,9 @@ html[data-theme="light"] .status-indicator.is-live {
     transition: transform var(--nav-flyout-dur) cubic-bezier(0.32, 0.72, 0, 1);
   }
 
-  /* Reservas: más altura para el calendario embebido en móvil */
+  /* Reservas: aprovechar más el viewport bajo (teclado/safe area con cuidado) */
   .nav-rail__flyout--booking {
-    max-height: min(68vh, 520px);
+    max-height: min(90dvh, 720px);
   }
 
   .nav-rail__flyout.is-open {

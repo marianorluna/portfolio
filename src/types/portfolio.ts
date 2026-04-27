@@ -43,6 +43,20 @@ export type NavUiText = {
   switchToDarkLabel: string;
 };
 
+export type ContactSocialLinkId = "github" | "linkedin" | "behance" | "email";
+
+export type ContactSocialLink = {
+  id: ContactSocialLinkId;
+  label: string;
+  href: string;
+};
+
+export type ContactSocial = {
+  /** Etiqueta accesible del grupo de iconos bajo el formulario. */
+  navAriaLabel: string;
+  items: ContactSocialLink[];
+};
+
 export type ContactFormCopy = {
   formAriaLabel: string;
   nameLabel: string;
@@ -129,13 +143,14 @@ export type PortfolioData = {
       iframeUnavailableHint: string;
     };
     contactForm: ContactFormCopy;
+    contactSocial: ContactSocial;
   };
   hero: {
     titleLines: string[];
     subtitle: string;
     cta: {
       primary: string;
-      /** Enlace del CTA primario (p. ej. LinkedIn) cuando no hay proyecto seleccionado. */
+      /** Enlace del CTA primario si no se usa apertura de panel (p. ej. string vacío + botón Proyectos). */
       primaryUrl: string;
       /** Texto del CTA primario con proyecto (p. ej. Demo). */
       primaryProject: string;

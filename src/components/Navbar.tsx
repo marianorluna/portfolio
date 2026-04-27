@@ -1,12 +1,15 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import Link from "next/link";
 import type { NavBrand, NavLink, NavUiText, PortfolioData } from "@/types/portfolio";
 import { NavIcon } from "./NavIcon";
 import { CalBookingEmbed } from "./CalBookingEmbed";
 import { ContactForm } from "./ContactForm";
+import { ContactSocialRow } from "./ContactSocialRow";
 import type { SceneTheme } from "@/config/scene-theme";
+
+export type NavActivePanel = "brand" | string | null;
 
 type Props = {
   brand:          NavBrand;
@@ -14,8 +17,11 @@ type Props = {
   projects:       PortfolioData["projects"];
   formacion:      PortfolioData["formacion"];
   contactForm:    PortfolioData["ui"]["contactForm"];
+  contactSocial:  PortfolioData["ui"]["contactSocial"];
   uiText:         NavUiText;
   theme:          SceneTheme;
+  activePanel:    NavActivePanel;
+  onActivePanelChange: Dispatch<SetStateAction<NavActivePanel>>;
   onThemeToggle:  () => void;
   onProjectSelect: (
     project: PortfolioData["projects"]["categories"][number]["items"][number],
@@ -23,9 +29,8 @@ type Props = {
   ) => void;
 };
 
-export function Navbar({ brand, links, projects, formacion, contactForm, uiText, theme, onThemeToggle, onProjectSelect }: Props) {
+export function Navbar({ brand, links, projects, formacion, contactForm, contactSocial, uiText, theme, activePanel, onActivePanelChange, onThemeToggle, onProjectSelect }: Props) {
   const railRef = useRef<HTMLElement | null>(null);
-  const [activePanel, setActivePanel] = useState<"brand" | string | null>(null);
   const [openFormationId, setOpenFormationId] = useState<string | null>(null);
   const aboutParagraphs = brand.aboutText
     .split("\n\n")
@@ -47,11 +52,11 @@ export function Navbar({ brand, links, projects, formacion, contactForm, uiText,
     const onDown = (e: MouseEvent) => {
       const t = e.target;
       if (t instanceof Node && railRef.current?.contains(t)) return;
-      setActivePanel(null);
+      onActivePanelChange(null);
     };
     document.addEventListener("mousedown", onDown);
     return () => document.removeEventListener("mousedown", onDown);
-  }, [activePanel]);
+  }, [activePanel, onActivePanelChange]);
 
   useEffect(() => {
     if (activePanel !== "formacion") {
@@ -74,7 +79,7 @@ export function Navbar({ brand, links, projects, formacion, contactForm, uiText,
       <button
         type="button"
         className={`nav-rail__brand nav-rail__brand--action${isBrandOpen ? " is-active" : ""}`}
-        onClick={() => setActivePanel(p => (p === "brand" ? null : "brand"))}
+        onClick={() => onActivePanelChange(p => (p === "brand" ? null : "brand"))}
         title={`${brand.nameMain}${brand.nameJoin}${brand.nameRest} | ${brand.tagline}`}
         aria-expanded={isBrandOpen}
         aria-controls="nav-flyout"
@@ -93,7 +98,7 @@ export function Navbar({ brand, links, projects, formacion, contactForm, uiText,
               key={link.id}
               type="button"
               className={`nav-rail__icon-btn${isOpen ? " is-active" : ""}`}
-              onClick={() => setActivePanel(p => (p === link.id ? null : link.id))}
+              onClick={() => onActivePanelChange(p => (p === link.id ? null : link.id))}
               aria-expanded={isOpen}
               aria-controls="nav-flyout"
               title={link.label}
@@ -109,7 +114,7 @@ export function Navbar({ brand, links, projects, formacion, contactForm, uiText,
       <button
         type="button"
         className={`nav-rail__icon-btn nav-rail__settings-btn${isSettingsOpen ? " is-active" : ""}`}
-        onClick={() => setActivePanel(p => (p === "settings" ? null : "settings"))}
+        onClick={() => onActivePanelChange(p => (p === "settings" ? null : "settings"))}
         aria-expanded={isSettingsOpen}
         aria-controls="nav-flyout"
         title={uiText.settingsLabel}
@@ -148,7 +153,7 @@ export function Navbar({ brand, links, projects, formacion, contactForm, uiText,
                   <Link
                     href="/"
                     className="nav-flyout-brand__title-link"
-                    onClick={() => setActivePanel(null)}
+                    onClick={() => onActivePanelChange(null)}
                   >
                     <span className="nav-flyout-brand__name-main">{brand.nameMain}</span>
                     <span className="nav-flyout-brand__name-join">{brand.nameJoin}</span>
@@ -191,7 +196,7 @@ export function Navbar({ brand, links, projects, formacion, contactForm, uiText,
                           <button
                             type="button"
                             className="nav-projects__item-btn"
-                            onClick={() => { onProjectSelect(item, category.label); setActivePanel(null); }}
+                            onClick={() => { onProjectSelect(item, category.label); onActivePanelChange(null); }}
                           >
                             <p className="nav-projects__item-name">{item.name}</p>
                             <p className="nav-projects__item-summary">{item.summary}</p>
@@ -255,7 +260,7 @@ export function Navbar({ brand, links, projects, formacion, contactForm, uiText,
         )}
         {contactLink && (
           <div
-            className="nav-rail__flyout-inner nav-rail__flyout-inner--projects"
+            className="nav-rail__flyout-inner nav-rail__flyout-inner--projects nav-rail__flyout-inner--contact"
             hidden={activePanel !== "contacto"}
             aria-hidden={activePanel !== "contacto"}
             style={{ display: activePanel === "contacto" ? "flex" : "none" }}
@@ -264,6 +269,7 @@ export function Navbar({ brand, links, projects, formacion, contactForm, uiText,
             <h2 className="nav-rail__flyout-title">{contactLink.label}</h2>
             <p className="nav-rail__flyout-desc">{contactLink.description}</p>
             <ContactForm copy={contactForm} />
+            <ContactSocialRow contactSocial={contactSocial} />
           </div>
         )}
         {bookingLink && (

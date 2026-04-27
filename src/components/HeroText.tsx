@@ -11,6 +11,8 @@ type Props = {
   data: PortfolioData;
   /** Si hay proyecto elegido en el menú, el hero refleja categoría, resumen y enlaces. */
   selection: HeroSelection | null;
+  /** Con vista por defecto: abre el panel lateral Proyectos. */
+  onOpenProyectos?: () => void;
 };
 
 function isHttpUrlString(value: unknown): value is string {
@@ -18,7 +20,7 @@ function isHttpUrlString(value: unknown): value is string {
   return value.startsWith("http://") || value.startsWith("https://");
 }
 
-export function HeroText({ data, selection }: Props) {
+export function HeroText({ data, selection, onOpenProyectos }: Props) {
   const { meta, hero } = data;
   const badge = selection ? selection.categoryLabel : meta.badge;
   const useProjectLinks = selection != null;
@@ -72,6 +74,10 @@ export function HeroText({ data, selection }: Props) {
           >
             {projectPrimaryLabel}
           </span>
+        ) : onOpenProyectos != null ? (
+          <button type="button" className="btn btn-primary" onClick={onOpenProyectos}>
+            {hero.cta.primary}
+          </button>
         ) : isHttpUrlString(defaultPrimaryUrl) ? (
           <a
             href={defaultPrimaryUrl}
@@ -107,16 +113,7 @@ export function HeroText({ data, selection }: Props) {
           >
             {hero.cta.secondary}
           </span>
-        ) : (
-          <a
-            href={hero.cta.secondaryUrl}
-            className="btn btn-secondary"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {hero.cta.secondary}
-          </a>
-        )}
+        ) : null}
       </div>
     </div>
   );

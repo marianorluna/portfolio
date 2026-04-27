@@ -26,7 +26,7 @@ export function CalBookingEmbed({ theme }: Props) {
       });
       if (cancelled) return;
       cal("ui", {
-        hideEventTypeDetails: false,
+        hideEventTypeDetails: true, // Ocultar detalles del evento: nombre, foto, etc.
         layout: "month_view",
         theme: calTheme,
       });
@@ -45,6 +45,7 @@ export function CalBookingEmbed({ theme }: Props) {
           calOrigin={CAL_ORIGIN}
           embedJsUrl={CAL_EMBED_SCRIPT}
           className="nav-cal-embed__cal"
+          style={{ height: "100%", minHeight: 0 }}
           config={{
             layout: "month_view",
             useSlotsViewOnSmallScreen: "true",

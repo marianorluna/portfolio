@@ -9,6 +9,8 @@ export interface FloorUserData {
   area: number;
   material: string;
   isHovered: boolean;
+  /** Si existe, este piso corresponde a un proyecto del portfolio (hotspot 3D). */
+  projectId?: string;
 }
 
 export function createBaseMaterial(): THREE.MeshPhysicalMaterial {

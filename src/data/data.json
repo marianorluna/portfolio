@@ -131,14 +131,39 @@
       "errorTurnstileRequired": "Completa la verificación de seguridad antes de enviar.",
       "errorTurnstile": "La verificación de seguridad falló o caducó. Recarga e inténtalo de nuevo.",
       "errorTurnstileDomain": "El dominio actual no está autorizado en Cloudflare Turnstile (error 110200). En el panel de Turnstile → tu widget → Hostname management, añade «localhost» para desarrollo y el dominio de producción (p. ej. ejemplo.com)."
+    },
+    "contactSocial": {
+      "navAriaLabel": "Perfiles y contacto",
+      "items": [
+        {
+          "id": "github",
+          "label": "GitHub",
+          "href": "https://github.com/marianorluna/"
+        },
+        {
+          "id": "linkedin",
+          "label": "LinkedIn",
+          "href": "https://www.linkedin.com/in/marianorluna/"
+        },
+        {
+          "id": "behance",
+          "label": "Behance",
+          "href": "https://www.behance.net/marianoluna1"
+        },
+        {
+          "id": "email",
+          "label": "Correo",
+          "href": "mailto:contact@marianorluna.com"
+        }
+      ]
     }
   },
   "hero": {
     "titleLines": ["Arquitectura", "BIM & Desarrollo", "Fullstack"],
     "subtitle": "Mi enfoque combina un perfil analítico con una fuerte orientación a lo digital. Abordo los proyectos desde su concepción espacial hasta el modelado, gestión y automatización. Me especializo en el ecosistema AECO y el desarrollo de herramientas con impacto tangible en la toma de decisiones y optimización del tiempo. No soy programador, en el sentido estricto: Soy un profesional que emplea la programación para desarrollar soluciones que integren diseño, datos, digitalización y IA.",
     "cta": {
-      "primary": "LinkedIn",
-      "primaryUrl": "https://www.linkedin.com/in/marianorluna/",
+      "primary": "Proyectos",
+      "primaryUrl": "",
       "primaryProject": "Demo",
       "secondary": "GitHub",
       "secondaryUrl": "https://github.com/marianorluna/"

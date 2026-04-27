@@ -5,7 +5,7 @@ import { LOADING_BACKGROUND } from "@/config/ui-theme";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: "Portfolio · Arquitecto BIM × Fullstack Dev",
+  title: "Portfolio · Mariano Luna",
   description: "Portfolio interactivo 3D — BIM meets Code"
 };
 

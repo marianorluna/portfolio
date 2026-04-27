@@ -15,11 +15,16 @@ import {
   createLineMaterial,
   type FloorUserData,
 } from "@/utils/building-model";
+import {
+  findProjectWithCategory,
+  PROJECT_HOTSPOT_COLORS,
+  tagMeshUserDataWithProject,
+} from "@/utils/floor-project-hotspots";
 import { getViewTarget, type ViewPreset } from "@/utils/view-variants";
 import { HERO_VARIANTS, pickHeroVariant, type HeroStartupVariant } from "@/utils/hero-variants";
 import { simulateLoad } from "@/utils/simulate-load";
 import { LoadingScreen } from "./LoadingScreen";
-import { Navbar } from "./Navbar";
+import { Navbar, type NavActivePanel } from "./Navbar";
 import { HeroText } from "./HeroText";
 import { ProjectViewerModal } from "./ProjectViewerModal";
 import { NodeInspector } from "./NodeInspector";
@@ -58,6 +63,8 @@ const ROTATE_SPEED_MIN = 1;
 const ROTATE_SPEED_MAX = 10;
 const ROTATE_SPEED_FACTOR = 0.3;
 const DEFAULT_ROTATE_SPEED_LEVEL = 4;
+/** Máx. desplazamiento en px para considerar clic (no pan) sobre hotspot. */
+const HOTSPOT_CLICK_MAX_DIST_PX = 5;
 type InteractionCursorState = "idle" | "orbit" | "pan";
 const ORBIT_CURSOR_URL =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%23d8f7ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='16' cy='16' r='8.5'/%3E%3Cpath d='M16 4.5l-2.5 2.5M16 4.5l2.5 2.5'/%3E%3Cpath d='M27.5 16l-2.5-2.5M27.5 16l-2.5 2.5'/%3E%3Cpath d='M16 27.5l-2.5-2.5M16 27.5l2.5-2.5'/%3E%3Cpath d='M4.5 16l2.5-2.5M4.5 16l2.5 2.5'/%3E%3C/g%3E%3C/svg%3E\") 16 16, grab";
@@ -210,6 +217,8 @@ type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][numb
 
 export function PortfolioScene({ data }: Props) {
   const defaultCodeHtml = data.ui.inspector.codeHtml.default;
+  const dataRef = useRef(data);
+  dataRef.current = data;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -262,16 +271,30 @@ export function PortfolioScene({ data }: Props) {
   /** HTML del proyecto "pinned" en el inspector; null = ninguno seleccionado. */
   const selectedProjectHtmlRef = useRef<string | null>(null);
 
+  /** Último mesh del que se derivó hero + inspector (evita setState por frame). */
+  const prevHoverUiMeshRef = useRef<THREE.Mesh | null>(null);
+  const defaultCodeHtmlRef = useRef(defaultCodeHtml);
+  defaultCodeHtmlRef.current = defaultCodeHtml;
+
+  const [activeNavPanel, setActiveNavPanel] = useState<NavActivePanel>(null);
+
   const [heroSelection, setHeroSelection] = useState<{
+    categoryLabel: string;
+    project: ProjectItem;
+  } | null>(null);
+
+  const [heroFloorPreview, setHeroFloorPreview] = useState<{
     categoryLabel: string;
     project: ProjectItem;
   } | null>(null);
 
   const clearProjectSelection = useCallback(() => {
     selectedProjectHtmlRef.current = null;
+    prevHoverUiMeshRef.current = null;
     setHeroSelection(null);
+    setHeroFloorPreview(null);
     setCodeHtml(defaultCodeHtml);
-  }, []);
+  }, [defaultCodeHtml]);
 
   const clearProjectSelectionRef = useRef(clearProjectSelection);
   clearProjectSelectionRef.current = clearProjectSelection;
@@ -293,6 +316,11 @@ export function PortfolioScene({ data }: Props) {
   const [loadHidden, setLoadHidden] = useState(false);
   const [floorCount, setFloorCount] = useState(INITIAL_FLOORS);
   const [codeHtml, setCodeHtml] = useState(defaultCodeHtml);
+  const setCodeHtmlRef = useRef(setCodeHtml);
+  setCodeHtmlRef.current = setCodeHtml;
+  const setHeroFloorPreviewRef = useRef(setHeroFloorPreview);
+  setHeroFloorPreviewRef.current = setHeroFloorPreview;
+
   const [isOrtho, setIsOrtho] = useState(false);
   const [activeView, setActiveView] = useState<ViewPreset | null>("iso");
   const [autoRotate, setAutoRotate] = useState(true);
@@ -307,7 +335,9 @@ export function PortfolioScene({ data }: Props) {
     const buildingGroup = buildingGroupRef.current;
     if (!baseMat || !lineMat || !buildingGroup) return;
 
-    const { group, mesh } = createFloor(floorCountRef.current, baseMat, lineMat);
+    const levelIndex = floorCountRef.current;
+    const { group, mesh } = createFloor(levelIndex, baseMat, lineMat);
+    tagMeshUserDataWithProject(mesh, levelIndex);
     buildingGroup.add(group);
     floorsRef.current.push(mesh);
     floorCountRef.current++;
@@ -331,11 +361,13 @@ export function PortfolioScene({ data }: Props) {
       if (intersected && intersected.parent === topFloor) {
         // No tocar materiales: el piso se anima a salida; reset podría chocar con el estado de Three
         intersectedRef.current = null;
+        prevHoverUiMeshRef.current = null;
         if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
+        setHeroFloorPreview(null);
         setCodeHtml(defaultCodeHtml);
       }
     }
-  }, []);
+  }, [defaultCodeHtml]);
 
   const handleViewClick = useCallback((view: ViewPreset) => {
     const controls = controlsRef.current;
@@ -430,6 +462,7 @@ export function PortfolioScene({ data }: Props) {
     if (floorCountRef.current < INITIAL_FLOORS) {
       for (let i = floorCountRef.current; i < INITIAL_FLOORS; i++) {
         const { group, mesh } = createFloor(i, baseMat, lineMat);
+        tagMeshUserDataWithProject(mesh, i);
         group.scale.y = 1;
         group.userData.targetScaleY = 1;
         buildingGroup.add(group);
@@ -552,13 +585,18 @@ export function PortfolioScene({ data }: Props) {
         resetFloorHighlight(currentIntersected, tc.buildingBase, tc.buildingLines);
         intersectedRef.current = null;
       }
+      prevHoverUiMeshRef.current = null;
       if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
       selectedProjectHtmlRef.current = html;
       setCodeHtml(html);
+      setHeroFloorPreview(null);
       setHeroSelection({ project, categoryLabel });
     },
     []
   );
+
+  const handleProjectSelectRef = useRef(handleProjectSelect);
+  handleProjectSelectRef.current = handleProjectSelect;
 
   // ── Three.js Setup ────────────────────────────────────────────────────────
 
@@ -654,13 +692,49 @@ export function PortfolioScene({ data }: Props) {
       return "idle";
     };
 
+    let pointerPickLeft: { x: number; y: number; pointerId: number } | null = null;
+
     const onPointerDown = (e: PointerEvent) => {
       hasUserInteractedRef.current = true;
       setCanvasCursor(resolveCursorStateFromPointer(e));
+      if (e.button === 0) {
+        pointerPickLeft = { x: e.clientX, y: e.clientY, pointerId: e.pointerId };
+      }
     };
 
-    const onPointerUp = () => {
+    const onPointerUp = (e: PointerEvent) => {
       setCanvasCursor("idle");
+      if (e.type === "pointercancel") {
+        pointerPickLeft = null;
+        return;
+      }
+      const pick = pointerPickLeft;
+      pointerPickLeft = null;
+      if (
+        pick == null ||
+        e.pointerId !== pick.pointerId ||
+        e.button !== 0 ||
+        selectedProjectHtmlRef.current
+      ) {
+        return;
+      }
+      const dx = e.clientX - pick.x;
+      const dy = e.clientY - pick.y;
+      if (dx * dx + dy * dy > HOTSPOT_CLICK_MAX_DIST_PX * HOTSPOT_CLICK_MAX_DIST_PX) {
+        return;
+      }
+      mouseRef.current.x = (e.clientX / window.innerWidth) * 2 - 1;
+      mouseRef.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
+      raycasterRef.current.setFromCamera(mouseRef.current, activeCameraRef.current!);
+      const hits = raycasterRef.current.intersectObjects(floorsRef.current, false);
+      if (hits.length === 0) return;
+      const mesh = hits[0].object as THREE.Mesh;
+      const ud = mesh.userData as FloorUserData;
+      if (!ud.projectId) return;
+      const hit = findProjectWithCategory(dataRef.current, ud.projectId);
+      if (hit) {
+        handleProjectSelectRef.current(hit.project, hit.categoryLabel);
+      }
     };
 
     const onContextMenu = (e: MouseEvent) => {
@@ -687,12 +761,41 @@ export function PortfolioScene({ data }: Props) {
     const floors: THREE.Mesh[] = [];
     for (let i = 0; i < INITIAL_FLOORS; i++) {
       const { group, mesh } = createFloor(i, baseMaterial, lineMaterial);
+      tagMeshUserDataWithProject(mesh, i);
       buildingGroup.add(group);
       floors.push(mesh);
     }
     floorsRef.current = floors;
 
     // ── Animation Loop ────────────────────────────────────────────────────
+
+    function syncHoverUiFromMesh(obj: THREE.Mesh | null) {
+      if (prevHoverUiMeshRef.current === obj) return;
+      prevHoverUiMeshRef.current = obj;
+      const fallback =
+        selectedProjectHtmlRef.current ?? defaultCodeHtmlRef.current;
+      if (obj == null) {
+        setHeroFloorPreviewRef.current(null);
+        setCodeHtmlRef.current(fallback);
+        return;
+      }
+      const d = obj.userData as FloorUserData;
+      if (d.projectId) {
+        const found = findProjectWithCategory(dataRef.current, d.projectId);
+        if (found) {
+          setCodeHtmlRef.current(buildProjectCodeHtml(found.project));
+          setHeroFloorPreviewRef.current({
+            project: found.project,
+            categoryLabel: found.categoryLabel,
+          });
+          return;
+        }
+      }
+      setHeroFloorPreviewRef.current(null);
+      setCodeHtmlRef.current(
+        buildFloorCodeHtml(d, dataRef.current.ui.inspector.codeHtml)
+      );
+    }
 
     function commitLiveSync() {
       const next =
@@ -738,7 +841,11 @@ export function PortfolioScene({ data }: Props) {
           if (inter && (inter.parent === fg || !floorsRef.current.includes(inter))) {
             intersectedRef.current = null;
             if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
-            setCodeHtml(selectedProjectHtmlRef.current ?? defaultCodeHtml);
+            prevHoverUiMeshRef.current = null;
+            setHeroFloorPreviewRef.current(null);
+            setCodeHtmlRef.current(
+              selectedProjectHtmlRef.current ?? defaultCodeHtmlRef.current
+            );
           }
           fg.traverse(child => {
             if (child instanceof THREE.Mesh || child instanceof THREE.LineSegments) {
@@ -818,7 +925,11 @@ export function PortfolioScene({ data }: Props) {
         if (stale && !floorsRef.current.includes(stale)) {
           intersectedRef.current = null;
           if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
-          setCodeHtml(selectedProjectHtmlRef.current ?? defaultCodeHtml);
+          prevHoverUiMeshRef.current = null;
+          setHeroFloorPreviewRef.current(null);
+          setCodeHtmlRef.current(
+            selectedProjectHtmlRef.current ?? defaultCodeHtmlRef.current
+          );
         }
       }
 
@@ -834,21 +945,36 @@ export function PortfolioScene({ data }: Props) {
             resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
           }
           intersectedRef.current = obj;
-          highlightFloor(obj);
+          highlightHoveredFloor(obj);
+          syncHoverUiFromMesh(obj);
 
           const d = obj.userData as FloorUserData;
           if (tooltipRef.current) {
-            tooltipRef.current.innerHTML = `&lt;${d.id} /&gt;`;
+            const tip =
+              d.projectId != null
+                ? findProjectWithCategory(dataRef.current, d.projectId)?.project.name ??
+                  d.id
+                : `<${d.id} />`;
+            tooltipRef.current.textContent = tip;
             tooltipRef.current.style.opacity = "1";
           }
-          setCodeHtml(buildFloorCodeHtml(d, data.ui.inspector.codeHtml));
         }
       } else if (intersectedRef.current) {
         const tc = SCENE_COLORS[themeRef.current];
         resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
         intersectedRef.current = null;
         if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
-        setCodeHtml(selectedProjectHtmlRef.current ?? defaultCodeHtml);
+        syncHoverUiFromMesh(null);
+      }
+
+      if (interactionCursorRef.current === "idle") {
+        const hit = intersectedRef.current;
+        const ud = hit?.userData as FloorUserData | undefined;
+        if (ud?.projectId) {
+          canvas.style.cursor = "pointer";
+        } else {
+          canvas.style.cursor = "crosshair";
+        }
       }
 
       commitLiveSync();
@@ -1037,8 +1163,11 @@ export function PortfolioScene({ data }: Props) {
         projects={data.projects}
         formacion={data.formacion}
         contactForm={data.ui.contactForm}
+        contactSocial={data.ui.contactSocial}
         uiText={data.nav.uiText}
         theme={theme}
+        activePanel={activeNavPanel}
+        onActivePanelChange={setActiveNavPanel}
         onThemeToggle={handleThemeToggle}
         onProjectSelect={handleProjectSelect}
       />
@@ -1048,7 +1177,13 @@ export function PortfolioScene({ data }: Props) {
         status={data.ui.inspector.status}
         liveSync={liveSync}
       />
-      {heroSelection == null && <HeroText data={data} selection={null} />}
+      {heroSelection == null && (
+        <HeroText
+          data={data}
+          selection={heroFloorPreview}
+          onOpenProyectos={() => setActiveNavPanel("proyectos")}
+        />
+      )}
       {heroSelection != null && (
         <>
           {/* Bloquea interacción con rail, escena, inspector y controles; el visor (z-100) queda encima. */}
@@ -1142,19 +1277,36 @@ function forEachMeshStandardMaterial(
   }
 }
 
-function highlightFloor(mesh: THREE.Mesh): void {
+function highlightHoveredFloor(mesh: THREE.Mesh): void {
+  const ud = mesh.userData as FloorUserData;
+  const palette =
+    ud.projectId != null ? PROJECT_HOTSPOT_COLORS[ud.projectId] : undefined;
   try {
     if (!mesh.material) return;
-    forEachMeshStandardMaterial(mesh.material, mat => {
-      safeColorSetHex(mat.color, 0x002244);
-      safeColorSetHex(mat.emissive, 0x0044aa);
-      mat.emissiveIntensity = 0.5;
-    });
-    const line = mesh.children[0];
-    if (line instanceof THREE.LineSegments) {
-      forEachLineBasicMaterial(line.material, mat => {
-        safeColorSetHex(mat.color, 0x00e5ff);
+    if (palette) {
+      forEachMeshStandardMaterial(mesh.material, mat => {
+        safeColorSetHex(mat.color, palette.base);
+        safeColorSetHex(mat.emissive, palette.emissive);
+        mat.emissiveIntensity = 0.55;
       });
+      const line = mesh.children[0];
+      if (line instanceof THREE.LineSegments) {
+        forEachLineBasicMaterial(line.material, mat => {
+          safeColorSetHex(mat.color, palette.line);
+        });
+      }
+    } else {
+      forEachMeshStandardMaterial(mesh.material, mat => {
+        safeColorSetHex(mat.color, 0x002244);
+        safeColorSetHex(mat.emissive, 0x0044aa);
+        mat.emissiveIntensity = 0.5;
+      });
+      const line = mesh.children[0];
+      if (line instanceof THREE.LineSegments) {
+        forEachLineBasicMaterial(line.material, mat => {
+          safeColorSetHex(mat.color, 0x00e5ff);
+        });
+      }
     }
   } catch {
     /* material u objeto invalidado tras dispose */

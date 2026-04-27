@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="48" height="48" role="img" aria-label="ML">
+  <rect width="48" height="48" rx="10" fill="#060608"/>
+  <rect
+    x="0.5"
+    y="0.5"
+    width="47"
+    height="47"
+    rx="9.5"
+    fill="rgba(0, 229, 255, 0.08)"
+    stroke="rgba(0, 229, 255, 0.2)"
+    stroke-width="1"
+  />
+  <text
+    x="24"
+    y="24"
+    text-anchor="middle"
+    dominant-baseline="central"
+    font-family="Inter, system-ui, 'Segoe UI', sans-serif"
+    font-size="22"
+    font-weight="800"
+    fill="#00e5ff"
+  >ML</text>
+</svg>

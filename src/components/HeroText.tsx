@@ -45,8 +45,7 @@ export function HeroText({
     Boolean(projectDemoOpensPanel && onProjectDemoPanel) &&
     isHttpUrlString(demoUrl);
   const inspectorFirstInMobile = Boolean(useProjectLinks && projectDemoOpensPanel);
-  const demoBtnClass = inspectorFirstInMobile ? "btn btn-secondary" : "btn btn-primary";
-  const inspectorBtnClass = inspectorFirstInMobile ? "btn btn-primary" : "btn btn-secondary";
+  const inspectorBtnClass = "btn btn-node-inspector";
 
   return (
     <div className="hero-content">
@@ -84,7 +83,7 @@ export function HeroText({
           </button>
         ) : null}
         {useProjectLinks && demoOpensPanel ? (
-          <button type="button" className={demoBtnClass} onClick={onProjectDemoPanel}>
+          <button type="button" className="btn btn-primary" onClick={onProjectDemoPanel}>
             {projectPrimaryLabel}
           </button>
         ) : useProjectLinks && isHttpUrlString(demoUrl) ? (
@@ -99,7 +98,7 @@ export function HeroText({
         ) : useProjectLinks ? (
           <span
             className="btn btn-primary btn-hero--static"
-            title={demoUrl ?? "Sin enlace de demo"}
+            title={demoUrl ?? hero.cta.missingDemoLinkTitle}
             aria-disabled
           >
             {projectPrimaryLabel}
@@ -120,7 +119,7 @@ export function HeroText({
         ) : (
           <span
             className="btn btn-primary btn-hero--static"
-            title="Sin enlace de perfil"
+            title={hero.cta.missingProfileLinkTitle}
             aria-disabled
           >
             {hero.cta.primary}
@@ -138,7 +137,7 @@ export function HeroText({
         ) : useProjectLinks ? (
           <span
             className="btn btn-secondary btn-hero--static"
-            title={githubUrl ?? "Sin enlace de GitHub"}
+            title={githubUrl ?? hero.cta.missingGithubLinkTitle}
             aria-disabled
           >
             {hero.cta.secondary}

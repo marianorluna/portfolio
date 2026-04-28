@@ -9,6 +9,8 @@ type Props = {
   mode?: "inline" | "mobileOverlay";
   onClose?: () => void;
   closeLabel?: string;
+  expandLabel?: string;
+  collapseLabel?: string;
 };
 
 export function NodeInspector({
@@ -19,6 +21,8 @@ export function NodeInspector({
   mode = "inline",
   onClose,
   closeLabel = "Cerrar",
+  expandLabel = "Expandir",
+  collapseLabel = "Contraer",
 }: Props) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const isOverlay = mode === "mobileOverlay";
@@ -57,7 +61,7 @@ export function NodeInspector({
         className="panel-header panel-header-toggle"
         onClick={() => setIsCollapsed((prev) => !prev)}
         aria-expanded={!isCollapsed}
-        aria-label={`${isCollapsed ? "Expandir" : "Contraer"} ${title}`}
+        aria-label={`${isCollapsed ? expandLabel : collapseLabel} ${title}`}
       >
         <span className="panel-title-text">{title}</span>
         <span className="panel-header-right">

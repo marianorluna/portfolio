@@ -1,5 +1,11 @@
 import type { ViewPreset } from "@/utils/view-variants";
 import { useEffect, useRef, useState } from "react";
+import {
+  Cuboid,
+  House,
+  RotateCcw,
+  type LucideIcon,
+} from "lucide-react";
 
 function Icon({
   name,
@@ -13,70 +19,63 @@ function Icon({
     | "camera-persp"
     | "rotate";
 }) {
-  switch (name) {
-    case "home":
-      return (
-        <svg className="view-icon" viewBox="0 0 24 24" aria-hidden focusable="false">
-          <path d="M4 11.5L12 4l8 7.5" />
-          <path d="M7 10.8V20h10v-9.2" />
-          <path d="M10 20v-5h4v5" />
-        </svg>
-      );
-    case "iso":
-      return (
-        <svg className="view-icon" viewBox="0 0 24 24" aria-hidden focusable="false">
-          <path d="M12 2.5l8.5 4.8L12 12 3.5 7.3 12 2.5z" />
-          <path d="M3.5 7.3V17L12 21.5V12" />
-          <path d="M20.5 7.3V17L12 21.5" />
-        </svg>
-      );
-    case "top":
-      return (
-        <svg className="view-icon" viewBox="0 0 24 24" aria-hidden focusable="false">
-          <path d="M12 2.5l8.5 4.8L12 12 3.5 7.3 12 2.5z" />
-          <path className="view-icon__face" d="M12 2.5l8.5 4.8L12 12 3.5 7.3 12 2.5z" />
-          <path d="M3.5 7.3V17L12 21.5l8.5-4.5V7.3" />
-        </svg>
-      );
-    case "front":
-      return (
-        <svg className="view-icon" viewBox="0 0 24 24" aria-hidden focusable="false">
-          <path d="M12 2.5l8.5 4.8L12 12 3.5 7.3 12 2.5z" />
-          <path d="M3.5 7.3V17L12 21.5V12" />
-          <path d="M20.5 7.3V17L12 21.5" />
-          <path className="view-icon__face" d="M3.5 7.3V17L12 21.5V12L3.5 7.3z" />
-        </svg>
-      );
-    case "camera-ortho":
-      return (
-        <svg className="view-icon" viewBox="0 0 24 24" aria-hidden focusable="false">
-          <path d="M12 2.5l8.5 4.8L12 12 3.5 7.3 12 2.5z" />
-          <path d="M3.5 7.3V17L12 21.5V12" />
-          <path d="M20.5 7.3V17L12 21.5" />
-          <path d="M2.2 9.4h4.2" />
-          <path d="M2.2 12h4.2" />
-          <path d="M2.2 14.6h4.2" />
-        </svg>
-      );
-    case "camera-persp":
-      return (
-        <svg className="view-icon" viewBox="0 0 24 24" aria-hidden focusable="false">
-          <path d="M12 2.5l8.5 4.8L12 12 3.5 7.3 12 2.5z" />
-          <path d="M3.5 7.3V17L12 21.5V12" />
-          <path d="M20.5 7.3V17L12 21.5" />
-          <path d="M2.4 12l4-2.6" />
-          <path d="M2.4 12l4 2.6" />
-          <path d="M2.4 12h4" />
-        </svg>
-      );
-    case "rotate":
-      return (
-        <svg className="view-icon" viewBox="0 0 24 24" aria-hidden focusable="false">
-          <path d="M12 3a9 9 0 1 0 9 9" />
-          <path d="M21 3v6h-6" />
-        </svg>
-      );
+  if (name === "top") {
+    return (
+      <svg className="view-icon" viewBox="0 0 24 24" aria-hidden focusable="false">
+        <path d="M12 2.5l8.5 4.8L12 12 3.5 7.3 12 2.5z" />
+        <path className="view-icon__face" d="M12 2.5l8.5 4.8L12 12 3.5 7.3 12 2.5z" />
+        <path d="M3.5 7.3V17L12 21.5l8.5-4.5V7.3" />
+      </svg>
+    );
   }
+
+  if (name === "front") {
+    return (
+      <svg className="view-icon" viewBox="0 0 24 24" aria-hidden focusable="false">
+        <path d="M12 2.5l8.5 4.8L12 12 3.5 7.3 12 2.5z" />
+        <path d="M3.5 7.3V17L12 21.5V12" />
+        <path d="M20.5 7.3V17L12 21.5" />
+        <path className="view-icon__face" d="M3.5 7.3V17L12 21.5V12L3.5 7.3z" />
+      </svg>
+    );
+  }
+
+  if (name === "camera-ortho") {
+    return (
+      <svg className="view-icon" viewBox="0 0 24 24" aria-hidden focusable="false">
+        <path d="M12 2.5l8.5 4.8L12 12 3.5 7.3 12 2.5z" />
+        <path d="M3.5 7.3V17L12 21.5V12" />
+        <path d="M20.5 7.3V17L12 21.5" />
+        <path d="M2.2 9.4h4.2" />
+        <path d="M2.2 12h4.2" />
+        <path d="M2.2 14.6h4.2" />
+      </svg>
+    );
+  }
+
+  if (name === "camera-persp") {
+    return (
+      <svg className="view-icon" viewBox="0 0 24 24" aria-hidden focusable="false">
+        <path d="M12 2.5l8.5 4.8L12 12 3.5 7.3 12 2.5z" />
+        <path d="M3.5 7.3V17L12 21.5V12" />
+        <path d="M20.5 7.3V17L12 21.5" />
+        <path d="M2.4 12l4-2.6" />
+        <path d="M2.4 12l4 2.6" />
+        <path d="M2.4 12h4" />
+      </svg>
+    );
+  }
+
+  const iconMap: Record<
+    "home" | "iso" | "rotate",
+    LucideIcon
+  > = {
+    home: House,
+    iso: Cuboid,
+    rotate: RotateCcw,
+  };
+  const IconComponent = iconMap[name as keyof typeof iconMap];
+  return <IconComponent className="view-icon" size={16} strokeWidth={1.8} aria-hidden />;
 }
 
 type Props = {

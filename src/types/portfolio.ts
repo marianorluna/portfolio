@@ -1,4 +1,7 @@
 export type NavIconName = "folder" | "layers" | "calendar" | "mail";
+export type DeviceMode = "mobile" | "tablet" | "desktop";
+export type TextSizeLevel = -2 | -1 | 0 | 1 | 2;
+export type Locale = "es" | "en";
 
 export type NavBrand = {
   initials: string;
@@ -39,8 +42,25 @@ export type NavUiText = {
   settingsTitle: string;
   themeTitle: string;
   themeDescription: string;
+  languageTitle: string;
+  languageDescription: string;
+  languageSpanishLabel: string;
+  languageEnglishLabel: string;
+  switchToSpanishLabel: string;
+  switchToEnglishLabel: string;
+  initialHelpTitle: string;
+  initialHelpDescription: string;
   switchToLightLabel: string;
   switchToDarkLabel: string;
+  initialHelpOnLabel: string;
+  initialHelpOffLabel: string;
+  textSizeTitle: string;
+  textSizeDescription: string;
+  textSizeCurrentModeLabel: string;
+  textSizeModeMobile: string;
+  textSizeModeTablet: string;
+  textSizeModeDesktop: string;
+  textSizeOptionLabel: string;
 };
 
 export type ContactSocialLinkId = "github" | "linkedin" | "behance" | "email";
@@ -103,6 +123,8 @@ export type PortfolioData = {
     inspector: {
       title: string;
       status: string;
+      expandLabel: string;
+      collapseLabel: string;
       codeHtml: {
         default: string;
         jsonResponseComment: string;
@@ -121,6 +143,17 @@ export type PortfolioData = {
       autoRotateOnTitle: string;
       autoRotateOffTitle: string;
       rotateLabel: string;
+    };
+    mobileControlsHelp: {
+      dialogAriaLabel: string;
+      closeAriaLabel: string;
+      title: string;
+      resetDescription: string;
+      isoDescription: string;
+      topDescription: string;
+      frontDescription: string;
+      cameraDescription: string;
+      rotateDescription: string;
     };
     levelControls: {
       floorsLabel: string;
@@ -142,6 +175,7 @@ export type PortfolioData = {
     /** Visor interno al elegir un proyecto (entre rail e inspector; iframe = demo) */
     projectViewer: {
       closeLabel: string;
+      dismissOverlayLabel: string;
       openDemoLabel: string;
       demoUnavailableTitle: string;
       /** Mensaje en el área del iframe si no hay URL de demo */
@@ -161,6 +195,9 @@ export type PortfolioData = {
       primaryProject: string;
       secondary: string;
       secondaryUrl: string;
+      missingDemoLinkTitle: string;
+      missingProfileLinkTitle: string;
+      missingGithubLinkTitle: string;
     };
   };
   projects: {
@@ -199,6 +236,12 @@ export type PortfolioData = {
         /** Institución, periodo, lugar: una línea tipo “Org · 20xx – 20xx · Ciudad” */
         meta: string;
         description: string;
+        /** Logo en tema claro (ruta pública, p. ej. /logos/logo.svg). */
+        logoLight?: string;
+        /** Logo en tema oscuro (ruta pública, p. ej. /logos/logo-white.svg). */
+        logoDark?: string;
+        /** Texto alternativo del logo. */
+        logoAlt?: string;
       }[];
     }[];
   };

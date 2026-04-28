@@ -1,10 +1,11 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
+import { usePathname, useRouter } from "next/navigation";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { MOUSE } from "three";
-import type { PortfolioData } from "@/types/portfolio";
+import type { DeviceMode, Locale, PortfolioData, TextSizeLevel } from "@/types/portfolio";
 import { setupScene } from "@/utils/three-scene";
 import type { SceneLights } from "@/utils/three-scene";
 import { SCENE_BACKGROUND, SCENE_COLORS } from "@/config/scene-theme";
@@ -37,6 +38,14 @@ const MAX_FLOORS = 40;
 const INITIAL_FLOORS = 15;
 /** Más estrecho que 45: encuadre al tercio central del edificio (mismo sentido en toggle orto). */
 const PERSP_FOV = 32;
+const MOBILE_BREAKPOINT = 768;
+const TABLET_BREAKPOINT = 1024;
+/**
+ * En pantallas táctiles (móvil/tablet): ajusta encuadre inicial para mostrar más
+ * volumen del modelo desde la primera carga, con intensidad distinta por rango.
+ */
+const MOBILE_STARTUP_ZOOM_OUT_FACTOR = 1.55;
+const TABLET_STARTUP_ZOOM_OUT_FACTOR = 1.35;
 const DESKTOP_OFFSET_X = 10;
 /** Cota y=0 = base del edificio; el pan no debe cruzar el suelo. */
 const MIN_PAN_TARGET_Y = 0;
@@ -64,6 +73,15 @@ const ROTATE_SPEED_MIN = 1;
 const ROTATE_SPEED_MAX = 10;
 const ROTATE_SPEED_FACTOR = 0.3;
 const DEFAULT_ROTATE_SPEED_LEVEL = 4;
+const TEXT_SIZE_STORAGE_KEY = "portfolio-text-size-by-device";
+const TEXT_SIZE_LEVELS: readonly TextSizeLevel[] = [-2, -1, 0, 1, 2];
+const TEXT_SIZE_SCALE_MAP: Record<TextSizeLevel, number> = {
+  [-2]: 0.84,
+  [-1]: 0.92,
+  [0]: 1,
+  [1]: 1.08,
+  [2]: 1.16,
+};
 /** Máx. desplazamiento en px para considerar clic (no pan) sobre hotspot. */
 const HOTSPOT_CLICK_MAX_DIST_PX = 5;
 type InteractionCursorState = "idle" | "orbit" | "pan";
@@ -145,6 +163,7 @@ function applyHeroVariantToCameras(
   heroVariant: HeroStartupVariant,
   bX: number,
   stackFloors: number,
+  viewportWidth: number,
   cameraPersp: THREE.PerspectiveCamera,
   cameraOrtho: THREE.OrthographicCamera,
   controls: OrbitControls,
@@ -155,14 +174,26 @@ function applyHeroVariantToCameras(
   const { position: startPos, lookAt: startLookAt } = heroVariant.getCamera
     ? heroVariant.getCamera(bX, stackFloors)
     : getViewTarget(heroVariant.view ?? "iso", bX, viewOpts);
+  const startupZoomOutFactor =
+    viewportWidth <= MOBILE_BREAKPOINT
+      ? MOBILE_STARTUP_ZOOM_OUT_FACTOR
+      : viewportWidth <= TABLET_BREAKPOINT
+        ? TABLET_STARTUP_ZOOM_OUT_FACTOR
+        : 1;
+  const adjustedStartPos =
+    startupZoomOutFactor > 1
+      ? startLookAt
+          .clone()
+          .add(startPos.clone().sub(startLookAt).multiplyScalar(startupZoomOutFactor))
+      : startPos;
 
-  cameraPersp.position.copy(startPos);
+  cameraPersp.position.copy(adjustedStartPos);
   cameraPersp.lookAt(startLookAt);
   cameraPersp.zoom = 1;
   cameraPersp.updateProjectionMatrix();
   cameraPersp.updateMatrixWorld();
 
-  cameraOrtho.position.copy(startPos);
+  cameraOrtho.position.copy(adjustedStartPos);
   cameraOrtho.quaternion.copy(cameraPersp.quaternion);
   cameraOrtho.zoom = 1;
   cameraOrtho.updateProjectionMatrix();
@@ -213,12 +244,47 @@ function applyHeroVariantToCameras(
   };
 }
 
-type Props = { data: PortfolioData };
+type Props = { data: PortfolioData; locale: Locale };
 type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][number];
+type TextSizeByDevice = Record<DeviceMode, TextSizeLevel>;
 
 type MobileProjectPanel = null | "demo" | "inspector";
 
-export function PortfolioScene({ data }: Props) {
+const DEFAULT_TEXT_SIZE_BY_DEVICE: TextSizeByDevice = {
+  mobile: 0,
+  tablet: 0,
+  desktop: 0,
+};
+
+function getDeviceModeFromWidth(width: number): DeviceMode {
+  if (width <= MOBILE_BREAKPOINT) return "mobile";
+  if (width <= TABLET_BREAKPOINT) return "tablet";
+  return "desktop";
+}
+
+function isTextSizeLevel(value: unknown): value is TextSizeLevel {
+  return typeof value === "number" && TEXT_SIZE_LEVELS.includes(value as TextSizeLevel);
+}
+
+function parseStoredTextSizeByDevice(raw: string | null): TextSizeByDevice {
+  if (raw == null) return DEFAULT_TEXT_SIZE_BY_DEVICE;
+  try {
+    const parsed: unknown = JSON.parse(raw);
+    if (parsed == null || typeof parsed !== "object") return DEFAULT_TEXT_SIZE_BY_DEVICE;
+    const source = parsed as Partial<Record<DeviceMode, unknown>>;
+    return {
+      mobile: isTextSizeLevel(source.mobile) ? source.mobile : 0,
+      tablet: isTextSizeLevel(source.tablet) ? source.tablet : 0,
+      desktop: isTextSizeLevel(source.desktop) ? source.desktop : 0,
+    };
+  } catch {
+    return DEFAULT_TEXT_SIZE_BY_DEVICE;
+  }
+}
+
+export function PortfolioScene({ data, locale }: Props) {
+  const router = useRouter();
+  const pathname = usePathname();
   const defaultCodeHtml = data.ui.inspector.codeHtml.default;
   const dataRef = useRef(data);
   dataRef.current = data;
@@ -227,6 +293,10 @@ export function PortfolioScene({ data }: Props) {
   const tooltipRef = useRef<HTMLDivElement>(null);
   const coarsePointerRef = useRef(false);
   const [isCoarsePointer, setIsCoarsePointer] = useState(false);
+  const [isMobileViewport, setIsMobileViewport] = useState(false);
+  const [showMobileControlsHelp, setShowMobileControlsHelp] = useState(false);
+  const [initialHelpEnabled, setInitialHelpEnabled] = useState(true);
+  const isMobileTouchUi = isCoarsePointer && isMobileViewport;
 
   // Three.js refs
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -240,6 +310,7 @@ export function PortfolioScene({ data }: Props) {
   const baseMaterialRef = useRef<THREE.MeshPhysicalMaterial | null>(null);
   const lineMaterialRef = useRef<THREE.LineBasicMaterial | null>(null);
   const intersectedRef = useRef<THREE.Mesh | null>(null);
+  const selectedFloorMeshRef = useRef<THREE.Mesh | null>(null);
   const mouseRef = useRef(new THREE.Vector2());
   const hasMouseMovedRef = useRef(false);
   const raycasterRef = useRef(new THREE.Raycaster());
@@ -300,14 +371,36 @@ export function PortfolioScene({ data }: Props) {
     setMobileProjectPanel(null);
   }, []);
 
+  const setPersistentSelectedFloor = useCallback((projectId: string | null) => {
+    const themeColors = SCENE_COLORS[themeRef.current];
+    const current = selectedFloorMeshRef.current;
+    if (current) {
+      const currentProjectId = ((current.userData as FloorUserData).projectId ?? null) as string | null;
+      if (projectId == null || currentProjectId !== projectId) {
+        resetFloorHighlight(current, themeColors.buildingBase, themeColors.buildingLines);
+        selectedFloorMeshRef.current = null;
+      }
+    }
+    if (projectId == null) return;
+    const selectedMesh =
+      floorsRef.current.find(
+        mesh => ((mesh.userData as FloorUserData).projectId ?? null) === projectId
+      ) ?? null;
+    selectedFloorMeshRef.current = selectedMesh;
+    if (selectedMesh) {
+      highlightHoveredFloor(selectedMesh);
+    }
+  }, []);
+
   const clearProjectSelection = useCallback(() => {
     selectedProjectHtmlRef.current = null;
+    setPersistentSelectedFloor(null);
     prevHoverUiMeshRef.current = null;
     setHeroSelection(null);
     setHeroFloorPreview(null);
     setMobileProjectPanel(null);
     setCodeHtml(defaultCodeHtml);
-  }, [defaultCodeHtml]);
+  }, [defaultCodeHtml, setPersistentSelectedFloor]);
 
   const clearProjectSelectionRef = useRef(clearProjectSelection);
   clearProjectSelectionRef.current = clearProjectSelection;
@@ -321,6 +414,14 @@ export function PortfolioScene({ data }: Props) {
   const [theme, setTheme] = useState<SceneTheme>(() => {
     if (typeof window === "undefined") return "dark";
     return (window.localStorage.getItem("portfolio-theme") as SceneTheme) ?? "dark";
+  });
+  const [activeDeviceMode, setActiveDeviceMode] = useState<DeviceMode>(() => {
+    if (typeof window === "undefined") return "desktop";
+    return getDeviceModeFromWidth(window.innerWidth);
+  });
+  const [textSizeByDevice, setTextSizeByDevice] = useState<TextSizeByDevice>(() => {
+    if (typeof window === "undefined") return DEFAULT_TEXT_SIZE_BY_DEVICE;
+    return parseStoredTextSizeByDevice(window.localStorage.getItem(TEXT_SIZE_STORAGE_KEY));
   });
 
   // React UI state
@@ -353,6 +454,17 @@ export function PortfolioScene({ data }: Props) {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
+    const mq = window.matchMedia?.(`(max-width: ${MOBILE_BREAKPOINT}px)`);
+    const commit = () => {
+      setIsMobileViewport(Boolean(mq?.matches));
+    };
+    commit();
+    mq?.addEventListener?.("change", commit);
+    return () => mq?.removeEventListener?.("change", commit);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
     const mq = window.matchMedia?.("(pointer: coarse)");
     const commit = () => {
       const next = Boolean(mq?.matches);
@@ -366,8 +478,57 @@ export function PortfolioScene({ data }: Props) {
   }, []);
 
   useEffect(() => {
-    if (!isCoarsePointer) setMobileProjectPanel(null);
-  }, [isCoarsePointer]);
+    if (!isMobileTouchUi) setMobileProjectPanel(null);
+  }, [isMobileTouchUi]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const commit = () => {
+      setActiveDeviceMode(getDeviceModeFromWidth(window.innerWidth));
+    };
+    commit();
+    window.addEventListener("resize", commit);
+    return () => window.removeEventListener("resize", commit);
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(TEXT_SIZE_STORAGE_KEY, JSON.stringify(textSizeByDevice));
+  }, [textSizeByDevice]);
+
+  useEffect(() => {
+    document.documentElement.lang = locale;
+  }, [locale]);
+
+  useEffect(() => {
+    const activeLevel = textSizeByDevice[activeDeviceMode];
+    const scale = TEXT_SIZE_SCALE_MAP[activeLevel];
+    document.documentElement.style.setProperty("--hero-text-scale", String(scale));
+    document.documentElement.style.setProperty("--inspector-text-scale", String(scale));
+    document.documentElement.setAttribute("data-text-device-mode", activeDeviceMode);
+  }, [activeDeviceMode, textSizeByDevice]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    if (!initialHelpEnabled || !isCoarsePointer || !isMobileViewport || !loadHidden) {
+      setShowMobileControlsHelp(false);
+      return;
+    }
+    setShowMobileControlsHelp(true);
+  }, [initialHelpEnabled, isCoarsePointer, isMobileViewport, loadHidden]);
+
+  const dismissMobileControlsHelp = useCallback(() => {
+    setInitialHelpEnabled(false);
+    setShowMobileControlsHelp(false);
+  }, []);
+
+  const handleInitialHelpToggle = useCallback(() => {
+    setInitialHelpEnabled(prev => {
+      const next = !prev;
+      setShowMobileControlsHelp(next && isCoarsePointer && isMobileViewport && loadHidden);
+      return next;
+    });
+  }, [isCoarsePointer, isMobileViewport, loadHidden]);
 
   // ── UI Handlers ──────────────────────────────────────────────────────────
 
@@ -539,11 +700,15 @@ export function PortfolioScene({ data }: Props) {
     const bX = window.innerWidth > 768 ? DESKTOP_OFFSET_X : 0;
     buildingOffsetXRef.current = bX;
     buildingGroup.position.x = bX;
-    const variant = heroVariantRef.current ?? HERO_VARIANTS[0];
+    const variant =
+      heroVariantRef.current ??
+      HERO_VARIANTS.find((heroVariant) => heroVariant.id === 2) ??
+      HERO_VARIANTS[0];
     const applied = applyHeroVariantToCameras(
       variant,
       bX,
       INITIAL_FLOORS,
+      window.innerWidth,
       cameraPersp,
       cameraOrtho,
       controls,
@@ -619,6 +784,26 @@ export function PortfolioScene({ data }: Props) {
     });
   }, []);
 
+  const handleTextSizeLevelChange = useCallback(
+    (nextLevel: TextSizeLevel) => {
+      setTextSizeByDevice(prev => ({
+        ...prev,
+        [activeDeviceMode]: nextLevel,
+      }));
+    },
+    [activeDeviceMode]
+  );
+
+  const handleLocaleChange = useCallback(
+    (nextLocale: Locale) => {
+      if (nextLocale === locale) return;
+      const path = pathname ?? "/";
+      const nextPath = path.replace(/^\/(es|en)(?=\/|$)/, `/${nextLocale}`);
+      router.push(nextPath);
+    },
+    [locale, pathname, router]
+  );
+
   const handleProjectSelect = useCallback(
     (project: ProjectItem, categoryLabel: string) => {
       const html = buildProjectCodeHtml(project);
@@ -635,8 +820,15 @@ export function PortfolioScene({ data }: Props) {
       setHeroFloorPreview(null);
       setMobileProjectPanel(null);
       setHeroSelection({ project, categoryLabel });
+      setPersistentSelectedFloor(project.id);
+      const controls = controlsRef.current;
+      if (controls && autoRotateRef.current) {
+        autoRotateRef.current = false;
+        controls.autoRotate = false;
+        setAutoRotate(false);
+      }
     },
-    []
+    [setPersistentSelectedFloor]
   );
 
   const handleProjectSelectRef = useRef(handleProjectSelect);
@@ -702,6 +894,7 @@ export function PortfolioScene({ data }: Props) {
       heroVariant,
       bX,
       INITIAL_FLOORS,
+      W,
       cameraPersp,
       cameraOrtho,
       controls,
@@ -752,14 +945,10 @@ export function PortfolioScene({ data }: Props) {
         pointerPickLeft = null;
         return;
       }
+      const hasPinnedProject = selectedProjectHtmlRef.current != null;
       const pick = pointerPickLeft;
       pointerPickLeft = null;
-      if (
-        pick == null ||
-        e.pointerId !== pick.pointerId ||
-        e.button !== 0 ||
-        selectedProjectHtmlRef.current
-      ) {
+      if (pick == null || e.pointerId !== pick.pointerId || e.button !== 0) {
         return;
       }
       const dx = e.clientX - pick.x;
@@ -771,14 +960,22 @@ export function PortfolioScene({ data }: Props) {
       mouseRef.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
       raycasterRef.current.setFromCamera(mouseRef.current, activeCameraRef.current!);
       const hits = raycasterRef.current.intersectObjects(floorsRef.current, false);
-      if (hits.length === 0) return;
+      if (hits.length === 0) {
+        if (hasPinnedProject) clearProjectSelectionRef.current();
+        return;
+      }
       const mesh = hits[0].object as THREE.Mesh;
       const ud = mesh.userData as FloorUserData;
-      if (!ud.projectId) return;
+      if (!ud.projectId) {
+        if (hasPinnedProject) clearProjectSelectionRef.current();
+        return;
+      }
       const hit = findProjectWithCategory(dataRef.current, ud.projectId);
       if (hit) {
         handleProjectSelectRef.current(hit.project, hit.categoryLabel);
+        return;
       }
+      if (hasPinnedProject) clearProjectSelectionRef.current();
     };
 
     const onContextMenu = (e: MouseEvent) => {
@@ -891,6 +1088,9 @@ export function PortfolioScene({ data }: Props) {
               selectedProjectHtmlRef.current ?? defaultCodeHtmlRef.current
             );
           }
+          if (selectedFloorMeshRef.current && selectedFloorMeshRef.current.parent === fg) {
+            selectedFloorMeshRef.current = null;
+          }
           fg.traverse(child => {
             if (child instanceof THREE.Mesh || child instanceof THREE.LineSegments) {
               child.geometry?.dispose();
@@ -952,10 +1152,14 @@ export function PortfolioScene({ data }: Props) {
 
       // Mientras haya un proyecto fijado en el inspector, bloquear hover/raycast 3D.
       if (selectedProjectHtmlRef.current) {
-        if (intersectedRef.current) {
+        const selectedFloor = selectedFloorMeshRef.current;
+        if (intersectedRef.current && intersectedRef.current !== selectedFloor) {
           const tc = SCENE_COLORS[themeRef.current];
           resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
           intersectedRef.current = null;
+        }
+        if (selectedFloor) {
+          highlightHoveredFloor(selectedFloor);
         }
         if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
         commitLiveSync();
@@ -1233,67 +1437,66 @@ export function PortfolioScene({ data }: Props) {
         activePanel={activeNavPanel}
         onActivePanelChange={setActiveNavPanel}
         onThemeToggle={handleThemeToggle}
+        locale={locale}
+        onLocaleChange={handleLocaleChange}
+        showInitialHelpSetting={isMobileTouchUi}
+        initialHelpEnabled={initialHelpEnabled}
+        onInitialHelpToggle={handleInitialHelpToggle}
+        activeDeviceMode={activeDeviceMode}
+        textSizeLevel={textSizeByDevice[activeDeviceMode]}
+        textSizeLevels={TEXT_SIZE_LEVELS}
+        onTextSizeLevelChange={handleTextSizeLevelChange}
         onProjectSelect={handleProjectSelect}
       />
-      {!isCoarsePointer && (
+      {!isMobileTouchUi && (
         <NodeInspector
           codeHtml={codeHtml}
           title={data.ui.inspector.title}
           status={data.ui.inspector.status}
           liveSync={liveSync}
+          expandLabel={data.ui.inspector.expandLabel}
+          collapseLabel={data.ui.inspector.collapseLabel}
         />
       )}
-      {isCoarsePointer &&
+      {isMobileTouchUi &&
         heroSelection != null &&
         mobileProjectPanel === null && (
           <button
             type="button"
             className="mobile-hero-dismiss-layer"
-            aria-label="Volver al resumen principal"
+            aria-label={data.ui.projectViewer.dismissOverlayLabel}
             onClick={clearProjectSelection}
           />
         )}
-      {(heroSelection == null || isCoarsePointer) && (
-        <HeroText
-          data={data}
-          selection={
-            heroSelection != null && isCoarsePointer ? heroSelection : heroFloorPreview
-          }
-          onOpenProyectos={() => setActiveNavPanel("proyectos")}
-          projectDemoOpensPanel={Boolean(isCoarsePointer && heroSelection != null)}
-          onProjectDemoPanel={
-            isCoarsePointer && heroSelection != null
-              ? () => setMobileProjectPanel("demo")
-              : undefined
-          }
-          onProjectInspectorPanel={
-            isCoarsePointer && heroSelection != null
-              ? () => setMobileProjectPanel("inspector")
-              : undefined
-          }
-          inspectorCtaLabel={data.ui.inspector.title}
-        />
-      )}
-      {heroSelection != null && !isCoarsePointer && (
+      <HeroText
+        data={data}
+        selection={heroSelection ?? heroFloorPreview}
+        onOpenProyectos={() => setActiveNavPanel("proyectos")}
+        projectDemoOpensPanel={Boolean(heroSelection != null)}
+        onProjectDemoPanel={
+          heroSelection != null
+            ? () => setMobileProjectPanel("demo")
+            : undefined
+        }
+        onProjectInspectorPanel={
+          isMobileTouchUi && heroSelection != null
+            ? () => setMobileProjectPanel("inspector")
+            : undefined
+        }
+        inspectorCtaLabel={data.ui.inspector.title}
+      />
+      {heroSelection != null && mobileProjectPanel === "demo" && (
         <>
-          <div className="project-viewer-backdrop" aria-hidden tabIndex={-1} />
+          {!isCoarsePointer && <div className="project-viewer-backdrop" aria-hidden tabIndex={-1} />}
           <ProjectViewerModal
             selection={heroSelection}
-            onClose={clearProjectSelection}
+            onClose={closeMobileProjectPanel}
             openDemoLabel={data.ui.projectViewer.openDemoLabel}
             projectViewer={data.ui.projectViewer}
           />
         </>
       )}
-      {heroSelection != null && isCoarsePointer && mobileProjectPanel === "demo" && (
-        <ProjectViewerModal
-          selection={heroSelection}
-          onClose={closeMobileProjectPanel}
-          openDemoLabel={data.ui.projectViewer.openDemoLabel}
-          projectViewer={data.ui.projectViewer}
-        />
-      )}
-      {heroSelection != null && isCoarsePointer && mobileProjectPanel === "inspector" && (
+      {heroSelection != null && isMobileTouchUi && mobileProjectPanel === "inspector" && (
         <NodeInspector
           mode="mobileOverlay"
           codeHtml={codeHtml}
@@ -1302,10 +1505,37 @@ export function PortfolioScene({ data }: Props) {
           liveSync={liveSync}
           onClose={closeMobileProjectPanel}
           closeLabel={data.ui.projectViewer.closeLabel}
+          expandLabel={data.ui.inspector.expandLabel}
+          collapseLabel={data.ui.inspector.collapseLabel}
         />
       )}
 
       <div className="controls-wrapper">
+        {showMobileControlsHelp && (
+          <div
+            className="mobile-controls-help"
+            role="dialog"
+            aria-label={data.ui.mobileControlsHelp.dialogAriaLabel}
+          >
+            <button
+              type="button"
+              className="mobile-controls-help__close"
+              aria-label={data.ui.mobileControlsHelp.closeAriaLabel}
+              onClick={dismissMobileControlsHelp}
+            >
+              X
+            </button>
+            <p className="mobile-controls-help__title">{data.ui.mobileControlsHelp.title}</p>
+            <ul className="mobile-controls-help__list">
+              <li><span>{data.ui.viewControls.resetLabel}</span> {data.ui.mobileControlsHelp.resetDescription}</li>
+              <li><span>{data.ui.viewControls.isoLabel}</span> {data.ui.mobileControlsHelp.isoDescription}</li>
+              <li><span>{data.ui.viewControls.topLabel}</span> {data.ui.mobileControlsHelp.topDescription}</li>
+              <li><span>{data.ui.viewControls.frontLabel}</span> {data.ui.mobileControlsHelp.frontDescription}</li>
+              <li><span>{isOrtho ? data.ui.viewControls.orthoLabel : data.ui.viewControls.perspectiveLabel}</span> {data.ui.mobileControlsHelp.cameraDescription}</li>
+              <li><span>{data.ui.viewControls.rotateLabel}</span> {data.ui.mobileControlsHelp.rotateDescription}</li>
+            </ul>
+          </div>
+        )}
         <ViewControls
           activeView={activeView}
           isOrtho={isOrtho}

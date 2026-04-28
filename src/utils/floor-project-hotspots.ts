@@ -4,7 +4,7 @@ import type { FloorUserData } from "@/utils/building-model";
 
 export type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][number];
 
-/** Índice de planta (`level`) → id de proyecto en `data.json`. */
+/** Índice de planta (`level`) → id de proyecto en los datasets localizados (`data-es.json` / `data-en.json`). */
 export const FLOOR_LEVEL_TO_PROJECT_ID: Readonly<Record<number, string>> = {
   2: "control-manager",
   4: "ribbon-revit",

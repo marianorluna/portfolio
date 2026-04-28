@@ -1,9 +1,6 @@
-import type { PortfolioData } from "@/types/portfolio";
-import rawData from "@/data/data.json";
-import { PortfolioSceneClient } from "@/components/PortfolioSceneClient";
-
-const data = rawData as PortfolioData;
+import { redirect } from "next/navigation";
+import { DEFAULT_LOCALE } from "@/i18n/locale";
 
 export default function Home() {
-  return <PortfolioSceneClient data={data} />;
+  redirect(`/${DEFAULT_LOCALE}`);
 }

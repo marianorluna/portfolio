@@ -148,19 +148,6 @@ function persistNewVariantIdx(idx: number): void {
  * el plazo, la próxima carga toma otra al azar.
  */
 export function pickHeroVariant(): HeroStartupVariant {
-  if (typeof window === "undefined") return HERO_VARIANTS[0];
-
-  migrateFromLegacySessionStorageIfNeeded();
-
-  const payload = readStoredPayload();
-  if (payload != null) {
-    const age = Date.now() - payload.at;
-    if (age >= 0 && age < HERO_VARIANT_TTL_MS) {
-      return HERO_VARIANTS[payload.idx];
-    }
-  }
-
-  const idx = Math.floor(Math.random() * HERO_VARIANTS.length);
-  persistNewVariantIdx(idx);
-  return HERO_VARIANTS[idx];
+  const fixedVariant = HERO_VARIANTS.find((variant) => variant.id === 2);
+  return fixedVariant ?? HERO_VARIANTS[0];
 }

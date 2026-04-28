@@ -1,6 +1,6 @@
 {
   "meta": {
-    "title": "Mariano Luna — Portfolio 3D",
+    "title": "Mariano Luna",
     "badge": "Barcelona"
   },
   "nav": {
@@ -12,7 +12,7 @@
       "tagline": "Arquitecto BIM & Fullstack Dev",
       "aboutKicker": "Acerca de mí",
       "aboutRole": "Arquitecto | BIM | Desarrollo Fullstack",
-      "aboutText": "Soy un Arquitecto con más de una década de experiencia en edificación y coordinación BIM, evolucionado hacia el Desarrollo Fullstack. Entiendo que construir edificios y escribir código comparten una misma esencia: requieren diseño, planificación y una resolución estructurada de problemas.\n\nMi transición hacia el desarrollo nació al crear herramientas de automatización (Python, Dynamo) y aplicaciones BIM web (IFC.js, Three.js). Hoy, aplico ese mismo pensamiento de ingeniería a la creación de aplicaciones modernas con el stack MERN, Next.js y flujos de trabajo asistidos por IA.",
+      "aboutText": "Soy un Arquitecto con experiencia en edificación y dirección de obra, visualización arquitectónica y 3D, modelado y coordinación BIM. Con el tiempo he evolucionado hacia el Desarrollo Fullstack, especializándome en esta área. Entiendo que construir edificios y escribir código comparten una misma esencia: requieren diseño, planificación y una resolución estructurada de problemas.\n\nMi transición hacia el desarrollo nació al crear herramientas de automatización (Python, Dynamo) y aplicaciones BIM web (IFC.js, Three.js). Hoy, aplico ese mismo pensamiento de ingeniería a la creación de aplicaciones modernas con el stack MERN, Next.js y flujos de trabajo asistidos por IA.",
       "aboutStatement": "Aporto una visión multidisciplinar que une el mundo de la construcción digital con la arquitectura de software, diseñando soluciones robustas desde la base de datos hasta la interfaz."
     },
     "links": [
@@ -53,8 +53,25 @@
       "settingsTitle": "Configuración",
       "themeTitle": "Tema",
       "themeDescription": "Cambia entre tema oscuro y claro.",
+      "languageTitle": "Idioma",
+      "languageDescription": "Cambia el idioma general de la app.",
+      "languageSpanishLabel": "ES",
+      "languageEnglishLabel": "EN",
+      "switchToSpanishLabel": "Cambiar idioma a español",
+      "switchToEnglishLabel": "Cambiar idioma a inglés",
+      "initialHelpTitle": "Ayuda de controles",
+      "initialHelpDescription": "Muestra u oculta las ayudas visuales al abrir la app.",
       "switchToLightLabel": "Cambiar a tema claro",
-      "switchToDarkLabel": "Cambiar a tema oscuro"
+      "switchToDarkLabel": "Cambiar a tema oscuro",
+      "initialHelpOnLabel": "Desactivar ayuda de controles",
+      "initialHelpOffLabel": "Activar ayuda de controles",
+      "textSizeTitle": "Tamaño de texto",
+      "textSizeDescription": "Aumentar o disminuir tipografías de la UI.",
+      "textSizeCurrentModeLabel": "Modo actual",
+      "textSizeModeMobile": "Móvil",
+      "textSizeModeTablet": "Tablet",
+      "textSizeModeDesktop": "Ordenador",
+      "textSizeOptionLabel": "Nivel de tamaño"
     }
   },
   "ui": {
@@ -74,6 +91,8 @@
     "inspector": {
       "title": "Node Inspector",
       "status": "● LIVE SYNC",
+      "expandLabel": "Expandir",
+      "collapseLabel": "Contraer",
       "codeHtml": {
         "default": "<div class=\"cl\"><span class=\"kd\">const</span> <span class=\"na\">BuildingModel</span> <span class=\"p\">=</span> () <span class=\"kd\">=&gt;</span> {</div><div class=\"cl cl-i1\"><span class=\"kd\">return</span> (</div><div class=\"cl cl-i2\"><span class=\"p\">&lt;</span><span class=\"nc\">IFCContainer</span> <span class=\"na\">id=</span><span class=\"s\">\"TWIN-01\"</span><span class=\"p\">&gt;</span></div><div class=\"cl cl-i3\"><span class=\"cm\">// Interactúa con el modelo 3D</span></div><div class=\"cl cl-i3\"><span class=\"cm\">// para inspeccionar los nodos.</span></div><div class=\"cl cl-i2\"><span class=\"p\">&lt;/</span><span class=\"nc\">IFCContainer</span><span class=\"p\">&gt;</span></div><div class=\"cl cl-i1\">);</div><div class=\"cl\">};</div>",
         "jsonResponseComment": "// JSON Query Response",
@@ -93,6 +112,17 @@
       "autoRotateOffTitle": "Activar rotación automática",
       "rotateLabel": "Rotar"
     },
+    "mobileControlsHelp": {
+      "dialogAriaLabel": "Ayuda de controles de vista",
+      "closeAriaLabel": "Cerrar ayuda de controles",
+      "title": "Controles de vista",
+      "resetDescription": "Reiniciar la vista",
+      "isoDescription": "Activa vista isométrica",
+      "topDescription": "Vista superior",
+      "frontDescription": "Vista frontal",
+      "cameraDescription": "Cámara perspectiva/ortogonal",
+      "rotateDescription": "Activa/desactiva auto-rotación"
+    },
     "levelControls": {
       "floorsLabel": "PISOS",
       "rotationLabel": "GIRO"
@@ -106,11 +136,12 @@
       "zoomLabel": "Zoom",
       "touchDragLabel": "Un dedo",
       "touchPanLabel": "Mover",
-      "touchPinchLabel": "Pellizcar",
+      "touchPinchLabel": "Gesto de Pinza",
       "touchZoomLabel": "Zoom"
     },
     "projectViewer": {
       "closeLabel": "Cerrar",
+      "dismissOverlayLabel": "Volver al resumen principal",
       "openDemoLabel": "Abrir en navegador",
       "demoUnavailableTitle": "No hay enlace de demo disponible",
       "iframeUnavailableHint": "No hay URL de demo configurada. Revisa el panel derecho o el JSON del proyecto."
@@ -170,7 +201,10 @@
       "primaryUrl": "",
       "primaryProject": "Demo",
       "secondary": "GitHub",
-      "secondaryUrl": "https://github.com/marianorluna/"
+      "secondaryUrl": "https://github.com/marianorluna/",
+      "missingDemoLinkTitle": "Sin enlace de demo",
+      "missingProfileLinkTitle": "Sin enlace de perfil",
+      "missingGithubLinkTitle": "Sin enlace de GitHub"
     }
   },
   "projects": {
@@ -322,6 +356,21 @@
             "name": "Máster en Desarrollo Fullstack",
             "meta": "Nuclio Digital School · 2025 – 2026 · Barcelona",
             "description": "Desarrollo web, ingeniería de software, integraciones de IA y automatización (n8n, servidores MCP). Aplicable al desarrollo de herramientas BIM: APIs REST, modelado de bases de datos e interfaces front-end para datos BIM."
+          }
+        ]
+      },
+      {
+        "id": "credenciales",
+        "label": "Credenciales",
+        "items": [
+          {
+            "id": "autodesk-authorized-developer",
+            "name": "Autodesk Authorized Developer",
+            "meta": "Miembro del Autodesk Developer Network (ADN) · ID: SEES0029",
+            "description": "Desarrollo integraciones, automatizaciones y soluciones personalizadas basadas en tecnologías y APIs oficiales de Autodesk.",
+            "logoLight": "/logos/logo-adn-black.png",
+            "logoDark": "/logos/logo-adn-white.png",
+            "logoAlt": "Autodesk Authorized Developer"
           }
         ]
       }

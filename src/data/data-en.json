@@ -1,0 +1,379 @@
+{
+  "meta": {
+    "title": "Mariano Luna",
+    "badge": "Barcelona"
+  },
+  "nav": {
+    "brand": {
+      "initials": "ML",
+      "nameMain": "Mariano",
+      "nameJoin": "_",
+      "nameRest": "Luna",
+      "tagline": "BIM Architect & Fullstack Dev",
+      "aboutKicker": "About me",
+      "aboutRole": "Architect | BIM | Fullstack Development",
+      "aboutText": "I am an Architect with experience in building design and site management, architectural visualization and 3D, BIM modeling and coordination. Over time I evolved toward Fullstack Development, specializing in this area. I see a shared essence between constructing buildings and writing code: both require design, planning, and structured problem solving.\n\nMy transition into development started by building automation tools (Python, Dynamo) and BIM web apps (IFC.js, Three.js). Today I apply that same engineering mindset to build modern applications with the MERN stack, Next.js, and AI-assisted workflows.",
+      "aboutStatement": "I bring a multidisciplinary perspective that connects digital construction with software architecture, designing robust solutions from database to interface."
+    },
+    "links": [
+      {
+        "id": "proyectos",
+        "label": "Projects",
+        "description": "Real cases, BIM, digital twins, and technical deliveries for AEC projects.",
+        "icon": "folder"
+      },
+      {
+        "id": "formacion",
+        "label": "Education",
+        "description": "Academic background, certifications, and continuous learning applied to BIM and development.",
+        "icon": "layers"
+      },
+      {
+        "id": "contacto",
+        "label": "Contact",
+        "description": "Collaboration, consulting, or project proposals: email, social networks, and availability.",
+        "icon": "mail"
+      },
+      {
+        "id": "citas",
+        "label": "Meetings",
+        "description": "Book an online meeting based on availability (15, 30, or 60 min).",
+        "icon": "calendar"
+      }
+    ],
+    "uiText": {
+      "railAriaLabel": "Navigation",
+      "sectionsAriaLabel": "Sections",
+      "siteBrandLabel": "Site brand",
+      "settingsLabel": "Settings",
+      "panelFallbackLabel": "Panel",
+      "brandScreenReaderPrefix": "Brand:",
+      "sectionKicker": "Section",
+      "settingsKicker": "Preferences",
+      "settingsTitle": "Settings",
+      "themeTitle": "Theme",
+      "themeDescription": "Switch between dark and light theme.",
+      "languageTitle": "Language",
+      "languageDescription": "Change the app language.",
+      "languageSpanishLabel": "ES",
+      "languageEnglishLabel": "EN",
+      "switchToSpanishLabel": "Switch language to Spanish",
+      "switchToEnglishLabel": "Switch language to English",
+      "initialHelpTitle": "Controls help",
+      "initialHelpDescription": "Show or hide visual control hints when opening the app.",
+      "switchToLightLabel": "Switch to light theme",
+      "switchToDarkLabel": "Switch to dark theme",
+      "initialHelpOnLabel": "Disable controls help",
+      "initialHelpOffLabel": "Enable controls help",
+      "textSizeTitle": "Text size",
+      "textSizeDescription": "Increase or decrease UI typography size.",
+      "textSizeCurrentModeLabel": "Current mode",
+      "textSizeModeMobile": "Mobile",
+      "textSizeModeTablet": "Tablet",
+      "textSizeModeDesktop": "Desktop",
+      "textSizeOptionLabel": "Size level"
+    }
+  },
+  "ui": {
+    "loading": {
+      "brandMain": "MARIANO",
+      "brandAccent": "_LUNA",
+      "initialText": "Initializing 3D engine...",
+      "messages": [
+        "Initializing Three.js renderer...",
+        "Loading IFC geometry engine...",
+        "Analyzing building elements...",
+        "Generating fragment data...",
+        "Configuring hotspots...",
+        "Ready."
+      ]
+    },
+    "inspector": {
+      "title": "Node Inspector",
+      "status": "● LIVE SYNC",
+      "expandLabel": "Expand",
+      "collapseLabel": "Collapse",
+      "codeHtml": {
+        "default": "<div class=\"cl\"><span class=\"kd\">const</span> <span class=\"na\">BuildingModel</span> <span class=\"p\">=</span> () <span class=\"kd\">=&gt;</span> {</div><div class=\"cl cl-i1\"><span class=\"kd\">return</span> (</div><div class=\"cl cl-i2\"><span class=\"p\">&lt;</span><span class=\"nc\">IFCContainer</span> <span class=\"na\">id=</span><span class=\"s\">\"TWIN-01\"</span><span class=\"p\">&gt;</span></div><div class=\"cl cl-i3\"><span class=\"cm\">// Interact with the 3D model</span></div><div class=\"cl cl-i3\"><span class=\"cm\">// to inspect nodes.</span></div><div class=\"cl cl-i2\"><span class=\"p\">&lt;/</span><span class=\"nc\">IFCContainer</span><span class=\"p\">&gt;</span></div><div class=\"cl cl-i1\">);</div><div class=\"cl\">};</div>",
+        "jsonResponseComment": "// JSON Query Response",
+        "status": "200 OK",
+        "sync": "realtime"
+      }
+    },
+    "viewControls": {
+      "resetTitle": "Return to initial state",
+      "resetLabel": "Home",
+      "isoLabel": "Iso",
+      "topLabel": "Top",
+      "frontLabel": "Front",
+      "orthoLabel": "Orthographic",
+      "perspectiveLabel": "Perspective",
+      "autoRotateOnTitle": "Disable auto-rotation",
+      "autoRotateOffTitle": "Enable auto-rotation",
+      "rotateLabel": "Rotate"
+    },
+    "mobileControlsHelp": {
+      "dialogAriaLabel": "View controls help",
+      "closeAriaLabel": "Close controls help",
+      "title": "View controls",
+      "resetDescription": "Reset view",
+      "isoDescription": "Enable isometric view",
+      "topDescription": "Top view",
+      "frontDescription": "Front view",
+      "cameraDescription": "Perspective/orthographic camera",
+      "rotateDescription": "Enable/disable auto-rotation"
+    },
+    "levelControls": {
+      "floorsLabel": "FLOORS",
+      "rotationLabel": "ROTATION"
+    },
+    "interactionHint": {
+      "clickLabel": "Click",
+      "panLabel": "Pan",
+      "rightClickLabel": "Right Click",
+      "orbitLabel": "Orbit",
+      "scrollLabel": "Scroll",
+      "zoomLabel": "Zoom",
+      "touchDragLabel": "One finger",
+      "touchPanLabel": "Move",
+      "touchPinchLabel": "Pinch",
+      "touchZoomLabel": "Zoom"
+    },
+    "projectViewer": {
+      "closeLabel": "Close",
+      "dismissOverlayLabel": "Return to main overview",
+      "openDemoLabel": "Open in browser",
+      "demoUnavailableTitle": "No demo link available",
+      "iframeUnavailableHint": "No demo URL configured. Check the right panel or the project JSON."
+    },
+    "contactForm": {
+      "formAriaLabel": "Send contact message",
+      "nameLabel": "Name",
+      "emailLabel": "Email",
+      "messageLabel": "Message",
+      "sendLabel": "Send",
+      "sendingLabel": "Sending…",
+      "newMessageLabel": "Write another",
+      "successMessage": "Message sent. I will reply as soon as possible.",
+      "errorGeneric": "Could not send the message. Check your connection or try again later.",
+      "errorConfig": "Server configuration is missing (Resend and/or Turnstile). If you own this site, check environment variables.",
+      "nameRequired": "Please enter your name.",
+      "nameMax": "Maximum 120 characters.",
+      "emailInvalid": "Please enter a valid email.",
+      "messageMin": "Please write at least 10 characters.",
+      "messageMax": "Maximum 4000 characters.",
+      "honeypotLabel": "Company (optional)",
+      "errorTurnstileRequired": "Complete the security check before sending.",
+      "errorTurnstile": "Security verification failed or expired. Reload and try again.",
+      "errorTurnstileDomain": "The current domain is not authorized in Cloudflare Turnstile (error 110200). In Turnstile dashboard → your widget → Hostname management, add localhost for development and your production domain."
+    },
+    "contactSocial": {
+      "navAriaLabel": "Profiles and contact",
+      "items": [
+        {
+          "id": "github",
+          "label": "GitHub",
+          "href": "https://github.com/marianorluna/"
+        },
+        {
+          "id": "linkedin",
+          "label": "LinkedIn",
+          "href": "https://www.linkedin.com/in/marianorluna/"
+        },
+        {
+          "id": "behance",
+          "label": "Behance",
+          "href": "https://www.behance.net/marianoluna1"
+        },
+        {
+          "id": "email",
+          "label": "Email",
+          "href": "mailto:contact@marianorluna.com"
+        }
+      ]
+    }
+  },
+  "hero": {
+    "titleLines": ["Architecture", "BIM & Development", "Fullstack"],
+    "subtitle": "My approach combines an analytical profile with a strong digital mindset. I handle projects from spatial conception to modeling, management, and automation. I specialize in the AECO ecosystem and in building tools with tangible impact on decision-making and time optimization. I am not a programmer in the strict sense: I am a professional who uses programming to build solutions that integrate design, data, digitalization, and AI.",
+    "cta": {
+      "primary": "Projects",
+      "primaryUrl": "",
+      "primaryProject": "Demo",
+      "secondary": "GitHub",
+      "secondaryUrl": "https://github.com/marianorluna/",
+      "missingDemoLinkTitle": "No demo link available",
+      "missingProfileLinkTitle": "No profile link available",
+      "missingGithubLinkTitle": "No GitHub link available"
+    }
+  },
+  "projects": {
+    "title": "Projects",
+    "categories": [
+      {
+        "id": "bim",
+        "label": "BIM Projects",
+        "items": [
+          {
+            "id": "control-manager",
+            "name": "Control Manager",
+            "summary": "Revit 2023-2026 plugin in C#",
+            "description": "Desktop plugin for Revit that centralizes validation rules (standards and project parameters), runs batch checks, and generates technical reports for coordination review, with a WPF interface to inspect results without leaving the BIM environment.",
+            "context": "BIM teams were spending too much time manually validating standards and parameters in large Revit models.",
+            "impact": "Reduced review time by 65% and lowered delivery errors in BIM coordination.",
+            "role": "I designed the plugin architecture, implemented validation rules, and automated technical reports.",
+            "stack": ["C#", ".NET", "Revit API", "WPF"],
+            "link": "https://arqfi.com",
+            "github": "https://github.com/marianorluna/revit-control-manager",
+            "demo": "https://apps.autodesk.com/RVT/es/Detail/Index?id=6529215684524589255&appLang=es&os=Win64&mode=preview",
+            "demoEmbedFallback": "/images/screenshot-control-manager.png"
+          },
+          {
+            "id": "ribbon-revit",
+            "name": "Ribbon Revit",
+            "summary": "Toolbar built with PyRevit",
+            "description": "A PyRevit command ribbon that groups modeling, documentation, and QA scripts in one place. Workflows share project conventions and in-Revit feedback messages, aligning the team and reducing ad-hoc scripts.",
+            "context": "The team used isolated scripts without a central interface for recurring workflows.",
+            "impact": "Standardized daily tasks and reduced adoption curve for internal automations by 40%.",
+            "role": "I designed the ribbon UX and developed Python commands for common BIM operations.",
+            "stack": ["Python", "pyRevit", "Revit API"],
+            "link": "https://arqfi.com",
+            "github": "https://github.com/marianorluna/ribbon-pyrevit",
+            "demo": "https://www.youtube.com/embed/rWGBVo9qDEg?si=feIjLqulLjMs4RA5&amp;controls=0"
+          }
+        ]
+      },
+      {
+        "id": "web-dev",
+        "label": "Web/Dev Projects",
+        "items": [
+          {
+            "id": "lol-match",
+            "name": "LOL Match",
+            "summary": "Web application for LOL players",
+            "description": "Fullstack application that consolidates recent match history, champion metrics, and role comparisons in one view. It includes visualizations to detect trends and improve pick and playstyle decisions, with controlled-test deployment.",
+            "context": "Amateur players lacked a unified view to compare recent performance by role and champion.",
+            "impact": "30% increase in weekly retention during closed tests with positive analytics feedback.",
+            "role": "I built frontend and backend, defined statistics queries, and set up continuous deployment.",
+            "stack": ["Next.js", "TypeScript", "Node.js", "PostgreSQL"],
+            "link": "https://arqfi.com",
+            "github": "https://github.com/marianorluna/lolmatch-frontend",
+            "demo": "https://lolmatch.online/"
+          },
+          {
+            "id": "stockearly",
+            "name": "Stockearly",
+            "summary": "Inventory control application",
+            "description": "Inventory system with stock movements, thresholds, alerts, and input/output traceability. It replaces scattered spreadsheets with a clear domain model, stable API, and browser-based operational panel.",
+            "context": "Small businesses managed inventory in spreadsheets with high mismatch rates.",
+            "impact": "Reduced stockouts by 35% and improved daily movement traceability.",
+            "role": "I led domain modeling, implemented inventory API, and built alert dashboard.",
+            "stack": ["React", "Node.js", "Express", "MongoDB"],
+            "link": "https://arqfi.com",
+            "github": "https://github.com/marianorluna/stock-app-backend",
+            "demo": "https://www.stockearly.online/"
+          }
+        ]
+      },
+      {
+        "id": "hibridos-bim-dev",
+        "label": "Hybrid (BIM + Dev)",
+        "items": [
+          {
+            "id": "visor-ifc",
+            "name": "IFC Viewer",
+            "summary": "Online 3D viewer with ThatOpen Engine and Three.js",
+            "description": "Web viewer that loads IFC models, orbits and focuses the building, applies visibility and selection, and adds inspection layers for team review. Built with ThatOpen Engine and Three.js for remote coordination without desktop viewers.",
+            "context": "Clients and technical teams needed to review IFC models on the web without desktop software dependencies.",
+            "impact": "Accelerated coordination reviews by 50% by centralizing comments in a shared viewer.",
+            "role": "I implemented model loading/navigation, element filters, and technical inspection layers.",
+            "stack": ["That Open Engine", "@thatopen/components", "Three.js", "TypeScript"],
+            "link": "https://arqfi.com",
+            "github": "https://github.com/marianorluna/ifc-viewer",
+            "demo": "https://viewer.arqfi.com/"
+          },
+          {
+            "id": "data-extractor",
+            "name": "Data Extractor",
+            "summary": "Application with APS Tools",
+            "description": "Pipeline on Autodesk Platform Services that extracts properties and lightweight geometry from cloud models, normalizes schema, and exports structured formats for reporting, BI, or storage, with traces by discipline and model version.",
+            "context": "BIM property extraction for reports was manual and lacked historical traceability.",
+            "impact": "Automated exports and reduced report generation from hours to minutes by discipline.",
+            "role": "I developed extraction pipeline, data mapping, and structured export for analysis.",
+            "stack": ["APS", "Node.js", "TypeScript", "MongoDB"],
+            "link": "https://arqfi.com",
+            "github": "https://github.com/marianorluna/aps-data-extractor",
+            "demo": "https://aps-data.arqfi.com/"
+          }
+        ]
+      }
+    ]
+  },
+  "formacion": {
+    "categories": [
+      {
+        "id": "titulo-de-grado",
+        "label": "Degree",
+        "items": [
+          {
+            "id": "msc-arquitectura-unsj",
+            "name": "MSc. Architecture, Design, and Architectural Engineering",
+            "meta": "National University of San Juan, Argentina · 2006 – 2015",
+            "description": "Architect degree (6 years): structural design, construction systems, urban planning, and architectural engineering."
+          }
+        ]
+      },
+      {
+        "id": "cursos-formativos",
+        "label": "Training Courses",
+        "items": [
+          {
+            "id": "master-bim-structuralia",
+            "name": "Master in BIM-Oriented Programming",
+            "meta": "Structuralia · 2019 – 2020",
+            "description": "ARCH, STR, MEP, and IFC modeling. Scripting with Dynamo and Python. Databases. Revit API."
+          },
+          {
+            "id": "master-bim-software-thatopen",
+            "name": "Master BIM Software Developer",
+            "meta": "That Open Company · 2023 – 2024",
+            "description": "BIM web app development with IFC.js and Three.js. Open BIM standards and IFC schema."
+          },
+          {
+            "id": "curso-pyrevit-learnrevitapi",
+            "name": "PyRevit and Revit API Course",
+            "meta": "LearnRevitAPI · 2024",
+            "description": "Custom tools and automations using Revit API and PyRevit framework."
+          }
+        ]
+      },
+      {
+        "id": "especializaciones",
+        "label": "Specializations",
+        "items": [
+          {
+            "id": "master-fullstack-nuclio",
+            "name": "Master in Fullstack Development",
+            "meta": "Nuclio Digital School · 2025 – 2026 · Barcelona",
+            "description": "Web development, software engineering, AI integrations, and automation (n8n, MCP servers). Applied to BIM tool development: REST APIs, database modeling, and front-end interfaces for BIM data."
+          }
+        ]
+      },
+      {
+        "id": "credenciales",
+        "label": "Credentials",
+        "items": [
+          {
+            "id": "autodesk-authorized-developer",
+            "name": "Autodesk Authorized Developer",
+            "meta": "Autodesk Developer Network (ADN) member · ID: SEES0029",
+            "description": "I build integrations, automations, and custom solutions based on official Autodesk technologies and APIs.",
+            "logoLight": "/logos/logo-adn-black.png",
+            "logoDark": "/logos/logo-adn-white.png",
+            "logoAlt": "Autodesk Authorized Developer"
+          }
+        ]
+      }
+    ]
+  }
+}

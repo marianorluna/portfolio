@@ -2,7 +2,16 @@
 
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
 import Link from "next/link";
-import type { NavBrand, NavLink, NavUiText, PortfolioData } from "@/types/portfolio";
+import { Settings } from "lucide-react";
+import type {
+  DeviceMode,
+  Locale,
+  NavBrand,
+  NavLink,
+  NavUiText,
+  PortfolioData,
+  TextSizeLevel,
+} from "@/types/portfolio";
 import { NavIcon } from "./NavIcon";
 import { CalBookingEmbed } from "./CalBookingEmbed";
 import { ContactForm } from "./ContactForm";
@@ -23,14 +32,47 @@ type Props = {
   activePanel:    NavActivePanel;
   onActivePanelChange: Dispatch<SetStateAction<NavActivePanel>>;
   onThemeToggle:  () => void;
+  locale: Locale;
+  onLocaleChange: (locale: Locale) => void;
+  showInitialHelpSetting: boolean;
+  initialHelpEnabled: boolean;
+  onInitialHelpToggle: () => void;
+  activeDeviceMode: DeviceMode;
+  textSizeLevel: TextSizeLevel;
+  textSizeLevels: readonly TextSizeLevel[];
+  onTextSizeLevelChange: (level: TextSizeLevel) => void;
   onProjectSelect: (
     project: PortfolioData["projects"]["categories"][number]["items"][number],
     categoryLabel: string
   ) => void;
 };
 
-export function Navbar({ brand, links, projects, formacion, contactForm, contactSocial, uiText, theme, activePanel, onActivePanelChange, onThemeToggle, onProjectSelect }: Props) {
+export function Navbar({
+  brand,
+  links,
+  projects,
+  formacion,
+  contactForm,
+  contactSocial,
+  uiText,
+  theme,
+  activePanel,
+  onActivePanelChange,
+  onThemeToggle,
+  locale,
+  onLocaleChange,
+  showInitialHelpSetting,
+  initialHelpEnabled,
+  onInitialHelpToggle,
+  activeDeviceMode,
+  textSizeLevel,
+  textSizeLevels,
+  onTextSizeLevelChange,
+  onProjectSelect,
+}: Props) {
   const railRef = useRef<HTMLElement | null>(null);
+  const flyoutRef = useRef<HTMLDivElement | null>(null);
+  const defaultFormacionItemId = "autodesk-authorized-developer";
   const [openFormationId, setOpenFormationId] = useState<string | null>(null);
   const aboutParagraphs = brand.aboutText
     .split("\n\n")
@@ -52,6 +94,7 @@ export function Navbar({ brand, links, projects, formacion, contactForm, contact
     const onDown = (e: MouseEvent) => {
       const t = e.target;
       if (t instanceof Node && railRef.current?.contains(t)) return;
+      if (t instanceof Node && flyoutRef.current?.contains(t)) return;
       onActivePanelChange(null);
     };
     document.addEventListener("mousedown", onDown);
@@ -59,12 +102,19 @@ export function Navbar({ brand, links, projects, formacion, contactForm, contact
   }, [activePanel, onActivePanelChange]);
 
   useEffect(() => {
-    if (activePanel !== "formacion") {
-      setOpenFormationId(null);
+    if (activePanel === "formacion") {
+      setOpenFormationId(defaultFormacionItemId);
+      return;
     }
+    setOpenFormationId(null);
   }, [activePanel]);
 
   const fullNameA11y = `${brand.nameMain} ${brand.nameRest}`;
+  const deviceModeLabelMap: Record<DeviceMode, string> = {
+    mobile: uiText.textSizeModeMobile,
+    tablet: uiText.textSizeModeTablet,
+    desktop: uiText.textSizeModeDesktop,
+  };
   const flyoutLabel =
     isBrandOpen
       ? uiText.siteBrandLabel
@@ -75,68 +125,58 @@ export function Navbar({ brand, links, projects, formacion, contactForm, contact
           : uiText.panelFallbackLabel;
 
   return (
-    <aside className="nav-rail" ref={railRef} aria-label={uiText.railAriaLabel}>
-      <button
-        type="button"
-        className={`nav-rail__brand nav-rail__brand--action${isBrandOpen ? " is-active" : ""}`}
-        onClick={() => onActivePanelChange(p => (p === "brand" ? null : "brand"))}
-        title={`${brand.nameMain}${brand.nameJoin}${brand.nameRest} | ${brand.tagline}`}
-        aria-expanded={isBrandOpen}
-        aria-controls="nav-flyout"
-      >
-        <span className="nav-rail__brand-mark" aria-hidden>
-          {brand.initials}
-        </span>
-        <span className="visually-hidden">{uiText.brandScreenReaderPrefix} {fullNameA11y}</span>
-      </button>
-
-      <nav className="nav-rail__tabs" aria-label={uiText.sectionsAriaLabel}>
-        {links.map(link => {
-          const isOpen = activePanel === link.id;
-          return (
-            <button
-              key={link.id}
-              type="button"
-              className={`nav-rail__icon-btn${isOpen ? " is-active" : ""}`}
-              onClick={() => onActivePanelChange(p => (p === link.id ? null : link.id))}
-              aria-expanded={isOpen}
-              aria-controls="nav-flyout"
-              title={link.label}
-            >
-              <span className="nav-rail__icon-pill" aria-hidden />
-              <NavIcon name={link.icon} title={link.label} />
-            </button>
-          );
-        })}
-      </nav>
-
-      {/* Botón de configuración — ancla al fondo del rail */}
-      <button
-        type="button"
-        className={`nav-rail__icon-btn nav-rail__settings-btn${isSettingsOpen ? " is-active" : ""}`}
-        onClick={() => onActivePanelChange(p => (p === "settings" ? null : "settings"))}
-        aria-expanded={isSettingsOpen}
-        aria-controls="nav-flyout"
-        title={uiText.settingsLabel}
-      >
-        <span className="nav-rail__icon-pill" aria-hidden />
-        <svg
-          width="22"
-          height="22"
-          viewBox="0 0 24 24"
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.6"
-          strokeLinecap="round"
-          strokeLinejoin="round"
-          aria-hidden
+    <>
+      <aside className="nav-rail" ref={railRef} aria-label={uiText.railAriaLabel}>
+        <button
+          type="button"
+          className={`nav-rail__brand nav-rail__brand--action${isBrandOpen ? " is-active" : ""}`}
+          onClick={() => onActivePanelChange(p => (p === "brand" ? null : "brand"))}
+          title={`${brand.nameMain}${brand.nameJoin}${brand.nameRest} | ${brand.tagline}`}
+          aria-expanded={isBrandOpen}
+          aria-controls="nav-flyout"
         >
-          <circle cx="12" cy="12" r="3.1" />
-          <path d="M19.4 15a1 1 0 0 0 .2 1.1l.1.1a1.5 1.5 0 1 1-2.1 2.1l-.1-.1a1 1 0 0 0-1.1-.2 1 1 0 0 0-.6.9V19a1.5 1.5 0 1 1-3 0v-.1a1 1 0 0 0-.6-.9 1 1 0 0 0-1.1.2l-.1.1a1.5 1.5 0 1 1-2.1-2.1l.1-.1a1 1 0 0 0 .2-1.1 1 1 0 0 0-.9-.6H5a1.5 1.5 0 1 1 0-3h.1a1 1 0 0 0 .9-.6 1 1 0 0 0-.2-1.1l-.1-.1a1.5 1.5 0 1 1 2.1-2.1l.1.1a1 1 0 0 0 1.1.2h0a1 1 0 0 0 .6-.9V5a1.5 1.5 0 1 1 3 0v.1a1 1 0 0 0 .6.9h0a1 1 0 0 0 1.1-.2l.1-.1a1.5 1.5 0 1 1 2.1 2.1l-.1.1a1 1 0 0 0-.2 1.1v0a1 1 0 0 0 .9.6H19a1.5 1.5 0 1 1 0 3h-.1a1 1 0 0 0-.9.6Z" />
-        </svg>
-      </button>
+          <span className="nav-rail__brand-mark" aria-hidden>
+            {brand.initials}
+          </span>
+          <span className="visually-hidden">{uiText.brandScreenReaderPrefix} {fullNameA11y}</span>
+        </button>
+
+        <nav className="nav-rail__tabs" aria-label={uiText.sectionsAriaLabel}>
+          {links.map(link => {
+            const isOpen = activePanel === link.id;
+            return (
+              <button
+                key={link.id}
+                type="button"
+                className={`nav-rail__icon-btn${isOpen ? " is-active" : ""}`}
+                onClick={() => onActivePanelChange(p => (p === link.id ? null : link.id))}
+                aria-expanded={isOpen}
+                aria-controls="nav-flyout"
+                title={link.label}
+              >
+                <span className="nav-rail__icon-pill" aria-hidden />
+                <NavIcon name={link.icon} title={link.label} />
+              </button>
+            );
+          })}
+        </nav>
+
+        {/* Botón de configuración — ancla al fondo del rail */}
+        <button
+          type="button"
+          className={`nav-rail__icon-btn nav-rail__settings-btn${isSettingsOpen ? " is-active" : ""}`}
+          onClick={() => onActivePanelChange(p => (p === "settings" ? null : "settings"))}
+          aria-expanded={isSettingsOpen}
+          aria-controls="nav-flyout"
+          title={uiText.settingsLabel}
+        >
+          <span className="nav-rail__icon-pill" aria-hidden />
+          <Settings size={22} strokeWidth={1.6} aria-hidden />
+        </button>
+      </aside>
 
       <div
+        ref={flyoutRef}
         id="nav-flyout"
         className={`nav-rail__flyout${activePanel != null ? " is-open" : ""}${
           activePanel === "citas" ? " nav-rail__flyout--booking" : ""
@@ -243,9 +283,19 @@ export function Navbar({ brand, links, projects, formacion, contactForm, contact
                                 </span>
                               </button>
                               {isExpanded && (
-                                <p className="nav-formacion__desc" id={panelId} aria-labelledby={`formacion-trigger-${item.id}`}>
-                                  {item.description}
-                                </p>
+                                <div className="nav-formacion__desc" id={panelId} aria-labelledby={`formacion-trigger-${item.id}`}>
+                                  {(item.logoLight != null || item.logoDark != null) && (
+                                    <div className="nav-formacion__logo-wrap">
+                                      <img
+                                        src={theme === "light" ? (item.logoLight ?? item.logoDark) : (item.logoDark ?? item.logoLight)}
+                                        alt={item.logoAlt ?? item.name}
+                                        className="nav-formacion__logo"
+                                        loading="lazy"
+                                      />
+                                    </div>
+                                  )}
+                                  <p className="nav-formacion__desc-text">{item.description}</p>
+                                </div>
                               )}
                             </div>
                           </li>
@@ -305,9 +355,81 @@ export function Navbar({ brand, links, projects, formacion, contactForm, contact
                 <span className="theme-toggle__thumb" />
               </button>
             </div>
+            <div className="nav-settings-option nav-settings-option--text-size">
+              <div className="nav-settings-option__copy">
+                <p className="nav-settings-option__title">{uiText.languageTitle}</p>
+                <p className="nav-settings-option__desc">
+                  {uiText.languageDescription}
+                </p>
+              </div>
+              <div className="text-size-levels text-size-levels--locale" role="group" aria-label={uiText.languageTitle}>
+                <button
+                  type="button"
+                  className={`text-size-level-btn${locale === "es" ? " is-active" : ""}`}
+                  onClick={() => onLocaleChange("es")}
+                  aria-pressed={locale === "es"}
+                  aria-label={uiText.switchToSpanishLabel}
+                >
+                  {uiText.languageSpanishLabel}
+                </button>
+                <button
+                  type="button"
+                  className={`text-size-level-btn${locale === "en" ? " is-active" : ""}`}
+                  onClick={() => onLocaleChange("en")}
+                  aria-pressed={locale === "en"}
+                  aria-label={uiText.switchToEnglishLabel}
+                >
+                  {uiText.languageEnglishLabel}
+                </button>
+              </div>
+            </div>
+            {showInitialHelpSetting && (
+              <div className="nav-settings-option">
+                <div className="nav-settings-option__copy">
+                  <p className="nav-settings-option__title">{uiText.initialHelpTitle}</p>
+                  <p className="nav-settings-option__desc">
+                    {uiText.initialHelpDescription}
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  className={`theme-toggle${initialHelpEnabled ? " is-light" : ""}`}
+                  onClick={onInitialHelpToggle}
+                  aria-label={initialHelpEnabled ? uiText.initialHelpOnLabel : uiText.initialHelpOffLabel}
+                >
+                  <span className="theme-toggle__thumb" />
+                </button>
+              </div>
+            )}
+            <div className="nav-settings-option nav-settings-option--text-size">
+              <div className="nav-settings-option__copy">
+                <p className="nav-settings-option__title">{uiText.textSizeTitle}</p>
+                <p className="nav-settings-option__desc">
+                  {uiText.textSizeDescription}
+                </p>
+              </div>
+              <div
+                className="text-size-levels"
+                role="group"
+                aria-label={`${uiText.textSizeOptionLabel} (${deviceModeLabelMap[activeDeviceMode]})`}
+              >
+                {textSizeLevels.map(level => (
+                  <button
+                    key={level}
+                    type="button"
+                    className={`text-size-level-btn${textSizeLevel === level ? " is-active" : ""}`}
+                    onClick={() => onTextSizeLevelChange(level)}
+                    aria-pressed={textSizeLevel === level}
+                    aria-label={`${uiText.textSizeOptionLabel} ${level > 0 ? `+${level}` : level}`}
+                  >
+                    {level > 0 ? `+${level}` : level}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
         )}
       </div>
-    </aside>
+    </>
   );
 }

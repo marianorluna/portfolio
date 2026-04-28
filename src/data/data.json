@@ -103,7 +103,11 @@
       "rightClickLabel": "Click Der",
       "orbitLabel": "Orbitar",
       "scrollLabel": "Scroll",
-      "zoomLabel": "Zoom"
+      "zoomLabel": "Zoom",
+      "touchDragLabel": "Un dedo",
+      "touchPanLabel": "Mover",
+      "touchPinchLabel": "Pellizcar",
+      "touchZoomLabel": "Zoom"
     },
     "projectViewer": {
       "closeLabel": "Cerrar",

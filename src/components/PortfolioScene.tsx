@@ -30,6 +30,7 @@ import { ProjectViewerModal } from "./ProjectViewerModal";
 import { NodeInspector } from "./NodeInspector";
 import { ViewControls } from "./ViewControls";
 import { LevelControls } from "./LevelControls";
+import { SideDrawer } from "./SideDrawer";
 
 const FRUSTUM_SIZE = 40;
 const MAX_FLOORS = 40;
@@ -215,6 +216,8 @@ function applyHeroVariantToCameras(
 type Props = { data: PortfolioData };
 type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][number];
 
+type MobileProjectPanel = null | "demo" | "inspector";
+
 export function PortfolioScene({ data }: Props) {
   const defaultCodeHtml = data.ui.inspector.codeHtml.default;
   const dataRef = useRef(data);
@@ -222,6 +225,8 @@ export function PortfolioScene({ data }: Props) {
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
+  const coarsePointerRef = useRef(false);
+  const [isCoarsePointer, setIsCoarsePointer] = useState(false);
 
   // Three.js refs
   const rendererRef = useRef<THREE.WebGLRenderer | null>(null);
@@ -236,6 +241,7 @@ export function PortfolioScene({ data }: Props) {
   const lineMaterialRef = useRef<THREE.LineBasicMaterial | null>(null);
   const intersectedRef = useRef<THREE.Mesh | null>(null);
   const mouseRef = useRef(new THREE.Vector2());
+  const hasMouseMovedRef = useRef(false);
   const raycasterRef = useRef(new THREE.Raycaster());
   const cameraCollisionRaycasterRef = useRef(new THREE.Raycaster());
   const targetCollisionRaycasterRef = useRef(new THREE.Raycaster());
@@ -288,11 +294,18 @@ export function PortfolioScene({ data }: Props) {
     project: ProjectItem;
   } | null>(null);
 
+  const [mobileProjectPanel, setMobileProjectPanel] = useState<MobileProjectPanel>(null);
+
+  const closeMobileProjectPanel = useCallback(() => {
+    setMobileProjectPanel(null);
+  }, []);
+
   const clearProjectSelection = useCallback(() => {
     selectedProjectHtmlRef.current = null;
     prevHoverUiMeshRef.current = null;
     setHeroSelection(null);
     setHeroFloorPreview(null);
+    setMobileProjectPanel(null);
     setCodeHtml(defaultCodeHtml);
   }, [defaultCodeHtml]);
 
@@ -314,6 +327,8 @@ export function PortfolioScene({ data }: Props) {
   const [loadProgress, setLoadProgress] = useState(0);
   const [loadText, setLoadText] = useState(data.ui.loading.initialText);
   const [loadHidden, setLoadHidden] = useState(false);
+  const loadHiddenRef = useRef(loadHidden);
+  loadHiddenRef.current = loadHidden;
   const [floorCount, setFloorCount] = useState(INITIAL_FLOORS);
   const [codeHtml, setCodeHtml] = useState(defaultCodeHtml);
   const setCodeHtmlRef = useRef(setCodeHtml);
@@ -325,6 +340,34 @@ export function PortfolioScene({ data }: Props) {
   const [activeView, setActiveView] = useState<ViewPreset | null>("iso");
   const [autoRotate, setAutoRotate] = useState(true);
   const [rotateSpeedLevel, setRotateSpeedLevel] = useState(DEFAULT_ROTATE_SPEED_LEVEL);
+
+  const [uiDrawersOpen, setUiDrawersOpen] = useState<{ left: boolean; right: boolean }>({
+    left: true,
+    right: true,
+  });
+
+  useEffect(() => {
+    const isMobile = window.innerWidth <= 768;
+    setUiDrawersOpen({ left: !isMobile, right: !isMobile });
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const mq = window.matchMedia?.("(pointer: coarse)");
+    const commit = () => {
+      const next = Boolean(mq?.matches);
+      coarsePointerRef.current = next;
+      setIsCoarsePointer(next);
+      if (next && tooltipRef.current) tooltipRef.current.style.opacity = "0";
+    };
+    commit();
+    mq?.addEventListener?.("change", commit);
+    return () => mq?.removeEventListener?.("change", commit);
+  }, []);
+
+  useEffect(() => {
+    if (!isCoarsePointer) setMobileProjectPanel(null);
+  }, [isCoarsePointer]);
 
   // ── UI Handlers ──────────────────────────────────────────────────────────
 
@@ -590,6 +633,7 @@ export function PortfolioScene({ data }: Props) {
       selectedProjectHtmlRef.current = html;
       setCodeHtml(html);
       setHeroFloorPreview(null);
+      setMobileProjectPanel(null);
       setHeroSelection({ project, categoryLabel });
     },
     []
@@ -933,47 +977,66 @@ export function PortfolioScene({ data }: Props) {
         }
       }
 
-      // Raycasting hover: recursive=true (default) pega en los bordes LineSegments, sin userData
-      raycasterRef.current.setFromCamera(mouseRef.current, activeCameraRef.current!);
-      const intersects = raycasterRef.current.intersectObjects(floorsRef.current, false);
+      // En táctil (pointer coarse) no hay hover real: evitar tooltip pegado arriba y UI de debug.
+      if (!coarsePointerRef.current) {
+        // Raycasting hover: recursive=true (default) pega en los bordes LineSegments, sin userData
+        raycasterRef.current.setFromCamera(mouseRef.current, activeCameraRef.current!);
+        const intersects = raycasterRef.current.intersectObjects(floorsRef.current, false);
 
-      if (intersects.length > 0) {
-        const obj = intersects[0].object as THREE.Mesh;
-        if (intersectedRef.current !== obj) {
-          if (intersectedRef.current) {
-            const tc = SCENE_COLORS[themeRef.current];
-            resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
+        if (intersects.length > 0) {
+          const obj = intersects[0].object as THREE.Mesh;
+          if (intersectedRef.current !== obj) {
+            if (intersectedRef.current) {
+              const tc = SCENE_COLORS[themeRef.current];
+              resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
+            }
+            intersectedRef.current = obj;
+            highlightHoveredFloor(obj);
+            syncHoverUiFromMesh(obj);
+
+            const d = obj.userData as FloorUserData;
+            if (
+              tooltipRef.current &&
+              loadHiddenRef.current &&
+              hasMouseMovedRef.current
+            ) {
+              const tip =
+                d.projectId != null
+                  ? findProjectWithCategory(dataRef.current, d.projectId)?.project.name ??
+                    d.id
+                  : `<${d.id} />`;
+              tooltipRef.current.textContent = tip;
+              tooltipRef.current.style.opacity = "1";
+            } else if (tooltipRef.current) {
+              tooltipRef.current.style.opacity = "0";
+            }
           }
-          intersectedRef.current = obj;
-          highlightHoveredFloor(obj);
-          syncHoverUiFromMesh(obj);
+        } else if (intersectedRef.current) {
+          const tc = SCENE_COLORS[themeRef.current];
+          resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
+          intersectedRef.current = null;
+          if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
+          syncHoverUiFromMesh(null);
+        }
 
-          const d = obj.userData as FloorUserData;
-          if (tooltipRef.current) {
-            const tip =
-              d.projectId != null
-                ? findProjectWithCategory(dataRef.current, d.projectId)?.project.name ??
-                  d.id
-                : `<${d.id} />`;
-            tooltipRef.current.textContent = tip;
-            tooltipRef.current.style.opacity = "1";
+        if (interactionCursorRef.current === "idle") {
+          const hit = intersectedRef.current;
+          const ud = hit?.userData as FloorUserData | undefined;
+          if (ud?.projectId) {
+            canvas.style.cursor = "pointer";
+          } else {
+            canvas.style.cursor = "crosshair";
           }
         }
-      } else if (intersectedRef.current) {
-        const tc = SCENE_COLORS[themeRef.current];
-        resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
-        intersectedRef.current = null;
+      } else {
         if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
-        syncHoverUiFromMesh(null);
-      }
-
-      if (interactionCursorRef.current === "idle") {
-        const hit = intersectedRef.current;
-        const ud = hit?.userData as FloorUserData | undefined;
-        if (ud?.projectId) {
-          canvas.style.cursor = "pointer";
-        } else {
-          canvas.style.cursor = "crosshair";
+        if (intersectedRef.current) {
+          const tc = SCENE_COLORS[themeRef.current];
+          resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
+          intersectedRef.current = null;
+          prevHoverUiMeshRef.current = null;
+          setHeroFloorPreviewRef.current(null);
+          setCodeHtmlRef.current(defaultCodeHtmlRef.current);
         }
       }
 
@@ -986,6 +1049,7 @@ export function PortfolioScene({ data }: Props) {
     // ── Events ────────────────────────────────────────────────────────────
 
     function onMouseMove(e: MouseEvent) {
+      hasMouseMovedRef.current = true;
       mouseRef.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouseRef.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
       if (tooltipRef.current) {
@@ -1155,7 +1219,7 @@ export function PortfolioScene({ data }: Props) {
       />
 
       <canvas ref={canvasRef} id="three-canvas" />
-      <div id="tooltip" ref={tooltipRef} />
+      {!isCoarsePointer && loadHidden && <div id="tooltip" ref={tooltipRef} />}
 
       <Navbar
         brand={data.nav.brand}
@@ -1171,22 +1235,47 @@ export function PortfolioScene({ data }: Props) {
         onThemeToggle={handleThemeToggle}
         onProjectSelect={handleProjectSelect}
       />
-      <NodeInspector
-        codeHtml={codeHtml}
-        title={data.ui.inspector.title}
-        status={data.ui.inspector.status}
-        liveSync={liveSync}
-      />
-      {heroSelection == null && (
-        <HeroText
-          data={data}
-          selection={heroFloorPreview}
-          onOpenProyectos={() => setActiveNavPanel("proyectos")}
+      {!isCoarsePointer && (
+        <NodeInspector
+          codeHtml={codeHtml}
+          title={data.ui.inspector.title}
+          status={data.ui.inspector.status}
+          liveSync={liveSync}
         />
       )}
-      {heroSelection != null && (
+      {isCoarsePointer &&
+        heroSelection != null &&
+        mobileProjectPanel === null && (
+          <button
+            type="button"
+            className="mobile-hero-dismiss-layer"
+            aria-label="Volver al resumen principal"
+            onClick={clearProjectSelection}
+          />
+        )}
+      {(heroSelection == null || isCoarsePointer) && (
+        <HeroText
+          data={data}
+          selection={
+            heroSelection != null && isCoarsePointer ? heroSelection : heroFloorPreview
+          }
+          onOpenProyectos={() => setActiveNavPanel("proyectos")}
+          projectDemoOpensPanel={Boolean(isCoarsePointer && heroSelection != null)}
+          onProjectDemoPanel={
+            isCoarsePointer && heroSelection != null
+              ? () => setMobileProjectPanel("demo")
+              : undefined
+          }
+          onProjectInspectorPanel={
+            isCoarsePointer && heroSelection != null
+              ? () => setMobileProjectPanel("inspector")
+              : undefined
+          }
+          inspectorCtaLabel={data.ui.inspector.title}
+        />
+      )}
+      {heroSelection != null && !isCoarsePointer && (
         <>
-          {/* Bloquea interacción con rail, escena, inspector y controles; el visor (z-100) queda encima. */}
           <div className="project-viewer-backdrop" aria-hidden tabIndex={-1} />
           <ProjectViewerModal
             selection={heroSelection}
@@ -1195,6 +1284,25 @@ export function PortfolioScene({ data }: Props) {
             projectViewer={data.ui.projectViewer}
           />
         </>
+      )}
+      {heroSelection != null && isCoarsePointer && mobileProjectPanel === "demo" && (
+        <ProjectViewerModal
+          selection={heroSelection}
+          onClose={closeMobileProjectPanel}
+          openDemoLabel={data.ui.projectViewer.openDemoLabel}
+          projectViewer={data.ui.projectViewer}
+        />
+      )}
+      {heroSelection != null && isCoarsePointer && mobileProjectPanel === "inspector" && (
+        <NodeInspector
+          mode="mobileOverlay"
+          codeHtml={codeHtml}
+          title={data.ui.inspector.title}
+          status={data.ui.inspector.status}
+          liveSync={liveSync}
+          onClose={closeMobileProjectPanel}
+          closeLabel={data.ui.projectViewer.closeLabel}
+        />
       )}
 
       <div className="controls-wrapper">
@@ -1208,26 +1316,50 @@ export function PortfolioScene({ data }: Props) {
           onToggleAuto={handleToggleAuto}
           labels={data.ui.viewControls}
         />
-        <div className="hint">
+        <div className="hint hint--mouse">
           <kbd>{data.ui.interactionHint.clickLabel}</kbd> {data.ui.interactionHint.panLabel} &nbsp;
           <kbd>{data.ui.interactionHint.rightClickLabel}</kbd> {data.ui.interactionHint.orbitLabel} &nbsp;
           <kbd>{data.ui.interactionHint.scrollLabel}</kbd> {data.ui.interactionHint.zoomLabel}
         </div>
+        <div className="hint hint--touch">
+          <kbd>{data.ui.interactionHint.touchDragLabel}</kbd> {data.ui.interactionHint.touchPanLabel} &nbsp;
+          <kbd>{data.ui.interactionHint.touchPinchLabel}</kbd> {data.ui.interactionHint.touchZoomLabel}
+        </div>
       </div>
 
-      <LevelControls
-        floorCount={floorCount}
-        onAdd={handleAddFloor}
-        onRemove={handleRemoveFloor}
-        floorsLabel={data.ui.levelControls.floorsLabel}
-      />
+      <SideDrawer
+        side="left"
+        open={uiDrawersOpen.left}
+        onToggle={() => setUiDrawersOpen(prev => ({ ...prev, left: !prev.left }))}
+        tabLabel={data.ui.levelControls.rotationLabel}
+        className="rotation-controls"
+      >
+        <div className="level-controls">
+          <button className="lvl-btn" onClick={handleIncreaseRotateSpeed} type="button">
+            +
+          </button>
+          <span className="lvl-value">{rotateSpeedLevel}</span>
+          <button className="lvl-btn" onClick={handleDecreaseRotateSpeed} type="button">
+            −
+          </button>
+          <span className="lvl-label">{data.ui.levelControls.rotationLabel}</span>
+        </div>
+      </SideDrawer>
 
-      <div className="level-controls rotation-controls">
-        <button className="lvl-btn" onClick={handleIncreaseRotateSpeed} type="button">+</button>
-        <span className="lvl-value">{rotateSpeedLevel}</span>
-        <button className="lvl-btn" onClick={handleDecreaseRotateSpeed} type="button">−</button>
-        <span className="lvl-label">{data.ui.levelControls.rotationLabel}</span>
-      </div>
+      <SideDrawer
+        side="right"
+        open={uiDrawersOpen.right}
+        onToggle={() => setUiDrawersOpen(prev => ({ ...prev, right: !prev.right }))}
+        tabLabel={data.ui.levelControls.floorsLabel}
+        className="level-drawer"
+      >
+        <LevelControls
+          floorCount={floorCount}
+          onAdd={handleAddFloor}
+          onRemove={handleRemoveFloor}
+          floorsLabel={data.ui.levelControls.floorsLabel}
+        />
+      </SideDrawer>
     </>
   );
 }

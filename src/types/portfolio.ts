@@ -133,6 +133,11 @@ export type PortfolioData = {
       orbitLabel: string;
       scrollLabel: string;
       zoomLabel: string;
+      /** Copy para pantallas táctiles (móvil/tablet) */
+      touchDragLabel: string;
+      touchPanLabel: string;
+      touchPinchLabel: string;
+      touchZoomLabel: string;
     };
     /** Visor interno al elegir un proyecto (entre rail e inspector; iframe = demo) */
     projectViewer: {

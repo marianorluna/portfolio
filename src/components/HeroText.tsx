@@ -13,6 +13,11 @@ type Props = {
   selection: HeroSelection | null;
   /** Con vista por defecto: abre el panel lateral Proyectos. */
   onOpenProyectos?: () => void;
+  /** Móvil: el CTA Demo abre el panel interno en lugar de navegar. */
+  projectDemoOpensPanel?: boolean;
+  onProjectDemoPanel?: () => void;
+  onProjectInspectorPanel?: () => void;
+  inspectorCtaLabel?: string;
 };
 
 function isHttpUrlString(value: unknown): value is string {
@@ -20,7 +25,15 @@ function isHttpUrlString(value: unknown): value is string {
   return value.startsWith("http://") || value.startsWith("https://");
 }
 
-export function HeroText({ data, selection, onOpenProyectos }: Props) {
+export function HeroText({
+  data,
+  selection,
+  onOpenProyectos,
+  projectDemoOpensPanel,
+  onProjectDemoPanel,
+  onProjectInspectorPanel,
+  inspectorCtaLabel,
+}: Props) {
   const { meta, hero } = data;
   const badge = selection ? selection.categoryLabel : meta.badge;
   const useProjectLinks = selection != null;
@@ -28,6 +41,12 @@ export function HeroText({ data, selection, onOpenProyectos }: Props) {
   const githubUrl = useProjectLinks ? selection.project.github : null;
   const defaultPrimaryUrl = hero.cta.primaryUrl;
   const projectPrimaryLabel = hero.cta.primaryProject;
+  const demoOpensPanel =
+    Boolean(projectDemoOpensPanel && onProjectDemoPanel) &&
+    isHttpUrlString(demoUrl);
+  const inspectorFirstInMobile = Boolean(useProjectLinks && projectDemoOpensPanel);
+  const demoBtnClass = inspectorFirstInMobile ? "btn btn-secondary" : "btn btn-primary";
+  const inspectorBtnClass = inspectorFirstInMobile ? "btn btn-primary" : "btn btn-secondary";
 
   return (
     <div className="hero-content">
@@ -57,7 +76,18 @@ export function HeroText({ data, selection, onOpenProyectos }: Props) {
       </h1>
       <p className="subtitle">{selection ? selection.project.description : hero.subtitle}</p>
       <div className="cta-group">
-        {useProjectLinks && isHttpUrlString(demoUrl) ? (
+        {inspectorFirstInMobile &&
+        onProjectInspectorPanel != null &&
+        inspectorCtaLabel != null ? (
+          <button type="button" className={inspectorBtnClass} onClick={onProjectInspectorPanel}>
+            {inspectorCtaLabel}
+          </button>
+        ) : null}
+        {useProjectLinks && demoOpensPanel ? (
+          <button type="button" className={demoBtnClass} onClick={onProjectDemoPanel}>
+            {projectPrimaryLabel}
+          </button>
+        ) : useProjectLinks && isHttpUrlString(demoUrl) ? (
           <a
             href={demoUrl}
             className="btn btn-primary"
@@ -113,6 +143,14 @@ export function HeroText({ data, selection, onOpenProyectos }: Props) {
           >
             {hero.cta.secondary}
           </span>
+        ) : null}
+        {!inspectorFirstInMobile &&
+        useProjectLinks &&
+        onProjectInspectorPanel != null &&
+        inspectorCtaLabel != null ? (
+          <button type="button" className={inspectorBtnClass} onClick={onProjectInspectorPanel}>
+            {inspectorCtaLabel}
+          </button>
         ) : null}
       </div>
     </div>

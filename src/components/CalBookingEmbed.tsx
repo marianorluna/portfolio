@@ -16,6 +16,7 @@ type Props = {
 
 export function CalBookingEmbed({ theme }: Props) {
   const calTheme = theme === "light" ? "light" : "dark";
+  const calKey = `${CAL_NAMESPACE}-${calTheme}`;
 
   useEffect(() => {
     let cancelled = false;
@@ -40,6 +41,7 @@ export function CalBookingEmbed({ theme }: Props) {
     <div className="nav-cal-embed">
       <div className="nav-cal-embed__shell" data-theme={calTheme}>
         <Cal
+          key={calKey}
           namespace={CAL_NAMESPACE}
           calLink={CAL_LINK}
           calOrigin={CAL_ORIGIN}

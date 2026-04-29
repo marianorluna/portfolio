@@ -443,14 +443,9 @@ export function PortfolioScene({ data, locale }: Props) {
   const [rotateSpeedLevel, setRotateSpeedLevel] = useState(DEFAULT_ROTATE_SPEED_LEVEL);
 
   const [uiDrawersOpen, setUiDrawersOpen] = useState<{ left: boolean; right: boolean }>({
-    left: true,
-    right: true,
+    left: false,
+    right: false,
   });
-
-  useEffect(() => {
-    const isMobile = window.innerWidth <= 768;
-    setUiDrawersOpen({ left: !isMobile, right: !isMobile });
-  }, []);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -806,7 +801,7 @@ export function PortfolioScene({ data, locale }: Props) {
 
   const handleProjectSelect = useCallback(
     (project: ProjectItem, categoryLabel: string) => {
-      const html = buildProjectCodeHtml(project);
+      const html = buildProjectCodeHtml(project, dataRef.current.ui.inspector.codeHtml.projectTemplate);
       const currentIntersected = intersectedRef.current;
       if (currentIntersected) {
         const tc = SCENE_COLORS[themeRef.current];
@@ -1024,7 +1019,9 @@ export function PortfolioScene({ data, locale }: Props) {
       if (d.projectId) {
         const found = findProjectWithCategory(dataRef.current, d.projectId);
         if (found) {
-          setCodeHtmlRef.current(buildProjectCodeHtml(found.project));
+          setCodeHtmlRef.current(
+            buildProjectCodeHtml(found.project, dataRef.current.ui.inspector.codeHtml.projectTemplate)
+          );
           setHeroFloorPreviewRef.current({
             project: found.project,
             categoryLabel: found.categoryLabel,
@@ -1758,43 +1755,26 @@ function toPascalCase(name: string): string {
 
 type CodeLineIndent = "i1" | "i2";
 
-/** Convierte texto largo en dos líneas si supera `maxLen` caracteres. */
+/** Línea tipo atributo: sin &lt;br&gt; fijos; el ajuste lo hace el CSS según el ancho (escalable con la fuente). */
 function wrapAttr(
   attr: string,
   value: string,
   indent: CodeLineIndent,
-  maxLen = 34
 ): string {
-  const lineClass = `cl cl-${indent}`;
   const safe = sanitizeCodeValue(value);
-  const nameAndEq =
-    `<span class="na">${attr}</span>` +
-    `<span class="p">=</span>`;
-
-  if (value.length <= maxLen) {
-    return (
-      `<div class="${lineClass}">` +
-      nameAndEq +
-      `<span class="s">"${safe}"</span>` +
-      `</div>`
-    );
-  }
-
-  const breakAt = value.lastIndexOf(" ", maxLen) > 12
-    ? value.lastIndexOf(" ", maxLen)
-    : maxLen;
-  const safeA = sanitizeCodeValue(value.slice(0, breakAt));
-  const safeB = sanitizeCodeValue(value.slice(breakAt).trimStart());
   return (
-    `<div class="${lineClass}">` +
-    nameAndEq +
-    `<span class="s">"${safeA}</span><br>` +
-    `<span class="s">${safeB}"</span>` +
+    `<div class="cl cl-${indent} cl-attr">` +
+    `<span class="na">${attr}</span>` +
+    ` <span class="p">=</span> ` +
+    `<span class="s">"${safe}"</span>` +
     `</div>`
   );
 }
 
-function buildProjectCodeHtml(project: ProjectItem): string {
+function buildProjectCodeHtml(
+  project: ProjectItem,
+  template: PortfolioData["ui"]["inspector"]["codeHtml"]["projectTemplate"]
+): string {
   const componentName = toPascalCase(project.name);
 
   const stackItems = project.stack
@@ -1812,29 +1792,24 @@ function buildProjectCodeHtml(project: ProjectItem): string {
     `<span class="p">(</span>` +
     `</div>` +
     `<div class="cl cl-i1">` +
-    `<span class="p">&lt;</span><span class="nc">ProjectNode</span>` +
+    `<span class="p">&lt;</span><span class="nc">${sanitizeCodeValue(template.componentTag)}</span>` +
     `</div>` +
-    `<div class="cl cl-i2"><span class="cm">// Contexto: problema real</span></div>` +
-    wrapAttr("contexto", project.context, "i2") +
-    `<div class="cl cl-i2"><span class="cm">// Impacto: resultado medible</span></div>` +
-    wrapAttr("impacto", project.impact, "i2") +
-    `<div class="cl cl-i2"><span class="cm">// Rol exacto</span></div>` +
-    wrapAttr("rol", project.role, "i2") +
+    `<div class="cl cl-i2"><span class="cm">${sanitizeCodeValue(template.contextComment)}</span></div>` +
+    wrapAttr(template.contextLabel, project.context, "i2") +
+    wrapAttr(template.impactLabel, project.impact, "i2") +
+    `<div class="cl cl-i2"><span class="cm">${sanitizeCodeValue(template.roleComment)}</span></div>` +
+    wrapAttr(template.roleLabel, project.role, "i2") +
+    wrapAttr(template.platformLabel, project.platform, "i2") +
+    wrapAttr(template.scopeLabel, project.scope, "i2") +
+    `<div class="cl cl-i2"><span class="cm">${sanitizeCodeValue(template.stackComment)}</span></div>` +
     `<div class="cl cl-i2">` +
-    `<span class="na">stack</span>` +
-    `<span class="p">={[</span>${stackItems}<span class="p">]}</span>` +
+    `<span class="na">${sanitizeCodeValue(template.stackLabel)}</span>` +
+    ` <span class="p">=</span> <span class="p">{[</span>${stackItems}<span class="p">]}</span>` +
     `</div>` +
     `<div class="cl cl-i1"><span class="p">&gt;</span></div>` +
-    `<div class="cl cl-i2"><span class="cm">// Enlaces</span></div>` +
-    wrapAttr("link", project.link, "i2") +
-    wrapAttr("github", project.github, "i2") +
-    wrapAttr("demo", project.demo, "i2") +
-    (project.demoEmbedFallback
-      ? wrapAttr("demoEmbedFallback", project.demoEmbedFallback, "i2")
-      : "") +
     `<div class="cl cl-i1">` +
     `<span class="p">&lt;/</span>` +
-    `<span class="nc">ProjectNode</span>` +
+    `<span class="nc">${sanitizeCodeValue(template.componentTag)}</span>` +
     `<span class="p">&gt;</span>` +
     `</div>` +
     `<div class="cl"><span class="p">);</span></div>`

@@ -25,13 +25,39 @@
   --mobile-bottom-clearance: var(--ui-inset);
   --hero-text-scale: 1;
   --inspector-text-scale: 1;
+  /* Pestañas laterales (GIRO / PISOS): ancho y hueco respecto al panel */
+  --side-drawer-tab-w: 44px;
+  --side-drawer-tab-gap: 14px;
+  --side-drawer-slide-offset: calc(var(--side-drawer-tab-w) + 8px);
+  /* Altura física base de las pestañas (escritorio/tablet = misma geometría horizontal de alineación) */
+  --side-drawer-tab-strip-h: 52px;
+  /* Ancho más estrecho solo en escritorio/tablet para menos solape con Node Inspector (≠ móvil) */
+  --side-drawer-tab-w-desktop: 28px;
+  --side-drawer-slide-offset-desktop: calc(var(--side-drawer-tab-w-desktop) + 8px);
+  /* Anclaje vertical común de los drawers respecto al viewport (par con .controls-wrapper si se ajusta) */
+  --side-drawer-anchor-bottom: 40px;
+  /*
+   * Alineación con el eje vertical de .view-controls dentro de .controls-wrapper:
+   * debajo van el gap y el hint; el centro de la barra de vistas queda a esta distancia
+   * desde el borde inferior del viewport (solo usado en ≥769px).
+   */
+  --controls-stack-bottom: 30px;
+  --controls-stack-gap-y: 12px;
+  --view-controls-bar-height: 44px;
+  --controls-hint-stack-height: 22px;
+  --view-controls-center-offset-from-viewport-bottom: calc(
+    var(--controls-stack-bottom) +
+      var(--controls-hint-stack-height) +
+      var(--controls-stack-gap-y) +
+      (var(--view-controls-bar-height) / 2)
+  );
 }
 
 html[data-theme="light"] {
   --accent-blue:   #0d6efd;
   --accent-cyan:   #0369a1;
   --text-main:     #0f172a;
-  --text-muted:    #475569;
+  --text-muted:    #2b333f;
   --panel-bg:      rgba(241, 245, 249, 0.88);
   --panel-border:  rgba(15, 23, 42, 0.12);
   --bg-color:      #e8eaed;
@@ -230,6 +256,12 @@ html[data-theme="light"] .level-controls {
   background: rgba(241, 245, 249, 0.9);
   border-color: rgba(15, 23, 42, 0.12);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+/* Móvil: Node Inspector fullscreen — mismo token que escritorio pero opaco (no heredar el rgba 0.9 del .data-panel claro). */
+html[data-theme="light"] .data-panel.data-panel--mobile-overlay {
+  background: var(--bg-color);
+  box-shadow: 0 24px 56px rgba(15, 23, 42, 0.18);
 }
 
 html[data-theme="light"] .panel-header {
@@ -1757,9 +1789,11 @@ html[data-theme="light"] .project-viewer__fallback-img {
 h1 {
   font-size: 64px;
   font-weight: 800;
-  line-height: 1.05;
+  line-height: 1.18;
   letter-spacing: -2px;
   margin-bottom: 24px;
+  /* Evita que descendentes (g,y,j) recorten con degradado + background-clip: text */
+  padding-block: 0.04em 0.06em;
   background: linear-gradient(180deg, #fff 0%, #888 100%);
   -webkit-background-clip: text;
   background-clip: text;
@@ -1874,6 +1908,9 @@ html[data-theme="light"] .btn-hero--static {
   right: var(--ui-inset);
   width: var(--data-panel-width);
   max-width: min(var(--data-panel-width), calc(100vw - var(--nav-rail-width) - var(--ui-inset) * 2 - 8px));
+  max-height: calc(100dvh - (var(--content-row-top) * 2));
+  display: flex;
+  flex-direction: column;
   background: var(--panel-bg);
   border: 1px solid var(--panel-border);
   border-radius: 12px;
@@ -2022,10 +2059,47 @@ html[data-theme="light"] .status-indicator.is-live {
 }
 
 .code-block-wrapper {
-  max-height: 900px;
+  max-height: calc(100dvh - (var(--content-row-top) * 2) - 52px);
   opacity: 1;
-  overflow: hidden;
+  overflow: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(120, 120, 120, 0.85) rgba(10, 10, 10, 0.55);
   transition: max-height 0.32s ease, opacity 0.2s ease;
+}
+
+.code-block-wrapper::-webkit-scrollbar {
+  width: 10px;
+}
+
+.code-block-wrapper::-webkit-scrollbar-track {
+  background: rgba(10, 10, 10, 0.55);
+}
+
+.code-block-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(120, 120, 120, 0.85);
+  border-radius: 10px;
+  border: 2px solid rgba(10, 10, 10, 0.55);
+}
+
+.code-block-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(150, 150, 150, 0.9);
+}
+
+html[data-theme="light"] .code-block-wrapper {
+  scrollbar-color: rgba(120, 132, 152, 0.9) rgba(226, 232, 240, 0.85);
+}
+
+html[data-theme="light"] .code-block-wrapper::-webkit-scrollbar-track {
+  background: rgba(226, 232, 240, 0.85);
+}
+
+html[data-theme="light"] .code-block-wrapper::-webkit-scrollbar-thumb {
+  background: rgba(120, 132, 152, 0.9);
+  border-color: rgba(226, 232, 240, 0.85);
+}
+
+html[data-theme="light"] .code-block-wrapper::-webkit-scrollbar-thumb:hover {
+  background: rgba(100, 116, 139, 0.95);
 }
 
 .data-panel.is-collapsed .code-block-wrapper {
@@ -2055,6 +2129,15 @@ html[data-theme="light"] .status-indicator.is-live {
 .code-block .cl-i1 { padding-left: 2ch; }
 .code-block .cl-i2 { padding-left: 4ch; }
 .code-block .cl-i3 { padding-left: 6ch; }
+
+/* Inspector: valores largos; sin saltos inyectados por carácter — el wrap sigue el ancho real del panel */
+.code-block .cl-attr {
+  min-width: 0;
+}
+.code-block .cl-attr .s {
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
 
 .code-block::-webkit-scrollbar { width: 4px; }
 .code-block::-webkit-scrollbar-track { background: transparent; }
@@ -2367,15 +2450,16 @@ html[data-theme="light"] .status-indicator.is-live {
 /* ─── ROTATION SPEED CONTROL (left side, mirror de level-controls) ─── */
 .rotation-controls {
   position: fixed;
-  left: calc(var(--nav-rail-width) + 40px);
+  /* Pestaña alineada con el borde derecho del rail (tras ella empieza el área útil). */
+  left: var(--nav-rail-width);
   right: auto;
-  bottom: 40px;
+  bottom: var(--side-drawer-anchor-bottom);
 }
 
 /* ─── SIDE DRAWERS (mobile-friendly controls) ─── */
 .side-drawer {
   position: fixed;
-  bottom: 40px;
+  bottom: var(--side-drawer-anchor-bottom);
   z-index: 20;
   pointer-events: none;
 }
@@ -2391,26 +2475,20 @@ html[data-theme="light"] .status-indicator.is-live {
   position: absolute;
   top: 50%;
   transform: translateY(-50%);
-  display: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   width: var(--side-drawer-tab-w);
-  height: 52px;
+  height: var(--side-drawer-tab-strip-h);
   border: 1px solid rgba(255, 255, 255, 0.08);
   background: rgba(8, 10, 14, 0.92);
   backdrop-filter: blur(22px);
-  align-items: center;
-  justify-content: center;
   cursor: pointer;
   transition: transform 0.22s ease, background 0.22s ease, border-color 0.22s ease;
   box-shadow:
     0 10px 28px rgba(0, 0, 0, 0.42),
     0 1px 0 rgba(255, 255, 255, 0.06) inset;
   border-radius: 12px;
-}
-
-/* Variables del tab para espaciar panel en móvil */
-:root {
-  --side-drawer-tab-w: 44px;
-  --side-drawer-tab-gap: 14px;
 }
 
 html[data-theme="light"] .side-drawer__tab {
@@ -2451,11 +2529,12 @@ html[data-theme="light"] .side-drawer__tab:hover {
 }
 
 .side-drawer--left {
-  left: calc(var(--nav-rail-width) + 40px);
+  left: var(--nav-rail-width);
 }
 
+/* Pestaña pegada al margen derecho de la ventana (escritorio/tablet). Móvil pisa en @media ≤768px. */
 .side-drawer--right {
-  right: 40px;
+  right: 0;
 }
 
 .side-drawer--left .side-drawer__tab {
@@ -2476,6 +2555,73 @@ html[data-theme="light"] .side-drawer__tab:hover {
   bottom: auto;
   left: auto;
   right: auto;
+}
+
+/* Tablet y escritorio: pestañas para ocultar/mostrar controladores (misma lógica que en móvil) */
+@media (min-width: 769px) {
+  .side-drawer--left .side-drawer__panel {
+    margin-left: var(--side-drawer-slide-offset-desktop);
+  }
+
+  .side-drawer--right .side-drawer__panel {
+    margin-right: var(--side-drawer-slide-offset-desktop);
+  }
+
+  .side-drawer--left.is-closed .side-drawer__panel {
+    transform: translateX(
+      calc(
+        -100% - var(--side-drawer-tab-w-desktop) - var(--side-drawer-tab-gap) -
+          var(--side-drawer-slide-offset-desktop)
+      )
+    );
+  }
+
+  .side-drawer--right.is-closed .side-drawer__panel {
+    transform: translateX(
+      calc(
+        100% + var(--side-drawer-tab-w-desktop) + var(--side-drawer-tab-gap) +
+          var(--side-drawer-slide-offset-desktop)
+      )
+    );
+  }
+
+  .side-drawer--left.is-open .side-drawer__panel,
+  .side-drawer--right.is-open .side-drawer__panel {
+    transform: translateX(0);
+  }
+
+  /*
+   * Ancho más estrecho sobre escritorio/tablet; alto heredado 52px.
+   * Centro alineado con .view-controls (sin top:50% sobre el panel alto).
+   */
+  .side-drawer__tab {
+    top: auto;
+    width: var(--side-drawer-tab-w-desktop);
+    box-shadow:
+      0 6px 16px rgba(0, 0, 0, 0.35),
+      0 1px 0 rgba(255, 255, 255, 0.06) inset;
+    bottom: calc(
+      var(--view-controls-center-offset-from-viewport-bottom) -
+        var(--side-drawer-anchor-bottom) -
+        (var(--side-drawer-tab-strip-h) / 2)
+    );
+    transform: translateY(0);
+  }
+
+  html[data-theme="light"] .side-drawer__tab {
+    box-shadow:
+      0 6px 14px rgba(15, 23, 42, 0.12),
+      0 1px 0 rgba(255, 255, 255, 0.8) inset;
+  }
+
+  .side-drawer__tab:active {
+    transform: scale(0.97);
+  }
+
+  .side-drawer__tab-icon {
+    width: 16px;
+    height: 16px;
+  }
 }
 
 /* ─── LOADING SCREEN ─── */
@@ -2680,7 +2826,11 @@ html[data-theme="light"] .side-drawer__tab:hover {
     transform: translateX(0);
   }
 
-  h1 { font-size: 42px; letter-spacing: -1px; }
+  h1 {
+    font-size: 42px;
+    letter-spacing: -1px;
+    line-height: 1.16;
+  }
 
   .nav-rail {
     top: auto;
@@ -2918,7 +3068,7 @@ html[data-theme="light"] .side-drawer__tab:hover {
 @media (max-width: 768px) and (max-height: 820px) {
   h1 {
     font-size: 36px;
-    line-height: 1.02;
+    line-height: 1.15;
     margin-bottom: 16px;
   }
 
@@ -2952,6 +3102,7 @@ html[data-theme="light"] .side-drawer__tab:hover {
 
   h1 {
     font-size: 32px;
+    line-height: 1.15;
     margin-bottom: 12px;
   }
 

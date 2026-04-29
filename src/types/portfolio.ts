@@ -130,6 +130,24 @@ export type PortfolioData = {
         jsonResponseComment: string;
         status: string;
         sync: string;
+        projectTemplate: {
+          componentTag: string;
+          contextComment: string;
+          impactComment: string;
+          roleComment: string;
+          stackComment: string;
+          linksComment: string;
+          contextLabel: string;
+          impactLabel: string;
+          roleLabel: string;
+          platformLabel: string;
+          scopeLabel: string;
+          stackLabel: string;
+          linkLabel: string;
+          githubLabel: string;
+          demoLabel: string;
+          demoEmbedFallbackLabel: string;
+        };
       };
     };
     viewControls: {
@@ -213,6 +231,8 @@ export type PortfolioData = {
         context: string;
         impact: string;
         role: string;
+        platform: string;
+        scope: string;
         stack: string[];
         link: string;
         github: string;

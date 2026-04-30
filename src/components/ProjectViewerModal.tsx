@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useId, useRef, useState } from "react";
+import Image from "next/image";
 import type { PortfolioData } from "@/types/portfolio";
+import { hasThirdPartyConsent, onConsentChanged, setThirdPartyConsent } from "@/lib/legal/consent";
 
 type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][number];
 
@@ -39,6 +41,9 @@ export function ProjectViewerModal({
   const [isPreviewLoading, setIsPreviewLoading] = useState(
     demoUrl != null || embedFallback != null
   );
+  const [thirdPartyConsent, setThirdPartyConsentState] = useState<boolean>(() =>
+    hasThirdPartyConsent()
+  );
 
   useEffect(() => {
     const el = closeRef.current;
@@ -46,11 +51,16 @@ export function ProjectViewerModal({
   }, [project.id]);
 
   useEffect(() => {
-    setIsPreviewLoading(demoUrl != null || embedFallback != null);
-  }, [project.id, demoUrl, embedFallback]);
+    return onConsentChanged((state) => {
+      setThirdPartyConsentState(state.thirdParty);
+    });
+  }, []);
+
+  const requiresThirdPartyConsent = demoUrl != null;
 
   useEffect(() => {
     if (!isPreviewLoading) return;
+    if (requiresThirdPartyConsent && !thirdPartyConsent) return;
     if (loadTimeoutRef.current != null) {
       window.clearTimeout(loadTimeoutRef.current);
     }
@@ -64,7 +74,7 @@ export function ProjectViewerModal({
         loadTimeoutRef.current = null;
       }
     };
-  }, [isPreviewLoading, project.id]);
+  }, [isPreviewLoading, requiresThirdPartyConsent, thirdPartyConsent]);
 
   return (
     <div
@@ -87,15 +97,33 @@ export function ProjectViewerModal({
               <p className="project-viewer__loading-text">Cargando vista previa...</p>
             </div>
           )}
-          {embedFallback != null ? (
+          {requiresThirdPartyConsent && !thirdPartyConsent ? (
+            <div className="project-viewer__iframe-fallback" role="status">
+              <p className="project-viewer__iframe-fallback-text">
+                Para ver contenido externo debes aceptar cookies de terceros.
+              </p>
+              <button
+                type="button"
+                className="btn btn-primary"
+                onClick={() => {
+                  setThirdPartyConsent(true);
+                  setThirdPartyConsentState(true);
+                  setIsPreviewLoading(true);
+                }}
+              >
+                Aceptar y continuar
+              </button>
+            </div>
+          ) : embedFallback != null ? (
             <div className="project-viewer__embed-fallback" role="img" aria-label={project.name}>
               {/* Captura: Autodesk (y similares) suelen bloquear iframe; la demo sigue abriéndose en pestaña */}
-              <img
+              <Image
                 className="project-viewer__fallback-img"
                 src={embedFallback}
                 alt={`Vista de ${project.name}`}
-                loading="eager"
-                decoding="async"
+                width={1280}
+                height={720}
+                priority
                 draggable={false}
                 onLoad={() => setIsPreviewLoading(false)}
                 onError={() => setIsPreviewLoading(false)}

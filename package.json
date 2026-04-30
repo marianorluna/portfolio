@@ -7,6 +7,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest",
+    "test:run": "vitest run --coverage",
+    "ci:check": "npm run lint && npm run typecheck && npm run test:run",
     "dev:local": "next dev --hostname 0.0.0.0 --port 3000"
   },
   "dependencies": {
@@ -21,12 +25,17 @@
     "zod": "^4.3.6"
   },
   "devDependencies": {
+    "@testing-library/jest-dom": "^6.9.1",
+    "@testing-library/react": "^16.3.2",
     "@types/node": "24.9.1",
     "@types/react": "19.2.2",
     "@types/react-dom": "19.2.2",
     "@types/three": "0.180.0",
+    "@vitest/coverage-v8": "^4.1.5",
     "eslint": "9.38.0",
     "eslint-config-next": "^16.2.4",
-    "typescript": "5.9.3"
+    "jsdom": "^29.1.1",
+    "typescript": "5.9.3",
+    "vitest": "^4.1.5"
   }
 }

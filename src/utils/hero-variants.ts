@@ -1,8 +1,10 @@
 import * as THREE from "three";
-import { getViewTarget, type ViewPreset } from "@/utils/view-variants";
+import type { ViewPreset } from "@/utils/view-variants";
 import { FLOOR_HEIGHT } from "@/utils/building-model";
 
 export type HeroCameraMode = "perspective" | "orthographic";
+export type HeroDeviceBucket = "desktop" | "tablet" | "mobile";
+export type HeroAutoRotateSpeedByDevice = Readonly<Record<HeroDeviceBucket, number>>;
 
 export interface HeroStartupVariant {
   readonly id: number;
@@ -15,6 +17,8 @@ export interface HeroStartupVariant {
   readonly view: ViewPreset | null;
   /** Nivel de velocidad de autorotación (1–10, igual escala que el slider de la UI). */
   readonly autoRotateSpeed: number;
+  /** Velocidad inicial opcional por dispositivo (desktop/tablet/mobile). */
+  readonly autoRotateSpeedByDevice?: HeroAutoRotateSpeedByDevice;
   /**
    * Sobreescribe `getViewTarget` para este preset.
    * Si no se define, se usa `getViewTarget(view ?? "iso", bX, opts)`.
@@ -45,8 +49,14 @@ export const HERO_VARIANTS: readonly HeroStartupVariant[] = [
     id: 2,
     cameraMode: "orthographic",
     view: "top",
-    autoRotateSpeed: 1,
-    getCamera: (bX, _stackFloors) => {
+    autoRotateSpeed: 3,
+    autoRotateSpeedByDevice: {
+      desktop: 1,
+      tablet: 3,
+      mobile: 4,
+    },
+    getCamera: (bX, stackFloors) => {
+      void stackFloors;
       const lookAt = new THREE.Vector3(bX, 10, 0);
       return {
         position: new THREE.Vector3(bX, 50, 0.001), // más bajo que 80 = más cerca
@@ -61,86 +71,12 @@ export const HERO_VARIANTS: readonly HeroStartupVariant[] = [
     view: null,
     autoRotateSpeed: 3,
     getCamera: (bX: number, stackFloors: number) => {
-      const midY = (stackFloors * FLOOR_HEIGHT) / 2;
       const position = new THREE.Vector3(bX + 5, 4, 22);
       const lookAt   = new THREE.Vector3(bX, stackFloors * FLOOR_HEIGHT * 0.75, 0);
       return { position, lookAt };
     },
   },
 ] as const;
-
-const STORAGE_KEY = "portfolio-hero-variant";
-/** 24 h; pasado este tiempo se elige otra variante al azar. */
-const HERO_VARIANT_TTL_MS = 24 * 60 * 60 * 1000;
-
-type HeroVariantStored = {
-  idx: number;
-  at: number;
-};
-
-function isValidIdx(idx: number): boolean {
-  return Number.isInteger(idx) && idx >= 0 && idx < HERO_VARIANTS.length;
-}
-
-function readStoredPayload(): HeroVariantStored | null {
-  if (typeof window === "undefined") return null;
-  try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw == null) return null;
-    const p = JSON.parse(raw) as unknown;
-    if (p == null || typeof p !== "object") return null;
-    const o = p as Record<string, unknown>;
-    const idx = o.idx;
-    const at = o.at;
-    if (typeof idx !== "number" || typeof at !== "number") return null;
-    if (!isValidIdx(idx)) return null;
-    if (!Number.isFinite(at) || at < 0) return null;
-    return { idx, at };
-  } catch {
-    return null;
-  }
-}
-
-/**
- * Migra un valor plano "0"…"3" (sessionStorage de la implementación previa) a
- * localStorage con TTL, para no forzar a todos a una nueva lotería inmediatamente.
- */
-function migrateFromLegacySessionStorageIfNeeded(): void {
-  if (typeof window === "undefined") return;
-  try {
-    if (window.localStorage.getItem(STORAGE_KEY) != null) return;
-    const legacy = window.sessionStorage.getItem(STORAGE_KEY);
-    if (legacy == null) return;
-    const idx = parseInt(legacy, 10);
-    if (!isValidIdx(idx)) return;
-    window.localStorage.setItem(
-      STORAGE_KEY,
-      JSON.stringify({ idx, at: Date.now() } satisfies HeroVariantStored)
-    );
-  } catch {
-    /* private mode / storage full */
-  }
-  try {
-    window.sessionStorage.removeItem(STORAGE_KEY);
-  } catch {
-    /* ignore */
-  }
-}
-
-function persistNewVariantIdx(idx: number): void {
-  if (typeof window === "undefined") return;
-  try {
-    const payload: HeroVariantStored = { idx, at: Date.now() };
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
-  } catch {
-    /* ignore */
-  }
-  try {
-    window.sessionStorage.removeItem(STORAGE_KEY);
-  } catch {
-    /* ignore */
-  }
-}
 
 /**
  * Elige (o reutiliza) la variante del hero. Persiste en `localStorage` con TTL de 24 h:

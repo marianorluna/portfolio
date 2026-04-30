@@ -77,6 +77,33 @@ export type ContactSocial = {
   items: ContactSocialLink[];
 };
 
+export type LegalSection = {
+  title: string;
+  paragraphs?: string[];
+  bullets?: string[];
+};
+
+export type LegalPageCopy = {
+  metadataTitle: string;
+  title: string;
+  sections: LegalSection[];
+};
+
+export type LegalCopy = {
+  footerAriaLabel: string;
+  links: {
+    legalNotice: string;
+    privacy: string;
+    cookies: string;
+  };
+  backToHome: string;
+  pages: {
+    legalNotice: LegalPageCopy;
+    privacy: LegalPageCopy;
+    cookies: LegalPageCopy;
+  };
+};
+
 export type ContactFormCopy = {
   formAriaLabel: string;
   nameLabel: string;
@@ -265,4 +292,5 @@ export type PortfolioData = {
       }[];
     }[];
   };
+  legal: LegalCopy;
 };

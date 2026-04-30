@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState, type Dispatch, type SetStateAction } from "react";
+import Image from "next/image";
 import Link from "next/link";
 import { Settings } from "lucide-react";
 import type {
@@ -27,6 +28,7 @@ type Props = {
   formacion:      PortfolioData["formacion"];
   contactForm:    PortfolioData["ui"]["contactForm"];
   contactSocial:  PortfolioData["ui"]["contactSocial"];
+  legal:          PortfolioData["legal"];
   uiText:         NavUiText;
   theme:          SceneTheme;
   activePanel:    NavActivePanel;
@@ -54,6 +56,7 @@ export function Navbar({
   formacion,
   contactForm,
   contactSocial,
+  legal,
   uiText,
   theme,
   activePanel,
@@ -80,7 +83,6 @@ export function Navbar({
     .filter(Boolean);
   const leadParagraph = aboutParagraphs[0] ?? "";
   const bodyParagraph = aboutParagraphs[1] ?? "";
-
   const isBrandOpen   = activePanel === "brand";
   const isSettingsOpen = activePanel === "settings";
   const openLink = activePanel && activePanel !== "brand" && activePanel !== "settings"
@@ -101,13 +103,8 @@ export function Navbar({
     return () => document.removeEventListener("mousedown", onDown);
   }, [activePanel, onActivePanelChange]);
 
-  useEffect(() => {
-    if (activePanel === "formacion") {
-      setOpenFormationId(defaultFormacionItemId);
-      return;
-    }
-    setOpenFormationId(null);
-  }, [activePanel]);
+  const effectiveOpenFormationId =
+    activePanel === "formacion" ? (openFormationId ?? defaultFormacionItemId) : null;
 
   const fullNameA11y = `${brand.nameMain} ${brand.nameRest}`;
   const deviceModeLabelMap: Record<DeviceMode, string> = {
@@ -191,7 +188,7 @@ export function Navbar({
               <p className="nav-flyout-brand__line1">
                 <span className="nav-flyout-brand__title-card">
                   <Link
-                    href="/"
+                    href={`/${locale}`}
                     className="nav-flyout-brand__title-link"
                     onClick={() => onActivePanelChange(null)}
                   >
@@ -210,6 +207,17 @@ export function Navbar({
                   <p className="nav-flyout-about__statement">{brand.aboutStatement}</p>
                 )}
               </section>
+              <nav className="nav-flyout-about__legal" aria-label={legal.footerAriaLabel}>
+                <Link href={`/${locale}/legal/aviso-legal`} onClick={() => onActivePanelChange(null)}>
+                  {legal.links.legalNotice}
+                </Link>
+                <Link href={`/${locale}/legal/privacidad`} onClick={() => onActivePanelChange(null)}>
+                  {legal.links.privacy}
+                </Link>
+                <Link href={`/${locale}/legal/cookies`} onClick={() => onActivePanelChange(null)}>
+                  {legal.links.cookies}
+                </Link>
+              </nav>
             </div>
           </div>
         )}
@@ -255,8 +263,12 @@ export function Navbar({
                     <h3 className="nav-projects__category-title">{category.label}</h3>
                     <ul className="nav-projects__list">
                       {category.items.map(item => {
-                        const isExpanded = openFormationId === item.id;
+                        const isExpanded = effectiveOpenFormationId === item.id;
                         const panelId = `formacion-desc-${item.id}`;
+                        const logoSrc =
+                          theme === "light"
+                            ? (item.logoLight ?? item.logoDark)
+                            : (item.logoDark ?? item.logoLight);
                         return (
                           <li key={item.id} className="nav-projects__item nav-projects__item--static">
                             <div
@@ -284,12 +296,14 @@ export function Navbar({
                               </button>
                               {isExpanded && (
                                 <div className="nav-formacion__desc" id={panelId} aria-labelledby={`formacion-trigger-${item.id}`}>
-                                  {(item.logoLight != null || item.logoDark != null) && (
+                                  {logoSrc != null && (
                                     <div className="nav-formacion__logo-wrap">
-                                      <img
-                                        src={theme === "light" ? (item.logoLight ?? item.logoDark) : (item.logoDark ?? item.logoLight)}
+                                      <Image
+                                        src={logoSrc}
                                         alt={item.logoAlt ?? item.name}
                                         className="nav-formacion__logo"
+                                        width={240}
+                                        height={80}
                                         loading="lazy"
                                       />
                                     </div>
@@ -322,17 +336,15 @@ export function Navbar({
             <ContactSocialRow contactSocial={contactSocial} />
           </div>
         )}
-        {bookingLink && (
+        {bookingLink && activePanel === "citas" && (
           <div
             className="nav-rail__flyout-inner nav-rail__flyout-inner--projects"
-            hidden={activePanel !== "citas"}
-            aria-hidden={activePanel !== "citas"}
-            style={{ display: activePanel === "citas" ? "flex" : "none" }}
+            aria-hidden={false}
           >
             <p className="nav-rail__flyout-kicker">{uiText.sectionKicker}</p>
             <h2 className="nav-rail__flyout-title">{bookingLink.label}</h2>
             <p className="nav-rail__flyout-desc">{bookingLink.description}</p>
-            <CalBookingEmbed theme={theme} />
+            <CalBookingEmbed theme={theme} locale={locale} />
           </div>
         )}
         {isSettingsOpen && (

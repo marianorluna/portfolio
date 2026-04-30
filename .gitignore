@@ -40,7 +40,6 @@ ehthumbs.db
 Desktop.ini
 
 # Other lockfiles
-package-lock.json
 yarn.lock
 pnpm-lock.yaml
 

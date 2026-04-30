@@ -16,6 +16,8 @@ export type TurnstileVerifyResult =
   | { success: true }
   | { success: false; reason: "missing_secret" | "http" | "invalid" | "error_codes" };
 
+const TURNSTILE_TIMEOUT_MS = 8000;
+
 /**
  * Comprueba el token devuelto por el widget Turnstile (servidor, usa `TURNSTILE_SECRET_KEY`).
  */
@@ -36,11 +38,25 @@ export async function verifyTurnstile(
     body.set("remoteip", ip);
   }
 
-  const res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: body.toString()
-  });
+  const controller = new AbortController();
+  const timeoutId = setTimeout(() => {
+    controller.abort();
+  }, TURNSTILE_TIMEOUT_MS);
+
+  let res: Response;
+  try {
+    res = await fetch("https://challenges.cloudflare.com/turnstile/v0/siteverify", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: body.toString(),
+      signal: controller.signal
+    });
+  } catch {
+    clearTimeout(timeoutId);
+    return { success: false, reason: "http" };
+  } finally {
+    clearTimeout(timeoutId);
+  }
 
   if (!res.ok) {
     return { success: false, reason: "http" };

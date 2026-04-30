@@ -19,22 +19,14 @@ type Props = {
 };
 
 function codeToMessage(code: ContactFieldErrorCode, c: ContactFormCopy): string {
-  switch (code) {
-    case "name_required":
-      return c.nameRequired;
-    case "name_max":
-      return c.nameMax;
-    case "email_invalid":
-      return c.emailInvalid;
-    case "message_min":
-      return c.messageMin;
-    case "message_max":
-      return c.messageMax;
-    default: {
-      const _exhaustive: never = code;
-      return _exhaustive;
-    }
-  }
+  const messageByCode: Record<ContactFieldErrorCode, string> = {
+    name_required: c.nameRequired,
+    name_max: c.nameMax,
+    email_invalid: c.emailInvalid,
+    message_min: c.messageMin,
+    message_max: c.messageMax,
+  };
+  return messageByCode[code];
 }
 
 function zodToMessages(err: ZodError, c: ContactFormCopy): FieldErrors {

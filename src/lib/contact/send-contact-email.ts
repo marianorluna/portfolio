@@ -2,6 +2,8 @@ import { Resend } from "resend";
 import type { ContactRequestPayload } from "./schema";
 import { escapeHtml } from "./escape-html";
 
+const RESEND_TIMEOUT_MS = 8000;
+
 function getEnv(): { apiKey: string; from: string; to: string } {
   const apiKey = process.env.RESEND_API_KEY;
   if (apiKey == null || apiKey.length === 0) {
@@ -29,7 +31,7 @@ export async function sendContactEmail(payload: ContactRequestPayload): Promise<
   const safeEmail = escapeHtml(email);
   const safeMessage = escapeHtml(message).replaceAll("\n", "<br>");
 
-  const { error } = await resend.emails.send({
+  const sendPromise = resend.emails.send({
     from,
     to: [to],
     replyTo: email,
@@ -37,6 +39,13 @@ export async function sendContactEmail(payload: ContactRequestPayload): Promise<
     text: `Nombre: ${name}\nCorreo: ${email}\n\n${message}`,
     html: `<p><strong>Nombre:</strong> ${safeName}</p><p><strong>Correo:</strong> ${safeEmail}</p><p><strong>Mensaje:</strong></p><p>${safeMessage}</p>`,
   });
+  const timeoutPromise = new Promise<never>((_, reject) => {
+    const timeout = setTimeout(() => {
+      reject(new Error("RESEND_TIMEOUT"));
+    }, RESEND_TIMEOUT_MS);
+    sendPromise.finally(() => clearTimeout(timeout)).catch(() => {});
+  });
+  const { error } = await Promise.race([sendPromise, timeoutPromise]);
 
   if (error != null) {
     throw new Error(error.message);

@@ -32,6 +32,7 @@ import { NodeInspector } from "./NodeInspector";
 import { ViewControls } from "./ViewControls";
 import { LevelControls } from "./LevelControls";
 import { SideDrawer } from "./SideDrawer";
+import { buildFloorCodeHtml, buildProjectCodeHtml } from "./portfolio-scene/inspector-code";
 
 const FRUSTUM_SIZE = 40;
 const MAX_FLOORS = 40;
@@ -74,6 +75,7 @@ const ROTATE_SPEED_MAX = 10;
 const ROTATE_SPEED_FACTOR = 0.3;
 const DEFAULT_ROTATE_SPEED_LEVEL = 4;
 const TEXT_SIZE_STORAGE_KEY = "portfolio-text-size-by-device";
+const LOADING_SCREEN_SEEN_STORAGE_KEY = "portfolio-loading-screen-seen";
 const TEXT_SIZE_LEVELS: readonly TextSizeLevel[] = [-2, -1, 0, 1, 2];
 const TEXT_SIZE_SCALE_MAP: Record<TextSizeLevel, number> = {
   [-2]: 0.84,
@@ -84,6 +86,34 @@ const TEXT_SIZE_SCALE_MAP: Record<TextSizeLevel, number> = {
 };
 /** Máx. desplazamiento en px para considerar clic (no pan) sobre hotspot. */
 const HOTSPOT_CLICK_MAX_DIST_PX = 5;
+const ACTIVE_RENDER_FPS = 60;
+const ACTIVE_INTERACTION_WINDOW_MS = 180;
+type RenderStrategy = {
+  maxPixelRatio: number;
+  hoverRaycastMinIntervalMs: number;
+  idleRenderFps: number;
+};
+function resolveRenderStrategy(viewportWidth: number): RenderStrategy {
+  if (viewportWidth <= MOBILE_BREAKPOINT) {
+    return {
+      maxPixelRatio: 1.25,
+      hoverRaycastMinIntervalMs: 90,
+      idleRenderFps: 20,
+    };
+  }
+  if (viewportWidth <= TABLET_BREAKPOINT) {
+    return {
+      maxPixelRatio: 1.5,
+      hoverRaycastMinIntervalMs: 66,
+      idleRenderFps: 24,
+    };
+  }
+  return {
+    maxPixelRatio: 2,
+    hoverRaycastMinIntervalMs: 33,
+    idleRenderFps: 30,
+  };
+}
 type InteractionCursorState = "idle" | "orbit" | "pan";
 const ORBIT_CURSOR_URL =
   "url(\"data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Cg fill='none' stroke='%23d8f7ff' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='16' cy='16' r='8.5'/%3E%3Cpath d='M16 4.5l-2.5 2.5M16 4.5l2.5 2.5'/%3E%3Cpath d='M27.5 16l-2.5-2.5M27.5 16l-2.5 2.5'/%3E%3Cpath d='M16 27.5l-2.5-2.5M16 27.5l2.5-2.5'/%3E%3Cpath d='M4.5 16l2.5-2.5M4.5 16l2.5 2.5'/%3E%3C/g%3E%3C/svg%3E\") 16 16, grab";
@@ -170,6 +200,14 @@ function applyHeroVariantToCameras(
   activeCameraRef: MutableRefObject<THREE.Camera | null>,
   isOrthoRef: MutableRefObject<boolean>
 ): { activeView: ViewPreset | null; autoRotateLevel: number; isOrtho: boolean } {
+  const deviceMode =
+    viewportWidth <= MOBILE_BREAKPOINT
+      ? "mobile"
+      : viewportWidth <= TABLET_BREAKPOINT
+        ? "tablet"
+        : "desktop";
+  const resolvedAutoRotateSpeed =
+    heroVariant.autoRotateSpeedByDevice?.[deviceMode] ?? heroVariant.autoRotateSpeed;
   const viewOpts = { stackFloors } as const;
   const { position: startPos, lookAt: startLookAt } = heroVariant.getCamera
     ? heroVariant.getCamera(bX, stackFloors)
@@ -201,7 +239,7 @@ function applyHeroVariantToCameras(
 
   controls.maxPolarAngle = heroVariant.getCamera ? Math.PI : ORTHO_ORBIT_MAX_POLAR;
   controls.target.copy(startLookAt);
-  controls.autoRotateSpeed = heroVariant.autoRotateSpeed * ROTATE_SPEED_FACTOR;
+  controls.autoRotateSpeed = resolvedAutoRotateSpeed * ROTATE_SPEED_FACTOR;
   controls.update();
 
   isOrthoRef.current = false;
@@ -239,7 +277,7 @@ function applyHeroVariantToCameras(
 
   return {
     activeView: heroVariant.view,
-    autoRotateLevel: heroVariant.autoRotateSpeed,
+    autoRotateLevel: resolvedAutoRotateSpeed,
     isOrtho: heroVariant.cameraMode === "orthographic",
   };
 }
@@ -287,14 +325,12 @@ export function PortfolioScene({ data, locale }: Props) {
   const pathname = usePathname();
   const defaultCodeHtml = data.ui.inspector.codeHtml.default;
   const dataRef = useRef(data);
-  dataRef.current = data;
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
   const coarsePointerRef = useRef(false);
   const [isCoarsePointer, setIsCoarsePointer] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
-  const [showMobileControlsHelp, setShowMobileControlsHelp] = useState(false);
   const [initialHelpEnabled, setInitialHelpEnabled] = useState(true);
   const isMobileTouchUi = isCoarsePointer && isMobileViewport;
 
@@ -344,6 +380,12 @@ export function PortfolioScene({ data, locale }: Props) {
   const buildingOffsetXRef = useRef(0);
   const interactionCursorRef = useRef<InteractionCursorState>("idle");
   const hasUserInteractedRef = useRef(false);
+  const lastInteractionTsRef = useRef(0);
+  const lastRenderTsRef = useRef(0);
+  const lastHoverRaycastTsRef = useRef(0);
+  const renderStrategyRef = useRef<RenderStrategy>(
+    resolveRenderStrategy(typeof window === "undefined" ? TABLET_BREAKPOINT : window.innerWidth)
+  );
   const heroVariantRef = useRef<HeroStartupVariant | null>(null);
   /** HTML del proyecto "pinned" en el inspector; null = ninguno seleccionado. */
   const selectedProjectHtmlRef = useRef<string | null>(null);
@@ -351,7 +393,6 @@ export function PortfolioScene({ data, locale }: Props) {
   /** Último mesh del que se derivó hero + inspector (evita setState por frame). */
   const prevHoverUiMeshRef = useRef<THREE.Mesh | null>(null);
   const defaultCodeHtmlRef = useRef(defaultCodeHtml);
-  defaultCodeHtmlRef.current = defaultCodeHtml;
 
   const [activeNavPanel, setActiveNavPanel] = useState<NavActivePanel>(null);
 
@@ -366,6 +407,14 @@ export function PortfolioScene({ data, locale }: Props) {
   } | null>(null);
 
   const [mobileProjectPanel, setMobileProjectPanel] = useState<MobileProjectPanel>(null);
+  const hasSeenLoadingScreen =
+    typeof window !== "undefined" &&
+    window.sessionStorage.getItem(LOADING_SCREEN_SEEN_STORAGE_KEY) === "1";
+  const [loadProgress, setLoadProgress] = useState(hasSeenLoadingScreen ? 100 : 0);
+  const [loadText, setLoadText] = useState(hasSeenLoadingScreen ? "" : data.ui.loading.initialText);
+  const [loadHidden, setLoadHidden] = useState(hasSeenLoadingScreen);
+  const [floorCount, setFloorCount] = useState(INITIAL_FLOORS);
+  const [codeHtml, setCodeHtml] = useState(defaultCodeHtml);
 
   const closeMobileProjectPanel = useCallback(() => {
     setMobileProjectPanel(null);
@@ -403,11 +452,9 @@ export function PortfolioScene({ data, locale }: Props) {
   }, [defaultCodeHtml, setPersistentSelectedFloor]);
 
   const clearProjectSelectionRef = useRef(clearProjectSelection);
-  clearProjectSelectionRef.current = clearProjectSelection;
 
   const [liveSync, setLiveSync] = useState(false);
   const setLiveSyncRef = useRef(setLiveSync);
-  setLiveSyncRef.current = setLiveSync;
   const prevLiveSyncRef = useRef(false);
 
   // Tema: inicializado desde localStorage para evitar flash
@@ -425,17 +472,37 @@ export function PortfolioScene({ data, locale }: Props) {
   });
 
   // React UI state
-  const [loadProgress, setLoadProgress] = useState(0);
-  const [loadText, setLoadText] = useState(data.ui.loading.initialText);
-  const [loadHidden, setLoadHidden] = useState(false);
   const loadHiddenRef = useRef(loadHidden);
-  loadHiddenRef.current = loadHidden;
-  const [floorCount, setFloorCount] = useState(INITIAL_FLOORS);
-  const [codeHtml, setCodeHtml] = useState(defaultCodeHtml);
   const setCodeHtmlRef = useRef(setCodeHtml);
-  setCodeHtmlRef.current = setCodeHtml;
   const setHeroFloorPreviewRef = useRef(setHeroFloorPreview);
-  setHeroFloorPreviewRef.current = setHeroFloorPreview;
+  useEffect(() => {
+    dataRef.current = data;
+  }, [data]);
+
+  useEffect(() => {
+    defaultCodeHtmlRef.current = defaultCodeHtml;
+  }, [defaultCodeHtml]);
+
+  useEffect(() => {
+    clearProjectSelectionRef.current = clearProjectSelection;
+  }, [clearProjectSelection]);
+
+  useEffect(() => {
+    setLiveSyncRef.current = setLiveSync;
+  }, [setLiveSync]);
+
+  useEffect(() => {
+    loadHiddenRef.current = loadHidden;
+  }, [loadHidden]);
+
+  useEffect(() => {
+    setCodeHtmlRef.current = setCodeHtml;
+  }, [setCodeHtml]);
+
+  useEffect(() => {
+    setHeroFloorPreviewRef.current = setHeroFloorPreview;
+  }, [setHeroFloorPreview]);
+
 
   const [isOrtho, setIsOrtho] = useState(false);
   const [activeView, setActiveView] = useState<ViewPreset | null>("iso");
@@ -473,10 +540,6 @@ export function PortfolioScene({ data, locale }: Props) {
   }, []);
 
   useEffect(() => {
-    if (!isMobileTouchUi) setMobileProjectPanel(null);
-  }, [isMobileTouchUi]);
-
-  useEffect(() => {
     if (typeof window === "undefined") return;
     const commit = () => {
       setActiveDeviceMode(getDeviceModeFromWidth(window.innerWidth));
@@ -503,27 +566,16 @@ export function PortfolioScene({ data, locale }: Props) {
     document.documentElement.setAttribute("data-text-device-mode", activeDeviceMode);
   }, [activeDeviceMode, textSizeByDevice]);
 
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    if (!initialHelpEnabled || !isCoarsePointer || !isMobileViewport || !loadHidden) {
-      setShowMobileControlsHelp(false);
-      return;
-    }
-    setShowMobileControlsHelp(true);
-  }, [initialHelpEnabled, isCoarsePointer, isMobileViewport, loadHidden]);
+  const showMobileControlsHelp =
+    initialHelpEnabled && isCoarsePointer && isMobileViewport && loadHidden;
 
   const dismissMobileControlsHelp = useCallback(() => {
     setInitialHelpEnabled(false);
-    setShowMobileControlsHelp(false);
   }, []);
 
   const handleInitialHelpToggle = useCallback(() => {
-    setInitialHelpEnabled(prev => {
-      const next = !prev;
-      setShowMobileControlsHelp(next && isCoarsePointer && isMobileViewport && loadHidden);
-      return next;
-    });
-  }, [isCoarsePointer, isMobileViewport, loadHidden]);
+    setInitialHelpEnabled(prev => !prev);
+  }, []);
 
   // ── UI Handlers ──────────────────────────────────────────────────────────
 
@@ -823,11 +875,13 @@ export function PortfolioScene({ data, locale }: Props) {
         setAutoRotate(false);
       }
     },
-    [setPersistentSelectedFloor]
+    [setCodeHtml, setPersistentSelectedFloor]
   );
 
   const handleProjectSelectRef = useRef(handleProjectSelect);
-  handleProjectSelectRef.current = handleProjectSelect;
+  useEffect(() => {
+    handleProjectSelectRef.current = handleProjectSelect;
+  }, [handleProjectSelect]);
 
   // ── Three.js Setup ────────────────────────────────────────────────────────
 
@@ -866,8 +920,9 @@ export function PortfolioScene({ data, locale }: Props) {
 
     // Renderer
     const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+    renderStrategyRef.current = resolveRenderStrategy(W);
     renderer.setSize(W, H);
-    renderer.setPixelRatio(Math.min(window.devicePixelRatio, 2));
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio, renderStrategyRef.current.maxPixelRatio));
     renderer.setClearColor(SCENE_BACKGROUND, 1);
     rendererRef.current = renderer;
 
@@ -926,8 +981,13 @@ export function PortfolioScene({ data, locale }: Props) {
 
     let pointerPickLeft: { x: number; y: number; pointerId: number } | null = null;
 
+    const markInteraction = () => {
+      lastInteractionTsRef.current = performance.now();
+    };
+
     const onPointerDown = (e: PointerEvent) => {
       hasUserInteractedRef.current = true;
+      markInteraction();
       setCanvasCursor(resolveCursorStateFromPointer(e));
       if (e.button === 0) {
         pointerPickLeft = { x: e.clientX, y: e.clientY, pointerId: e.pointerId };
@@ -935,6 +995,7 @@ export function PortfolioScene({ data, locale }: Props) {
     };
 
     const onPointerUp = (e: PointerEvent) => {
+      markInteraction();
       setCanvasCursor("idle");
       if (e.type === "pointercancel") {
         pointerPickLeft = null;
@@ -1044,8 +1105,17 @@ export function PortfolioScene({ data, locale }: Props) {
       }
     }
 
-    function animate() {
+    function animate(now: number) {
       rafRef.current = requestAnimationFrame(animate);
+      const strategy = renderStrategyRef.current;
+      const activeInteraction =
+        isFlyingRef.current || now - lastInteractionTsRef.current < ACTIVE_INTERACTION_WINDOW_MS;
+      const targetFps = activeInteraction ? ACTIVE_RENDER_FPS : strategy.idleRenderFps;
+      const minFrameIntervalMs = 1000 / targetFps;
+      if (now - lastRenderTsRef.current < minFrameIntervalMs) {
+        return;
+      }
+      lastRenderTsRef.current = now;
 
       // Fly-to animation
       if (isFlyingRef.current) {
@@ -1180,11 +1250,19 @@ export function PortfolioScene({ data, locale }: Props) {
 
       // En táctil (pointer coarse) no hay hover real: evitar tooltip pegado arriba y UI de debug.
       if (!coarsePointerRef.current) {
+        const shouldRunHoverRaycast =
+          now - lastHoverRaycastTsRef.current >= strategy.hoverRaycastMinIntervalMs;
         // Raycasting hover: recursive=true (default) pega en los bordes LineSegments, sin userData
-        raycasterRef.current.setFromCamera(mouseRef.current, activeCameraRef.current!);
-        const intersects = raycasterRef.current.intersectObjects(floorsRef.current, false);
+        let intersects: THREE.Intersection[] | null = null;
+        if (shouldRunHoverRaycast) {
+          raycasterRef.current.setFromCamera(mouseRef.current, activeCameraRef.current!);
+          intersects = raycasterRef.current.intersectObjects(floorsRef.current, false);
+        }
+        if (shouldRunHoverRaycast) {
+          lastHoverRaycastTsRef.current = now;
+        }
 
-        if (intersects.length > 0) {
+        if (intersects && intersects.length > 0) {
           const obj = intersects[0].object as THREE.Mesh;
           if (intersectedRef.current !== obj) {
             if (intersectedRef.current) {
@@ -1212,7 +1290,7 @@ export function PortfolioScene({ data, locale }: Props) {
               tooltipRef.current.style.opacity = "0";
             }
           }
-        } else if (intersectedRef.current) {
+        } else if (intersects && intersectedRef.current) {
           const tc = SCENE_COLORS[themeRef.current];
           resetFloorHighlight(intersectedRef.current, tc.buildingBase, tc.buildingLines);
           intersectedRef.current = null;
@@ -1245,12 +1323,13 @@ export function PortfolioScene({ data, locale }: Props) {
       renderer.render(scene, activeCameraRef.current!);
     }
 
-    animate();
+    rafRef.current = requestAnimationFrame(animate);
 
     // ── Events ────────────────────────────────────────────────────────────
 
     function onMouseMove(e: MouseEvent) {
       hasMouseMovedRef.current = true;
+      markInteraction();
       mouseRef.current.x = (e.clientX / window.innerWidth) * 2 - 1;
       mouseRef.current.y = -(e.clientY / window.innerHeight) * 2 + 1;
       if (tooltipRef.current) {
@@ -1264,6 +1343,8 @@ export function PortfolioScene({ data, locale }: Props) {
       const nH = window.innerHeight;
       const nAspect = nW / nH;
       const newBX = nW > 768 ? DESKTOP_OFFSET_X : 0;
+      renderStrategyRef.current = resolveRenderStrategy(nW);
+      markInteraction();
       buildingOffsetXRef.current = newBX;
 
       if (cameraPerspRef.current) {
@@ -1279,12 +1360,16 @@ export function PortfolioScene({ data, locale }: Props) {
       }
 
       renderer.setSize(nW, nH);
+      renderer.setPixelRatio(
+        Math.min(window.devicePixelRatio, renderStrategyRef.current.maxPixelRatio)
+      );
       buildingGroup.position.x = newBX;
       controls.target.setX(newBX);
     }
 
     controls.addEventListener("start", () => {
       hasUserInteractedRef.current = true;
+      markInteraction();
       isFlyingRef.current = false;
       activeViewRef.current = null;
       setActiveView(null);
@@ -1295,6 +1380,7 @@ export function PortfolioScene({ data, locale }: Props) {
     });
 
     controls.addEventListener("end", () => {
+      markInteraction();
       setCanvasCursor("idle");
     });
 
@@ -1308,12 +1394,21 @@ export function PortfolioScene({ data, locale }: Props) {
     document.addEventListener("keydown", onKeyDown);
     window.addEventListener("resize", onResize);
 
-    simulateLoad(
-      data.ui.loading.messages,
-      p => setLoadProgress(p),
-      msg => setLoadText(msg),
-      () => setLoadHidden(true)
-    );
+    if (hasSeenLoadingScreen) {
+      setLoadProgress(100);
+      setLoadText("");
+      setLoadHidden(true);
+    } else {
+      simulateLoad(
+        data.ui.loading.messages,
+        p => setLoadProgress(p),
+        msg => setLoadText(msg),
+        () => {
+          setLoadHidden(true);
+          window.sessionStorage.setItem(LOADING_SCREEN_SEEN_STORAGE_KEY, "1");
+        }
+      );
+    }
 
     return () => {
       cancelAnimationFrame(rafRef.current);
@@ -1328,7 +1423,7 @@ export function PortfolioScene({ data, locale }: Props) {
       canvas.removeEventListener("pointercancel", onPointerUp);
       canvas.removeEventListener("contextmenu", onContextMenu);
     };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [data.ui.loading.messages, hasSeenLoadingScreen]);
 
   // ── Theme (declarado DESPUÉS del init para que las refs 3D ya estén listas) ──
 
@@ -1405,7 +1500,7 @@ export function PortfolioScene({ data, locale }: Props) {
       lm.opacity    = colors.buildingLinesOpacity;
       lm.needsUpdate = true;
     }
-  }, [theme]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [theme]);
 
   // ── Render ─────────────────────────────────────────────────────────────
 
@@ -1429,6 +1524,7 @@ export function PortfolioScene({ data, locale }: Props) {
         formacion={data.formacion}
         contactForm={data.ui.contactForm}
         contactSocial={data.ui.contactSocial}
+        legal={data.legal}
         uiText={data.nav.uiText}
         theme={theme}
         activePanel={activeNavPanel}
@@ -1486,6 +1582,7 @@ export function PortfolioScene({ data, locale }: Props) {
         <>
           {!isCoarsePointer && <div className="project-viewer-backdrop" aria-hidden tabIndex={-1} />}
           <ProjectViewerModal
+            key={heroSelection.project.id}
             selection={heroSelection}
             onClose={closeMobileProjectPanel}
             openDemoLabel={data.ui.projectViewer.openDemoLabel}
@@ -1693,127 +1790,6 @@ function resetFloorHighlight(
   } catch {
     /* material u objeto invalidado tras dispose */
   }
-}
-
-function buildFloorCodeHtml(
-  d: FloorUserData,
-  codeHtmlText: {
-    jsonResponseComment: string;
-    status: string;
-    sync: string;
-  }
-): string {
-  return (
-    `<div class="cl">` +
-    `<span class="p">&lt;</span><span class="nc">FloorNode</span>` +
-    `</div>` +
-    `<div class="cl cl-i1">` +
-    `<span class="na">guid</span><span class="p">=</span><span class="s">"${d.id}"</span>` +
-    `</div>` +
-    `<div class="cl cl-i1">` +
-    `<span class="na">level</span><span class="p">={</span><span class="m">${d.level}</span><span class="p">}</span>` +
-    `</div>` +
-    `<div class="cl cl-i1">` +
-    `<span class="na">elevation</span><span class="p">={</span><span class="m">${d.elevation}</span><span class="p">}</span>` +
-    `</div>` +
-    `<div class="cl cl-i1">` +
-    `<span class="na">properties</span><span class="p">={{</span>` +
-    `</div>` +
-    `<div class="cl cl-i2">` +
-    `<span class="na">area_m2</span><span class="p">:</span> <span class="m">${d.area}</span><span class="p">,</span>` +
-    `</div>` +
-    `<div class="cl cl-i2">` +
-    `<span class="na">material</span><span class="p">:</span> <span class="s">"${d.material}"</span>` +
-    `</div>` +
-    `<div class="cl cl-i1"><span class="p">}}</span></div>` +
-    `<div class="cl"><span class="p">/&gt;</span></div><br><br>` +
-    `<div class="cl"><span class="cm">${codeHtmlText.jsonResponseComment}</span></div>` +
-    `<div class="cl">` +
-    `<span class="kd">status</span>: <span class="s">"${codeHtmlText.status}"</span>` +
-    `</div>` +
-    `<div class="cl">` +
-    `<span class="kd">sync</span>: <span class="s">"${codeHtmlText.sync}"</span>` +
-    `</div>`
-  );
-}
-
-function sanitizeCodeValue(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll("\"", "&quot;");
-}
-
-/** "Control Manager" → "ControlManager" */
-function toPascalCase(name: string): string {
-  return name
-    .split(/\s+/)
-    .map(w => w.charAt(0).toUpperCase() + w.slice(1))
-    .join("");
-}
-
-type CodeLineIndent = "i1" | "i2";
-
-/** Línea tipo atributo: sin &lt;br&gt; fijos; el ajuste lo hace el CSS según el ancho (escalable con la fuente). */
-function wrapAttr(
-  attr: string,
-  value: string,
-  indent: CodeLineIndent,
-): string {
-  const safe = sanitizeCodeValue(value);
-  return (
-    `<div class="cl cl-${indent} cl-attr">` +
-    `<span class="na">${attr}</span>` +
-    ` <span class="p">=</span> ` +
-    `<span class="s">"${safe}"</span>` +
-    `</div>`
-  );
-}
-
-function buildProjectCodeHtml(
-  project: ProjectItem,
-  template: PortfolioData["ui"]["inspector"]["codeHtml"]["projectTemplate"]
-): string {
-  const componentName = toPascalCase(project.name);
-
-  const stackItems = project.stack
-    .map(t => `<span class="s">"${sanitizeCodeValue(t)}"</span>`)
-    .join(`<span class="p">,</span> `);
-
-  return (
-    `<div class="cl"><span class="cm">// → ${sanitizeCodeValue(project.name)}</span></div>` +
-    `<div class="cl">` +
-    `<span class="kd">const</span> ` +
-    `<span class="nc">${componentName}</span> ` +
-    `<span class="p">=</span> ` +
-    `<span class="p">()</span> ` +
-    `<span class="kd">=&gt;</span> ` +
-    `<span class="p">(</span>` +
-    `</div>` +
-    `<div class="cl cl-i1">` +
-    `<span class="p">&lt;</span><span class="nc">${sanitizeCodeValue(template.componentTag)}</span>` +
-    `</div>` +
-    `<div class="cl cl-i2"><span class="cm">${sanitizeCodeValue(template.contextComment)}</span></div>` +
-    wrapAttr(template.contextLabel, project.context, "i2") +
-    wrapAttr(template.impactLabel, project.impact, "i2") +
-    `<div class="cl cl-i2"><span class="cm">${sanitizeCodeValue(template.roleComment)}</span></div>` +
-    wrapAttr(template.roleLabel, project.role, "i2") +
-    wrapAttr(template.platformLabel, project.platform, "i2") +
-    wrapAttr(template.scopeLabel, project.scope, "i2") +
-    `<div class="cl cl-i2"><span class="cm">${sanitizeCodeValue(template.stackComment)}</span></div>` +
-    `<div class="cl cl-i2">` +
-    `<span class="na">${sanitizeCodeValue(template.stackLabel)}</span>` +
-    ` <span class="p">=</span> <span class="p">{[</span>${stackItems}<span class="p">]}</span>` +
-    `</div>` +
-    `<div class="cl cl-i1"><span class="p">&gt;</span></div>` +
-    `<div class="cl cl-i1">` +
-    `<span class="p">&lt;/</span>` +
-    `<span class="nc">${sanitizeCodeValue(template.componentTag)}</span>` +
-    `<span class="p">&gt;</span>` +
-    `</div>` +
-    `<div class="cl"><span class="p">);</span></div>`
-  );
 }
 
 /**

@@ -405,5 +405,112 @@
         ]
       }
     ]
+  },
+  "legal": {
+    "footerAriaLabel": "Legal links",
+    "links": {
+      "legalNotice": "Legal notice",
+      "privacy": "Privacy",
+      "cookies": "Cookies"
+    },
+    "backToHome": "Back to home",
+    "pages": {
+      "legalNotice": {
+        "metadataTitle": "Legal Notice",
+        "title": "Legal notice",
+        "sections": [
+          {
+            "title": "Website owner",
+            "paragraphs": [
+              "Name or company name: Mariano Luna",
+              "Address: Barcelona, Spain",
+              "Email: contact@marianorluna.com"
+            ]
+          },
+          {
+            "title": "Terms of use",
+            "paragraphs": [
+              "This website has an informational and professional purpose. Users agree to use its contents appropriately and not for unlawful activities."
+            ]
+          },
+          {
+            "title": "Intellectual property",
+            "paragraphs": [
+              "The website content, design, and source code belong to the website owner or licensed third parties. Reproduction without permission is prohibited."
+            ]
+          }
+        ]
+      },
+      "privacy": {
+        "metadataTitle": "Privacy",
+        "title": "Privacy policy",
+        "sections": [
+          {
+            "title": "Data controller",
+            "paragraphs": [
+              "Controller: Mariano Luna",
+              "Contact email: contact@marianorluna.com"
+            ]
+          },
+          {
+            "title": "Collected data",
+            "paragraphs": [
+              "The contact form collects: name, email, and message. A security token (Cloudflare Turnstile) is also processed to prevent spam."
+            ]
+          },
+          {
+            "title": "Purpose and legal basis",
+            "paragraphs": [
+              "Purpose: respond to contact requests and potential professional collaborations. Legal basis: user consent (art. 6.1.a GDPR)."
+            ]
+          },
+          {
+            "title": "Recipients and processors",
+            "bullets": [
+              "Resend (email delivery).",
+              "Cloudflare Turnstile (spam prevention).",
+              "Cal.com and YouTube (if third-party cookies are accepted)."
+            ]
+          },
+          {
+            "title": "Retention and rights",
+            "paragraphs": [
+              "Retention period: 1 year. You may exercise access, rectification, erasure, objection, restriction, and portability rights by contacting: contact@marianorluna.com."
+            ]
+          }
+        ]
+      },
+      "cookies": {
+        "metadataTitle": "Cookies",
+        "title": "Cookie policy",
+        "sections": [
+          {
+            "title": "What cookies are",
+            "paragraphs": [
+              "Cookies are small files stored on your device to enable website functionality or remember preferences."
+            ]
+          },
+          {
+            "title": "Cookies used by this website",
+            "bullets": [
+              "Necessary technical: functional preferences (for example, theme mode).",
+              "Third-party (optional): embedded content from YouTube and Cal.com."
+            ]
+          },
+          {
+            "title": "How to manage consent",
+            "paragraphs": [
+              "You can accept or reject non-essential cookies from the initial banner or from \"Cookie settings\" in the site footer."
+            ]
+          },
+          {
+            "title": "Third-party information",
+            "paragraphs": [
+              "Review each provider's privacy/cookie policies: Cloudflare, Cal.com, and YouTube."
+            ]
+          }
+        ]
+      }
+    }
   }
 }

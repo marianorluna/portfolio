@@ -405,5 +405,112 @@
         ]
       }
     ]
+  },
+  "legal": {
+    "footerAriaLabel": "Enlaces legales",
+    "links": {
+      "legalNotice": "Aviso legal",
+      "privacy": "Privacidad",
+      "cookies": "Cookies"
+    },
+    "backToHome": "Volver al inicio",
+    "pages": {
+      "legalNotice": {
+        "metadataTitle": "Aviso Legal",
+        "title": "Aviso legal",
+        "sections": [
+          {
+            "title": "Titular del sitio web",
+            "paragraphs": [
+              "Nombre o razón social: Mariano Luna",
+              "Domicilio: Barcelona, Spain",
+              "Correo electrónico: contact@marianorluna.com"
+            ]
+          },
+          {
+            "title": "Condiciones de uso",
+            "paragraphs": [
+              "Este sitio tiene carácter informativo y profesional. El usuario se compromete a realizar un uso adecuado de sus contenidos y a no emplearlos para actividades ilícitas."
+            ]
+          },
+          {
+            "title": "Propiedad intelectual",
+            "paragraphs": [
+              "Los contenidos, diseño y código del sitio son titularidad del propietario del sitio o de terceros con licencia. Queda prohibida su reproducción sin autorización."
+            ]
+          }
+        ]
+      },
+      "privacy": {
+        "metadataTitle": "Privacidad",
+        "title": "Política de privacidad",
+        "sections": [
+          {
+            "title": "Responsable del tratamiento",
+            "paragraphs": [
+              "Responsable: Mariano Luna",
+              "Correo de contacto: contact@marianorluna.com"
+            ]
+          },
+          {
+            "title": "Datos que se recogen",
+            "paragraphs": [
+              "A través del formulario se recogen: nombre, correo electrónico y mensaje. Además, se procesa un token de seguridad (Cloudflare Turnstile) para prevenir spam."
+            ]
+          },
+          {
+            "title": "Finalidad y base jurídica",
+            "paragraphs": [
+              "Finalidad: atender solicitudes de contacto y posibles colaboraciones profesionales. Base jurídica: consentimiento del interesado (art. 6.1.a RGPD)."
+            ]
+          },
+          {
+            "title": "Destinatarios y encargados",
+            "bullets": [
+              "Resend (envío de correo).",
+              "Cloudflare Turnstile (prevención de spam).",
+              "Cal.com y YouTube (si aceptas cookies de terceros)."
+            ]
+          },
+          {
+            "title": "Conservación y derechos",
+            "paragraphs": [
+              "Plazo de conservación: 1 año. Puedes ejercer los derechos de acceso, rectificación, supresión, oposición, limitación y portabilidad escribiendo a: contact@marianorluna.com."
+            ]
+          }
+        ]
+      },
+      "cookies": {
+        "metadataTitle": "Cookies",
+        "title": "Política de cookies",
+        "sections": [
+          {
+            "title": "Qué son las cookies",
+            "paragraphs": [
+              "Las cookies son pequeños archivos que se almacenan en tu dispositivo para permitir el funcionamiento del sitio o recordar preferencias."
+            ]
+          },
+          {
+            "title": "Cookies que utiliza este sitio",
+            "bullets": [
+              "Técnicas necesarias: preferencias de funcionamiento (por ejemplo, tema visual).",
+              "Terceros (opcionales): contenido embebido de YouTube y Cal.com."
+            ]
+          },
+          {
+            "title": "Cómo gestionar el consentimiento",
+            "paragraphs": [
+              "Puedes aceptar o rechazar cookies no esenciales desde el banner inicial o desde la opción \"Configurar cookies\" disponible en el pie del sitio."
+            ]
+          },
+          {
+            "title": "Información de terceros",
+            "paragraphs": [
+              "Consulta las políticas de privacidad/cookies de cada proveedor: Cloudflare, Cal.com y YouTube."
+            ]
+          }
+        ]
+      }
+    }
   }
 }

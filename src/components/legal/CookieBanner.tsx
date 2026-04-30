@@ -1,7 +1,12 @@
 "use client";
 
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import {
+  matchesPortfolioHome,
+  usePortfolioSceneLoadGate,
+} from "@/components/portfolio-scene-load/PortfolioSceneLoadGate";
 import {
   acceptAllConsent,
   ensureConsentInitialized,
@@ -62,19 +67,36 @@ const copyByLocale: Record<Locale, Copy> = {
 
 export function CookieBanner({ locale }: Props) {
   const copy = useMemo(() => copyByLocale[locale], [locale]);
+  const pathname = usePathname();
+  const loadGate = usePortfolioSceneLoadGate();
   const [isHydrated, setIsHydrated] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
   const [thirdPartyEnabled, setThirdPartyEnabled] = useState(false);
 
+  const isPortfolioHome = matchesPortfolioHome(pathname, locale);
+
   useEffect(() => {
     queueMicrotask(() => {
       const existing = getStoredConsent();
       setThirdPartyEnabled(existing?.thirdParty ?? false);
-      setIsVisible(existing == null);
       setIsHydrated(true);
     });
   }, []);
+
+  useEffect(() => {
+    if (!isHydrated) return;
+    if (getStoredConsent() != null) return;
+    if (isConfigOpen) return;
+
+    const sceneOk = !isPortfolioHome || loadGate.initialSceneLoadDismissed;
+    setIsVisible(sceneOk);
+  }, [
+    isHydrated,
+    isConfigOpen,
+    isPortfolioHome,
+    loadGate.initialSceneLoadDismissed,
+  ]);
 
   useEffect(() => {
     return onOpenCookiePreferences(() => {

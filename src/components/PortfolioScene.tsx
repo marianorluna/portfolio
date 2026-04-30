@@ -24,6 +24,7 @@ import {
 import { getViewTarget, type ViewPreset } from "@/utils/view-variants";
 import { HERO_VARIANTS, pickHeroVariant, type HeroStartupVariant } from "@/utils/hero-variants";
 import { simulateLoad } from "@/utils/simulate-load";
+import { useNotifyPortfolioSceneLoadDismissed } from "@/components/portfolio-scene-load/PortfolioSceneLoadGate";
 import { LoadingScreen } from "./LoadingScreen";
 import { Navbar, type NavActivePanel } from "./Navbar";
 import { HeroText } from "./HeroText";
@@ -415,6 +416,12 @@ export function PortfolioScene({ data, locale }: Props) {
   const [loadHidden, setLoadHidden] = useState(hasSeenLoadingScreen);
   const [floorCount, setFloorCount] = useState(INITIAL_FLOORS);
   const [codeHtml, setCodeHtml] = useState(defaultCodeHtml);
+
+  const notifyPortfolioSceneLoadDismissed = useNotifyPortfolioSceneLoadDismissed();
+  useEffect(() => {
+    if (!loadHidden) return;
+    notifyPortfolioSceneLoadDismissed();
+  }, [loadHidden, notifyPortfolioSceneLoadDismissed]);
 
   const closeMobileProjectPanel = useCallback(() => {
     setMobileProjectPanel(null);

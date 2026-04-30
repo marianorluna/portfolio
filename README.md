@@ -1,4 +1,4 @@
-# Portfolio 3D · Next.js 16
+# Mariano Luna · Portfolio 3D
 
 Portfolio profesional bilingüe (ES/EN) construido sobre `Next.js` con interfaz 3D interactiva, formulario de contacto endurecido y enfoque de arquitectura limpia en la capa de dominio.
 

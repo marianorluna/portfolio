@@ -93,29 +93,20 @@
       "status": "● LIVE SYNC",
       "expandLabel": "Expand",
       "collapseLabel": "Collapse",
-      "codeHtml": {
-        "default": "<div class=\"cl\"><span class=\"kd\">const</span> <span class=\"na\">BuildingModel</span> <span class=\"p\">=</span> () <span class=\"kd\">=&gt;</span> {</div><div class=\"cl cl-i1\"><span class=\"kd\">return</span> (</div><div class=\"cl cl-i2\"><span class=\"p\">&lt;</span><span class=\"nc\">IFCContainer</span> <span class=\"na\">id=</span><span class=\"s\">\"TWIN-01\"</span><span class=\"p\">&gt;</span></div><div class=\"cl cl-i3\"><span class=\"cm\">// Interact with the 3D model</span></div><div class=\"cl cl-i3\"><span class=\"cm\">// to inspect nodes.</span></div><div class=\"cl cl-i2\"><span class=\"p\">&lt;/</span><span class=\"nc\">IFCContainer</span><span class=\"p\">&gt;</span></div><div class=\"cl cl-i1\">);</div><div class=\"cl\">};</div>",
-        "jsonResponseComment": "// JSON Query Response",
-        "status": "200 OK",
-        "sync": "realtime",
-        "projectTemplate": {
-          "componentTag": "ProjectNode",
-          "contextComment": "// Problems · Solutions",
-          "impactComment": "// Impact · Measurable results",
-          "roleComment": "// Project highlights",
-          "stackComment": "// Tools used",
-          "linksComment": "// Links",
-          "contextLabel": "context",
-          "impactLabel": "impact",
-          "roleLabel": "features",
-          "platformLabel": "platform",
-          "scopeLabel": "scope",
-          "stackLabel": "stack",
-          "linkLabel": "link",
-          "githubLabel": "github",
-          "demoLabel": "demo",
-          "demoEmbedFallbackLabel": "demoEmbedFallback"
-        }
+      "collapseAllLabel": "Collapse all",
+      "idleMessage": "Interact with the 3D model to inspect floors and projects.",
+      "statusValue": "200 OK",
+      "syncValue": "realtime",
+      "floor": {
+        "nodeLabel": "FloorNode"
+      },
+      "projectSections": {
+        "contextLabel": "Context",
+        "impactLabel": "Impact",
+        "roleLabel": "Features",
+        "platformLabel": "Platform",
+        "scopeLabel": "Scope",
+        "stackLabel": "Stack"
       }
     },
     "viewControls": {

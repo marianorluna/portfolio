@@ -33,7 +33,12 @@ import { NodeInspector } from "./NodeInspector";
 import { ViewControls } from "./ViewControls";
 import { LevelControls } from "./LevelControls";
 import { SideDrawer } from "./SideDrawer";
-import { buildFloorCodeHtml, buildProjectCodeHtml } from "./portfolio-scene/inspector-code";
+import {
+  buildFloorInspectorContent,
+  buildIdleInspectorContent,
+  buildProjectInspectorContent,
+} from "./portfolio-scene/inspector-content";
+import type { InspectorContent } from "@/types/inspector";
 
 const FRUSTUM_SIZE = 40;
 const MAX_FLOORS = 40;
@@ -324,7 +329,7 @@ function parseStoredTextSizeByDevice(raw: string | null): TextSizeByDevice {
 export function PortfolioScene({ data, locale }: Props) {
   const router = useRouter();
   const pathname = usePathname();
-  const defaultCodeHtml = data.ui.inspector.codeHtml.default;
+  const defaultInspectorContent = buildIdleInspectorContent(data.ui.inspector);
   const dataRef = useRef(data);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -388,12 +393,12 @@ export function PortfolioScene({ data, locale }: Props) {
     resolveRenderStrategy(typeof window === "undefined" ? TABLET_BREAKPOINT : window.innerWidth)
   );
   const heroVariantRef = useRef<HeroStartupVariant | null>(null);
-  /** HTML del proyecto "pinned" en el inspector; null = ninguno seleccionado. */
-  const selectedProjectHtmlRef = useRef<string | null>(null);
+  /** Contenido del proyecto fijado en el inspector; null = ninguno seleccionado. */
+  const selectedProjectContentRef = useRef<InspectorContent | null>(null);
 
   /** Último mesh del que se derivó hero + inspector (evita setState por frame). */
   const prevHoverUiMeshRef = useRef<THREE.Mesh | null>(null);
-  const defaultCodeHtmlRef = useRef(defaultCodeHtml);
+  const defaultInspectorContentRef = useRef(defaultInspectorContent);
 
   const [activeNavPanel, setActiveNavPanel] = useState<NavActivePanel>(null);
 
@@ -415,7 +420,7 @@ export function PortfolioScene({ data, locale }: Props) {
   const [loadText, setLoadText] = useState(hasSeenLoadingScreen ? "" : data.ui.loading.initialText);
   const [loadHidden, setLoadHidden] = useState(hasSeenLoadingScreen);
   const [floorCount, setFloorCount] = useState(INITIAL_FLOORS);
-  const [codeHtml, setCodeHtml] = useState(defaultCodeHtml);
+  const [inspectorContent, setInspectorContent] = useState(defaultInspectorContent);
 
   const notifyPortfolioSceneLoadDismissed = useNotifyPortfolioSceneLoadDismissed();
   useEffect(() => {
@@ -449,14 +454,14 @@ export function PortfolioScene({ data, locale }: Props) {
   }, []);
 
   const clearProjectSelection = useCallback(() => {
-    selectedProjectHtmlRef.current = null;
+    selectedProjectContentRef.current = null;
     setPersistentSelectedFloor(null);
     prevHoverUiMeshRef.current = null;
     setHeroSelection(null);
     setHeroFloorPreview(null);
     setMobileProjectPanel(null);
-    setCodeHtml(defaultCodeHtml);
-  }, [defaultCodeHtml, setPersistentSelectedFloor]);
+    setInspectorContent(defaultInspectorContent);
+  }, [defaultInspectorContent, setPersistentSelectedFloor]);
 
   const clearProjectSelectionRef = useRef(clearProjectSelection);
 
@@ -480,15 +485,15 @@ export function PortfolioScene({ data, locale }: Props) {
 
   // React UI state
   const loadHiddenRef = useRef(loadHidden);
-  const setCodeHtmlRef = useRef(setCodeHtml);
+  const setInspectorContentRef = useRef(setInspectorContent);
   const setHeroFloorPreviewRef = useRef(setHeroFloorPreview);
   useEffect(() => {
     dataRef.current = data;
   }, [data]);
 
   useEffect(() => {
-    defaultCodeHtmlRef.current = defaultCodeHtml;
-  }, [defaultCodeHtml]);
+    defaultInspectorContentRef.current = defaultInspectorContent;
+  }, [defaultInspectorContent]);
 
   useEffect(() => {
     clearProjectSelectionRef.current = clearProjectSelection;
@@ -503,8 +508,8 @@ export function PortfolioScene({ data, locale }: Props) {
   }, [loadHidden]);
 
   useEffect(() => {
-    setCodeHtmlRef.current = setCodeHtml;
-  }, [setCodeHtml]);
+    setInspectorContentRef.current = setInspectorContent;
+  }, [setInspectorContent]);
 
   useEffect(() => {
     setHeroFloorPreviewRef.current = setHeroFloorPreview;
@@ -622,10 +627,10 @@ export function PortfolioScene({ data, locale }: Props) {
         prevHoverUiMeshRef.current = null;
         if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
         setHeroFloorPreview(null);
-        setCodeHtml(defaultCodeHtml);
+        setInspectorContent(defaultInspectorContent);
       }
     }
-  }, [defaultCodeHtml]);
+  }, [defaultInspectorContent]);
 
   const handleViewClick = useCallback((view: ViewPreset) => {
     const controls = controlsRef.current;
@@ -860,7 +865,10 @@ export function PortfolioScene({ data, locale }: Props) {
 
   const handleProjectSelect = useCallback(
     (project: ProjectItem, categoryLabel: string) => {
-      const html = buildProjectCodeHtml(project, dataRef.current.ui.inspector.codeHtml.projectTemplate);
+      const content = buildProjectInspectorContent(
+        project,
+        dataRef.current.ui.inspector,
+      );
       const currentIntersected = intersectedRef.current;
       if (currentIntersected) {
         const tc = SCENE_COLORS[themeRef.current];
@@ -869,8 +877,8 @@ export function PortfolioScene({ data, locale }: Props) {
       }
       prevHoverUiMeshRef.current = null;
       if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
-      selectedProjectHtmlRef.current = html;
-      setCodeHtml(html);
+      selectedProjectContentRef.current = content;
+      setInspectorContent(content);
       setHeroFloorPreview(null);
       setMobileProjectPanel(null);
       setHeroSelection({ project, categoryLabel });
@@ -882,7 +890,7 @@ export function PortfolioScene({ data, locale }: Props) {
         setAutoRotate(false);
       }
     },
-    [setCodeHtml, setPersistentSelectedFloor]
+    [setPersistentSelectedFloor]
   );
 
   const handleProjectSelectRef = useRef(handleProjectSelect);
@@ -1008,7 +1016,7 @@ export function PortfolioScene({ data, locale }: Props) {
         pointerPickLeft = null;
         return;
       }
-      const hasPinnedProject = selectedProjectHtmlRef.current != null;
+      const hasPinnedProject = selectedProjectContentRef.current != null;
       const pick = pointerPickLeft;
       pointerPickLeft = null;
       if (pick == null || e.pointerId !== pick.pointerId || e.button !== 0) {
@@ -1077,18 +1085,21 @@ export function PortfolioScene({ data, locale }: Props) {
       if (prevHoverUiMeshRef.current === obj) return;
       prevHoverUiMeshRef.current = obj;
       const fallback =
-        selectedProjectHtmlRef.current ?? defaultCodeHtmlRef.current;
+        selectedProjectContentRef.current ?? defaultInspectorContentRef.current;
       if (obj == null) {
         setHeroFloorPreviewRef.current(null);
-        setCodeHtmlRef.current(fallback);
+        setInspectorContentRef.current(fallback);
         return;
       }
       const d = obj.userData as FloorUserData;
       if (d.projectId) {
         const found = findProjectWithCategory(dataRef.current, d.projectId);
         if (found) {
-          setCodeHtmlRef.current(
-            buildProjectCodeHtml(found.project, dataRef.current.ui.inspector.codeHtml.projectTemplate)
+          setInspectorContentRef.current(
+            buildProjectInspectorContent(
+              found.project,
+              dataRef.current.ui.inspector,
+            ),
           );
           setHeroFloorPreviewRef.current({
             project: found.project,
@@ -1098,14 +1109,14 @@ export function PortfolioScene({ data, locale }: Props) {
         }
       }
       setHeroFloorPreviewRef.current(null);
-      setCodeHtmlRef.current(
-        buildFloorCodeHtml(d, dataRef.current.ui.inspector.codeHtml)
+      setInspectorContentRef.current(
+        buildFloorInspectorContent(d, dataRef.current.ui.inspector),
       );
     }
 
     function commitLiveSync() {
       const next =
-        selectedProjectHtmlRef.current != null || intersectedRef.current != null;
+        selectedProjectContentRef.current != null || intersectedRef.current != null;
       if (next !== prevLiveSyncRef.current) {
         prevLiveSyncRef.current = next;
         setLiveSyncRef.current(next);
@@ -1158,8 +1169,8 @@ export function PortfolioScene({ data, locale }: Props) {
             if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
             prevHoverUiMeshRef.current = null;
             setHeroFloorPreviewRef.current(null);
-            setCodeHtmlRef.current(
-              selectedProjectHtmlRef.current ?? defaultCodeHtmlRef.current
+            setInspectorContentRef.current(
+              selectedProjectContentRef.current ?? defaultInspectorContentRef.current,
             );
           }
           if (selectedFloorMeshRef.current && selectedFloorMeshRef.current.parent === fg) {
@@ -1225,7 +1236,7 @@ export function PortfolioScene({ data, locale }: Props) {
       }
 
       // Mientras haya un proyecto fijado en el inspector, bloquear hover/raycast 3D.
-      if (selectedProjectHtmlRef.current) {
+      if (selectedProjectContentRef.current) {
         const selectedFloor = selectedFloorMeshRef.current;
         if (intersectedRef.current && intersectedRef.current !== selectedFloor) {
           const tc = SCENE_COLORS[themeRef.current];
@@ -1249,8 +1260,8 @@ export function PortfolioScene({ data, locale }: Props) {
           if (tooltipRef.current) tooltipRef.current.style.opacity = "0";
           prevHoverUiMeshRef.current = null;
           setHeroFloorPreviewRef.current(null);
-          setCodeHtmlRef.current(
-            selectedProjectHtmlRef.current ?? defaultCodeHtmlRef.current
+          setInspectorContentRef.current(
+            selectedProjectContentRef.current ?? defaultInspectorContentRef.current,
           );
         }
       }
@@ -1322,7 +1333,7 @@ export function PortfolioScene({ data, locale }: Props) {
           intersectedRef.current = null;
           prevHoverUiMeshRef.current = null;
           setHeroFloorPreviewRef.current(null);
-          setCodeHtmlRef.current(defaultCodeHtmlRef.current);
+          setInspectorContentRef.current(defaultInspectorContentRef.current);
         }
       }
 
@@ -1392,7 +1403,7 @@ export function PortfolioScene({ data, locale }: Props) {
     });
 
     function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape" && selectedProjectHtmlRef.current) {
+      if (e.key === "Escape" && selectedProjectContentRef.current) {
         clearProjectSelectionRef.current();
       }
     }
@@ -1550,12 +1561,13 @@ export function PortfolioScene({ data, locale }: Props) {
       />
       {!isMobileTouchUi && (
         <NodeInspector
-          codeHtml={codeHtml}
+          content={inspectorContent}
           title={data.ui.inspector.title}
           status={data.ui.inspector.status}
           liveSync={liveSync}
           expandLabel={data.ui.inspector.expandLabel}
           collapseLabel={data.ui.inspector.collapseLabel}
+          collapseAllLabel={data.ui.inspector.collapseAllLabel}
         />
       )}
       {isMobileTouchUi &&
@@ -1600,7 +1612,7 @@ export function PortfolioScene({ data, locale }: Props) {
       {heroSelection != null && isMobileTouchUi && mobileProjectPanel === "inspector" && (
         <NodeInspector
           mode="mobileOverlay"
-          codeHtml={codeHtml}
+          content={inspectorContent}
           title={data.ui.inspector.title}
           status={data.ui.inspector.status}
           liveSync={liveSync}
@@ -1608,6 +1620,7 @@ export function PortfolioScene({ data, locale }: Props) {
           closeLabel={data.ui.projectViewer.closeLabel}
           expandLabel={data.ui.inspector.expandLabel}
           collapseLabel={data.ui.inspector.collapseLabel}
+          collapseAllLabel={data.ui.inspector.collapseAllLabel}
         />
       )}
 

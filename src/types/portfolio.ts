@@ -152,29 +152,20 @@ export type PortfolioData = {
       status: string;
       expandLabel: string;
       collapseLabel: string;
-      codeHtml: {
-        default: string;
-        jsonResponseComment: string;
-        status: string;
-        sync: string;
-        projectTemplate: {
-          componentTag: string;
-          contextComment: string;
-          impactComment: string;
-          roleComment: string;
-          stackComment: string;
-          linksComment: string;
-          contextLabel: string;
-          impactLabel: string;
-          roleLabel: string;
-          platformLabel: string;
-          scopeLabel: string;
-          stackLabel: string;
-          linkLabel: string;
-          githubLabel: string;
-          demoLabel: string;
-          demoEmbedFallbackLabel: string;
-        };
+      collapseAllLabel: string;
+      idleMessage: string;
+      statusValue: string;
+      syncValue: string;
+      floor: {
+        nodeLabel: string;
+      };
+      projectSections: {
+        contextLabel: string;
+        impactLabel: string;
+        roleLabel: string;
+        platformLabel: string;
+        scopeLabel: string;
+        stackLabel: string;
       };
     };
     viewControls: {

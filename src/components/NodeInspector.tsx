@@ -1,7 +1,9 @@
 import { useState } from "react";
+import { InspectorAccordionBody } from "./InspectorAccordionBody";
+import type { InspectorContent } from "@/types/inspector";
 
 type Props = {
-  codeHtml: string;
+  content: InspectorContent;
   title: string;
   status: string;
   /** true cuando hay hover sobre el modelo 3D o un proyecto fijado en el inspector. */
@@ -11,10 +13,11 @@ type Props = {
   closeLabel?: string;
   expandLabel?: string;
   collapseLabel?: string;
+  collapseAllLabel?: string;
 };
 
 export function NodeInspector({
-  codeHtml,
+  content,
   title,
   status,
   liveSync,
@@ -23,6 +26,7 @@ export function NodeInspector({
   closeLabel = "Cerrar",
   expandLabel = "Expandir",
   collapseLabel = "Contraer",
+  collapseAllLabel = "Contraer todo",
 }: Props) {
   const [isCollapsed, setIsCollapsed] = useState(false);
   const isOverlay = mode === "mobileOverlay";
@@ -36,8 +40,11 @@ export function NodeInspector({
             <span className={`status-indicator ${liveSync ? "is-live" : ""}`}>{status}</span>
           </span>
         </div>
-        <div className="code-block-wrapper data-panel__mobile-overlay-body">
-          <div className="code-block" dangerouslySetInnerHTML={{ __html: codeHtml }} />
+        <div className="data-panel__mobile-overlay-body inspector-body-wrapper">
+          <InspectorAccordionBody
+            content={content}
+            collapseAllLabel={collapseAllLabel}
+          />
         </div>
         {onClose != null ? (
           <div className="data-panel__mobile-overlay-footer">
@@ -71,8 +78,13 @@ export function NodeInspector({
           </span>
         </span>
       </button>
-      <div className="code-block-wrapper" aria-hidden={isCollapsed}>
-        <div className="code-block" dangerouslySetInnerHTML={{ __html: codeHtml }} />
+      <div className="inspector-body-wrapper" aria-hidden={isCollapsed}>
+        {isCollapsed ? null : (
+          <InspectorAccordionBody
+            content={content}
+            collapseAllLabel={collapseAllLabel}
+          />
+        )}
       </div>
     </div>
   );

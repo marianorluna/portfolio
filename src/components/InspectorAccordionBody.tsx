@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useState } from "react";
 import type { InspectorContent, InspectorSection } from "@/types/inspector";
+import { formatInlineText } from "@/utils/format-inline-text";
 
 const DEFAULT_OPEN_SECTION_ID = "stack";
 
@@ -33,16 +34,6 @@ function CollapseAllIcon() {
       <path d="m7 7 5-4 5 4" />
     </svg>
   );
-}
-
-function formatInlineText(text: string): ReactNode[] {
-  const parts = text.split(/(\*\*[^*]+\*\*)/g);
-  return parts.map((part, index) => {
-    if (part.startsWith("**") && part.endsWith("**")) {
-      return <strong key={index}>{part.slice(2, -2)}</strong>;
-    }
-    return part;
-  });
 }
 
 function SectionBody({ section }: { section: InspectorSection }) {

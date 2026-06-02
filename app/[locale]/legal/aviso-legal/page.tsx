@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { buildLegalPageMetadata } from "@/config/site-seo";
 import { getPortfolioDataByLocale, isLocale } from "@/i18n/locale";
 import { LegalPageLayout } from "../LegalPageLayout";
 
@@ -9,9 +10,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { locale } = await params;
   if (!isLocale(locale)) return {};
   const data = getPortfolioDataByLocale(locale);
-  return {
-    title: data.legal.pages.legalNotice.metadataTitle,
-  };
+  const page = data.legal.pages.legalNotice;
+  return buildLegalPageMetadata(
+    locale,
+    "/legal/aviso-legal",
+    page.metadataTitle,
+    page.metadataDescription
+  );
 }
 
 export default async function LegalNoticePage({ params }: Props) {

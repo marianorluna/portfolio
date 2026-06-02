@@ -1,4 +1,5 @@
 import type { PortfolioData } from "@/types/portfolio";
+import { formatInlineText } from "@/utils/format-inline-text";
 
 type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][number];
 
@@ -73,7 +74,9 @@ export function HeroText({
           })
         )}
       </h1>
-      <p className="subtitle">{selection ? selection.project.description : hero.subtitle}</p>
+      <p className="subtitle">
+        {selection ? formatInlineText(selection.project.description) : hero.subtitle}
+      </p>
       <div className="cta-group">
         {inspectorFirstInMobile &&
         onProjectInspectorPanel != null &&

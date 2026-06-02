@@ -85,6 +85,7 @@ export type LegalSection = {
 
 export type LegalPageCopy = {
   metadataTitle: string;
+  metadataDescription: string;
   title: string;
   sections: LegalSection[];
 };
@@ -102,6 +103,16 @@ export type LegalCopy = {
     privacy: LegalPageCopy;
     cookies: LegalPageCopy;
   };
+};
+
+export type NotFoundCopy = {
+  metadataTitle: string;
+  metadataDescription: string;
+  title: string;
+  heading: string;
+  description: string;
+  backToHome: string;
+  otherLocaleLabel: string;
 };
 
 export type ContactFormCopy = {
@@ -134,6 +145,7 @@ export type PortfolioData = {
   meta: {
     title: string;
     badge: string;
+    description: string;
   };
   nav: {
     brand: NavBrand;
@@ -216,6 +228,8 @@ export type PortfolioData = {
       demoUnavailableTitle: string;
       /** Mensaje en el área del iframe si no hay URL de demo */
       iframeUnavailableHint: string;
+      /** Mensaje cuando la demo solo puede abrirse en pestaña externa */
+      externalDemoHint: string;
     };
     contactForm: ContactFormCopy;
     contactSocial: ContactSocial;
@@ -284,4 +298,5 @@ export type PortfolioData = {
     }[];
   };
   legal: LegalCopy;
+  notFound: NotFoundCopy;
 };

@@ -10,8 +10,9 @@ export const FLOOR_LEVEL_TO_PROJECT_ID: Readonly<Record<number, string>> = {
   4: "ribbon-revit",
   6: "lol-match",
   8: "stockearly",
-  10: "visor-ifc",
-  12: "data-extractor",
+  10: "eva-mendez-web",
+  12: "visor-ifc",
+  14: "data-extractor",
 };
 
 /** Colores de hover por proyecto (sin azul dominante). base / emissive / aristas */
@@ -22,6 +23,7 @@ export const PROJECT_HOTSPOT_COLORS: Readonly<
   "ribbon-revit": { base: 0x052e16, emissive: 0x15803d, line: 0x4ade80 },
   "lol-match": { base: 0x3b0764, emissive: 0x9333ea, line: 0xe879f9 },
   stockearly: { base: 0x431407, emissive: 0xea580c, line: 0xfdba74 },
+  "eva-mendez-web": { base: 0x4a1942, emissive: 0xbe185d, line: 0xf9a8d4 },
   "visor-ifc": { base: 0x042f2e, emissive: 0x0f766e, line: 0x5eead4 },
   "data-extractor": { base: 0x4c0519, emissive: 0xe11d48, line: 0xfda4af },
 };

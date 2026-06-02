@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import type { PortfolioData } from "@/types/portfolio";
 import { hasThirdPartyConsent, onConsentChanged, setThirdPartyConsent } from "@/lib/legal/consent";
+import { isNonEmbeddableDemoUrl } from "@/lib/project-demo";
 
 type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][number];
 
@@ -38,8 +39,10 @@ export function ProjectViewerModal({
     typeof project.demoEmbedFallback === "string" && project.demoEmbedFallback.trim() !== ""
       ? project.demoEmbedFallback.trim()
       : null;
+  const showExternalDemoOnly =
+    demoUrl != null && embedFallback == null && isNonEmbeddableDemoUrl(demoUrl);
   const [isPreviewLoading, setIsPreviewLoading] = useState(
-    demoUrl != null || embedFallback != null
+    embedFallback != null || (demoUrl != null && !showExternalDemoOnly)
   );
   const [thirdPartyConsent, setThirdPartyConsentState] = useState<boolean>(() =>
     hasThirdPartyConsent()
@@ -116,7 +119,7 @@ export function ProjectViewerModal({
             </div>
           ) : embedFallback != null ? (
             <div className="project-viewer__embed-fallback" role="img" aria-label={project.name}>
-              {/* Captura: Autodesk (y similares) suelen bloquear iframe; la demo sigue abriéndose en pestaña */}
+              {/* Captura opcional cuando el proveedor bloquea iframe y hay imagen configurada */}
               <Image
                 className="project-viewer__fallback-img"
                 src={embedFallback}
@@ -128,6 +131,12 @@ export function ProjectViewerModal({
                 onLoad={() => setIsPreviewLoading(false)}
                 onError={() => setIsPreviewLoading(false)}
               />
+            </div>
+          ) : showExternalDemoOnly ? (
+            <div className="project-viewer__iframe-fallback" role="status">
+              <p className="project-viewer__iframe-fallback-text">
+                {projectViewer.externalDemoHint}
+              </p>
             </div>
           ) : demoUrl != null ? (
             <iframe

@@ -1,7 +1,8 @@
 {
   "meta": {
     "title": "Mariano Luna",
-    "badge": "Barcelona"
+    "badge": "Barcelona",
+    "description": "Mariano Luna's interactive 3D portfolio. BIM architect and fullstack developer focused on AEC workflows, automation, and web tools."
   },
   "nav": {
     "brand": {
@@ -101,12 +102,12 @@
         "nodeLabel": "FloorNode"
       },
       "projectSections": {
-        "contextLabel": "Context",
-        "impactLabel": "Impact",
-        "roleLabel": "Features",
-        "platformLabel": "Platform",
-        "scopeLabel": "Scope",
-        "stackLabel": "Stack"
+        "contextLabel": "Problem",
+        "impactLabel": "Outcome",
+        "roleLabel": "My role",
+        "platformLabel": "Environment",
+        "scopeLabel": "Project scope",
+        "stackLabel": "Technologies"
       }
     },
     "viewControls": {
@@ -153,7 +154,8 @@
       "dismissOverlayLabel": "Return to main overview",
       "openDemoLabel": "Open in browser",
       "demoUnavailableTitle": "No demo link available",
-      "iframeUnavailableHint": "No demo URL is configured. Check the right-hand panel or the project JSON."
+      "iframeUnavailableHint": "No demo URL is configured. Check the right-hand panel or the project JSON.",
+      "externalDemoHint": "The demo opens on the provider's site. Use the button below to view it in a new tab."
     },
     "contactForm": {
       "formAriaLabel": "Send contact message",
@@ -227,29 +229,28 @@
             "id": "control-manager",
             "name": "Control Manager",
             "summary": "Quality control plugin for Autodesk Revit",
-            "description": "Desktop plugin for Autodesk Revit aimed at BIM coordinators who need to validate models consistently and with traceability. Control Manager automates common QC checks in Revit models and delivers actionable results. Review happens on the local model, with no dependency on external services.",
-            "context": "BIM issue validation such as empty names, duplicate marks, empty comments, and unclosed rooms was done manually and took too much time.",
-            "impact": "Speeds up BIM coordination reviews and improves delivery quality by catching issues before models are published.",
-            "role": "Plugin architecture design, multi-version validation rules, direct selection of elements in Revit, and Excel export for tracking.",
-            "platform": "Plugin for Autodesk Revit 2023–2027 on Windows 10–11 (64-bit)",
-            "scope": "On-premise BIM in production; install via ZIP bundle or EXE installer",
-            "stack": ["C#", "Revit API", ".NET Framework 4.8-10", "WPF", "ClosedXML"],
+            "description": "Quality Control plugin for Autodesk Revit for BIM coordinators: automates QC checks on the local model and delivers actionable results with no cloud services.",
+            "context": "Revit quality reviews—empty names or type names, blank Comments, unclosed rooms, duplicate Marks, and elements without a level—are often done manually, inconsistently, and with little traceability before the model is published.",
+            "impact": "Cuts coordination time through automatic issue detection, in-model element selection, and Excel export with priority levels (high, medium, low) for tracking. Reviews run fully on the local model, suitable when models cannot be sent to external services.",
+            "role": "Designed and built the multi-version plugin (Revit 2023–2027): five severity-rated validation rules, WPF UI with MVVM, ClosedXML export, ribbon tab, privacy/EULA flow, and distribution via ApplicationPlugins bundle, ZIP releases, and a single-file EXE installer.",
+            "platform": "Application plugin for Autodesk Revit 2023, 2024, 2025, 2026, and 2027 on Windows 10/11 (64-bit); .NET Framework 4.8 (2023–2026) and .NET 10 (2027).",
+            "scope": "v1.0.0 shipped on GitHub Releases: five QC checks, manual install (ZIP) or toggle EXE installer. Autodesk App Store publication under review.",
+            "stack": ["C#", "Revit API", ".NET Framework 4.8", ".NET 10", "WPF", "MVVM", "ClosedXML"],
             "link": "https://arqfi.com",
             "github": "https://github.com/marianorluna/revit-control-manager",
-            "demo": "https://apps.autodesk.com/RVT/es/Detail/Index?id=6529215684524589255&appLang=es&os=Win64&mode=preview",
-            "demoEmbedFallback": "/images/screenshot-control-manager.png"
+            "demo": "https://apps.autodesk.com/RVT/es/Detail/Index?id=6529215684524589255&appLang=es&os=Win64&mode=preview"
           },
           {
             "id": "ribbon-revit",
             "name": "Ribbon Revit",
-            "summary": "Toolbar ribbon with PyRevit",
-            "description": "PyRevit command ribbon that groups modeling, documentation, and QA scripts in one place. Workflows share project conventions and in-Revit feedback messages, aligning the team and reducing ad-hoc, hard-to-trace scripts.",
-            "context": "An organized Revit tab to practice transactions, parameters, selection and filters, `FilteredElementCollector`, dialogs (WinForms and Task Dialog), and views, instead of scattered scripts that are hard to navigate.",
-            "impact": "The **ARQFI** tab groups panels by theme (buttons, selection, parameters, transactions, collector, I/O, views, and graphic overrides) with sample buttons, a reusable `lib/Snippets` folder, and shortcuts to Learn Revit API and pyRevit/Revit API docs.",
-            "role": "Organization of the `learnrevitapi.extension` following pyRevit conventions (`ARQFI.tab`, panels/stacks, `bundle.yaml`) and per-command scripts. Maintenance of `lib/Snippets` and `lib/Code` as decoupled practice material.",
-            "platform": "Installable pyRevit extension for Autodesk Revit 2022, 2023, and 2024; Python via the IronPython or CPython runtime from your pyRevit install.",
-            "scope": "Practice material for students and BIM developers.",
-            "stack": ["Python", "pyRevit", "Revit API", "WinForms"],
+            "summary": "ARQFI pyRevit tab for learning the Revit API",
+            "description": "pyRevit extension with the ARQFI ribbon tab: organized examples to practice transactions, parameters, selection, FilteredElementCollector, dialogs, views, sheets, and graphic overrides on the active model.",
+            "context": "Learning the Revit API often means scattered scripts that are hard to find and share, with no consistent ribbon structure or examples grouped by topic.",
+            "impact": "Keeps learning inside Revit with tools grouped by theme, reusable helpers in lib/Snippets, and quick links to Learn Revit API, Revit API Docs, and pyRevit developer docs—less setup time before trying each API concept.",
+            "role": "Structured and maintained the learnrevitapi.extension (ARQFI.tab, Resources/Buttons/Select/Parameters/Transactions/Collector/InOut/Views/Overrides panels, bundle.yaml), per-button scripts, and lib/Code and lib/Snippets with helpers for transactions, parameters, selection, and unit conversion.",
+            "platform": "pyRevit extension for Autodesk Revit 2022, 2023, and 2024; Python via your pyRevit runtime (IronPython or CPython).",
+            "scope": "Open-source educational material (MIT) on GitHub, no published releases; install by copying learnrevitapi.extension into your pyRevit extensions folder. Intended for test project copies, not production models.",
+            "stack": ["Python", "pyRevit", "Revit API", "WinForms", "Task Dialog", "RPW"],
             "link": "https://arqfi.com",
             "github": "https://github.com/marianorluna/ribbon-pyrevit",
             "demo": "https://www.youtube.com/embed/rWGBVo9qDEg?si=feIjLqulLjMs4RA5&amp;controls=0"
@@ -263,14 +264,14 @@
           {
             "id": "lol-match",
             "name": "LOL Match",
-            "summary": "Web app for League of Legends players",
-            "description": "Fullstack web app developed as a master’s thesis (TFM), letting League of Legends players manage profiles, form squads, find matches, and connect with the community. Includes authentication, profile management, real-time chat, a squad system, Riot Games API integration, and LoL statistics views.",
-            "context": "There is no official place that combines LoL profiles, squads, matchmaking, and community chat. Players need a space to discover compatible profiles with good Honor and matching roles.",
-            "impact": "Live platform with solid authentication (JWT), real-time messaging, Riot Games integration and statistics, with a responsive UI across devices.",
-            "role": "React and Vite client (routes, WebSocket contexts, API services); on the server, Express REST API with MongoDB/Mongoose, Socket.io for chat and notifications, and cached Riot Games API calls.",
-            "platform": "Responsive fullstack web app: React + Vite SPA with Node.js REST API.",
-            "scope": "Master thesis with separate frontend and backend repos deployed on Vercel and Render.",
-            "stack": ["React", "Vite", "Tailwind CSS", "Node.js", "Express", "MongoDB", "Socket.io", "JWT", "Mongoose", "Riot Games API"],
+            "summary": "Fullstack MERN platform for League of Legends players",
+            "description": "Fullstack web app (master’s thesis project) to manage summoner profiles, squads, teammate discovery, chat, and stats via the Riot Games API. Two-repo architecture: React + Vite client and Node REST API with MongoDB and real-time WebSockets.",
+            "context": "Riot exposes game data but not a single web space that combines verified signup, LoL profile, squads, player matches, chat, and stats in one responsive experience.",
+            "impact": "Live platform at lolmatch.online where players verify their account, sync their summoner, manage squads, chat in real time, receive notifications, and browse matches and rank without juggling scattered tools outside the browser.",
+            "role": "Fullstack work across lolmatch-frontend and lolmatch-backend: React 19 UI with protected routes and Auth, Socket, Chat, and Notification contexts; Express 5 API with Mongoose, httpOnly JWT cookies, 2FA, and sessions; Socket.io for chat and alerts; Riot API caching, Cloudinary avatars, and Brevo email.",
+            "platform": "React SPA on Netlify (lolmatch.online and legacy Netlify domain) calling a Node.js REST API and WebSockets; local MongoDB in development and MongoDB Atlas in production; multi-domain CORS with cross-origin cookies.",
+            "scope": "MIT thesis project, separate GitHub repos; full auth flows (signup, verification, recovery, 2FA), squads, matches, public and private chat, and Riot integration. Vitest, Cypress, and Jest tests with initial documented coverage.",
+            "stack": ["React", "Vite", "Tailwind CSS", "Radix UI", "Node.js", "Express", "MongoDB", "Mongoose", "Socket.io", "JWT", "Riot Games API", "Cloudinary", "Zod"],
             "link": "https://arqfi.com",
             "github": "https://github.com/marianorluna/lolmatch-frontend",
             "demo": "https://lolmatch.online/"
@@ -278,17 +279,32 @@
           {
             "id": "stockearly",
             "name": "Stockearly",
-            "summary": "Stock control application",
-            "description": "MVP built for a small restaurant. Provides manual flows to log sales, purchases, and waste while consuming real-time updates from the backend via Socket.io. Its main goal is to grow into an inventory system that supports cost adjustments and ingredient optimization. Replaces scattered spreadsheets with a clear domain model. Includes a stable API and an operational browser-based dashboard. Data is stored in MongoDB.",
-            "context": "Inventory split across spreadsheets and loosely aligned manual records. An event-driven core with coherent stock and a live operational view was needed without demanding full integrations from day one.",
-            "impact": "Sales, purchases, and shrinkage go through an event bus that updates MongoDB and pushes changes to the dashboard instantly; hooks are ready for POS webhooks and an invoice pipeline to scale without redesigning the domain.",
-            "role": "Modeled event-driven flows and stock services in Express, manual endpoints, and webhook. React (Vite) client with Material UI and Tailwind, Zustand state, and Socket.io for snapshots and live inventory.",
-            "platform": "Frontend and backend: React + Vite SPA with event-driven Node/Express API, MongoDB, and WebSockets.",
-            "scope": "Manual-first MVP with live dashboard and alerts. The same architecture can take POS webhooks, JSON invoices, and OCR-style extensions without breaking the model.",
-            "stack": ["React", "Vite", "Material UI", "Tailwind CSS", "Node.js", "Express", "MongoDB", "Socket.io", "Zustand"],
-            "link": "https://arqfi.com",
+            "summary": "Fullstack stock control app",
+            "description": "Inventory control app for Etama, a brunch and healthy-food restaurant in Barcelona ([etama.es](https://etama.es)): sales, purchases, and wastage, ingredient catalog, recipes (bill of materials), and a real-time dashboard. Two-repo setup — React + Vite client and event-driven Node API with MongoDB and Socket.io.",
+            "context": "Etama tracked inventory across spreadsheets and manual notes with no single stock view or low-stock alerts; requiring POS or automated invoices on day one would have delayed a tool kitchen and front-of-house could use right away.",
+            "impact": "Panel at stockearly.online deployed for daily restaurant operations: inventory snapshots and low-stock alerts that refresh instantly after each sale, purchase, or wastage event; the public menu and bookings stay on its own website while the kitchen monitors stock in real time. The same core supports POS webhooks and invoices (JSON with preview and confirm, PDF via cloud storage and AI) without redesigning the domain.",
+            "role": "Fullstack development on stock-app-frontend and stock-app-backend: EventBus, stockService, manual endpoints, POS webhook, invoice pipeline, and JWT-backed API; models for ingredients, recipes, suppliers, and notifications. TypeScript client with MUI, Zustand, and react-hook-form; dashboard, ingredients, recipes, and manual logging screens; Socket.io for live snapshots.",
+            "platform": "React SPA (Vite + TypeScript) on Vercel (stockearly.online) calling a Node/Express REST API and WebSockets (port 4000); local or Atlas MongoDB; optional Android packaging with Capacitor.",
+            "scope": "Real client project (Etama, Barcelona): app in production with manual-first flows; ingredient and recipe CRUD, wastage presets, and suppliers. JSON invoices shipped; PDF processing with Gemini/GCS when configured; POS webhook signature verification on the roadmap.",
+            "stack": ["React", "TypeScript", "Vite", "Material UI", "Tailwind CSS", "Zustand", "Node.js", "Express", "MongoDB", "Mongoose", "Socket.io", "JWT", "Joi", "Capacitor"],
+            "link": "https://etama.es/",
             "github": "https://github.com/marianorluna/stock-app-backend",
             "demo": "https://www.stockearly.online/"
+          },
+          {
+            "id": "eva-mendez-web",
+            "name": "EMP Website",
+            "summary": "Professional site with Next.js + Sanity",
+            "description": "Website for Eva Méndez Pérez, a general health psychologist and creator of Terapia de Sentido: migration from WordPress to a monorepo with Next.js 15 (App Router, ISR) and Sanity Studio v3 so she can manage blog posts, services, and pages without plugins.",
+            "context": "The WordPress site had weak SEO, plugin dependency (Amelia for bookings), and cumbersome content upkeep; she needed a fast, Spanish-only professional presence aligned with GDPR, editable by the practitioner herself.",
+            "impact": "Production site at evamendezperez.com with stronger discovery (metadata, JSON-LD, sitemap), migrated blog, online booking via embedded Cal.eu, contact form with Resend and Turnstile, cookie consent, and Studio at studio.evamendezperez.com to update copy and media without code changes.",
+            "role": "Migration and monorepo delivery (pnpm): WordPress and Amelia → Sanity scripts, schemas and GROQ, home, about, blog with Portable Text and carousels, per-service booking pages, contact and legal pages; Tailwind v4 and shadcn/ui; Docker Compose on Coolify (web + studio), CI lint and build, and deployment runbooks.",
+            "platform": "Next.js 15 standalone in Docker (Coolify) at evamendezperez.com; Sanity Studio at studio.evamendezperez.com; Cal.eu (EU) for scheduling; Resend for email; Spanish-only content (Europe/Madrid).",
+            "scope": "Real client project (private repository): phases completed (CMS, pages, SEO, cookies, deploy). Planned phase 6 (Sanity webhook → on-demand ISR and social automation via n8n) documented but not required for current operation.",
+            "stack": ["Next.js", "Sanity", "TypeScript", "Tailwind CSS", "Docker", "Resend", "Cal.eu", "Zod", "GROQ"],
+            "link": "https://evamendezperez.com",
+            "github": "",
+            "demo": "https://evamendezperez.com/"
           }
         ]
       },
@@ -299,14 +315,14 @@
           {
             "id": "visor-ifc",
             "name": "IFC Viewer",
-            "summary": "3D viewer with ThatOpen Engine and Three.js",
-            "description": "IFC model web viewer built with That Open Engine (v3), Three.js, and Vite. The app follows a layered hexagonal architecture (domain, application, infrastructure, presentation) to isolate business rules from the concrete viewer implementation. Built with ThatOpen Engine and Three.js for remote coordination without desktop viewers. Supports IFC 2x3 and IFC4 models.",
-            "context": "IFC viewer in the browser with property inspection and BIM navigation (levels and categories) without desktop installs or engine assets hosted from unreliable external origins.",
-            "impact": "Loads IFC from file or sample model; classification by storeys and categories with isolate/hide/show; camera views and HUD view cube; web-ifc WASM served from the same site.",
-            "role": "Application, infrastructure, and presentation layers; integration of `IfcLoader`, `FragmentsManager`, Highlighter, Classifier/Hider, and `ThatOpenViewerAdapter`, plus light/dark theme, camera presets, and visualization styles.",
-            "platform": "TypeScript SPA with Vite, That Open Engine v3, Three.js, and web-ifc runtime. `@thatopen/fragments` worker bundled with the build.",
-            "scope": "Viewer and model, selection and properties, and BIM navigation. Unit tests aligned with documented use cases.",
-            "stack": ["That Open Engine", "@thatopen/components", "@thatopen/fragments", "Three.js", "web-ifc", "Vite", "TypeScript"],
+            "summary": "ARQFI web IFC viewer with That Open Engine v3",
+            "description": "Web IFC model viewer (ARQFI IFC Viewer) built with That Open Engine v3, Three.js, and Vite. Layered architecture —domain, application, infrastructure, and presentation— to keep business rules separate from the 3D engine and coordinate models in the browser with no desktop install.",
+            "context": "Reviewing IFC on site or with clients often means desktop viewers or unreliable third-party CDNs and WASM; teams need a lightweight tool that combines the 3D model, properties, and navigation by storeys and categories in one URL.",
+            "impact": "Coordination from viewer.arqfi.com: load a local IFC or bundled sample, inspect properties in table or JSON, isolate and hide by level and category, camera presets and HUD view cube, with WASM and worker assets shipped in the same deployment (no external engine CDN).",
+            "role": "Designed and built the layered viewer: ThatOpenViewerAdapter, IfcLoader and FragmentsManager, Highlighter, Classifier and Hider, property enrichment (quantities, materials, project units), BIM navigation UI, light/dark theme, visualization styles, ViewCubeHud, and postinstall web-ifc pipeline; use-case tests and v0.1.0 release with Conventional Commits.",
+            "platform": "TypeScript SPA (Node 20+) with Vite; deployed on Vercel at viewer.arqfi.com; web-ifc runtime under /vendor/web-ifc and @thatopen/fragments worker bundled in the build.",
+            "scope": "Phases 1 and 2 shipped (v0.1.0, MIT): model load and rebuild, selection and properties, storey and category navigation, camera panel and help; unit tests and typecheck in the local workflow.",
+            "stack": ["That Open Engine", "@thatopen/components", "@thatopen/components-front", "@thatopen/fragments", "Three.js", "web-ifc", "Vite", "TypeScript"],
             "link": "https://arqfi.com",
             "github": "https://github.com/marianorluna/ifc-viewer",
             "demo": "https://viewer.arqfi.com/"
@@ -314,14 +330,14 @@
           {
             "id": "data-extractor",
             "name": "Data Extractor",
-            "summary": "APS application with Model Derivative",
-            "description": "Web app to explore Autodesk Docs/ACC and OSS, translate RVT/NWC models with APS Model Derivative, and query properties/metadata with a UX focused on technical extraction. Use your own Autodesk account for cloud models or test with a demo account.",
-            "context": "Ability to browse Autodesk Docs/ACC hubs, operate OSS buckets in the app, and queue RVT/NWC translations with Model Derivative without wiring scattered APS calls and manifests by hand.",
-            "impact": "Unified Express backend with OAuth 3-legged access to hubs and a parallel OSS project, smart manifest and `svf2` jobs with `svf` fallback, property panel and aggregated metrics in React, and an optional demo mode with limits and CAPTCHA.",
-            "role": "Express API implementation (`/auth`, Data Management, OSS, translate, metadata, properties, tree, demo) and React frontend with smart extraction. Docker added for dev and production-style deploys, with separate frontend/backend deployment documented.",
-            "platform": "React client (dev 3001) and REST Express API (3000) with session cookies. APS Authentication, Data Management, OSS, and Model Derivative integration.",
-            "scope": "Fullstack monorepo: authenticated Docs/ACC, app-owned OSS (buckets, upload, extraction), and optional public demo extraction without login.",
-            "stack": ["APS", "React", "Express", "Node.js", "Docker"],
+            "summary": "APS cloud extractor for RVT/NWC metadata",
+            "description": "APS Revit Data Extractor: web app to browse Autodesk Docs/ACC and OSS, translate RVT/NWC with Model Derivative, and inspect properties and the model tree with a technical extraction UX. React + Express monorepo with OAuth session handling.",
+            "context": "Pulling properties and metrics from cloud RVT/NWC models means chaining OAuth, Data Management, OSS, translation jobs, and manifest reads by hand; without a unified layer the technical workflow is slow and error-prone.",
+            "impact": "Tool at aps-data.arqfi.com that centralizes sign-in with the user’s Autodesk account, Hub → Project → Content navigation, OSS upload, and extraction with automatic manifest handling (ready, in progress, or queued svf2/svf), plus a property and analytics panel; optional public demo with limits and CAPTCHA to try without credentials.",
+            "role": "Designed and built the monorepo (frontend/ and backend/): 3-legged OAuth, hub routes and Docs extraction, OSS bucket CRUD with signed upload, translate/metadata/properties/tree, smart extraction UI in React, and demoProtection with rate limiting; Docker Compose for dev and prod and documented split deploy (Coolify).",
+            "platform": "React client (port 3001 locally) and Express API (3000) with session cookies; production frontend at aps-data.arqfi.com and API at aps-data-api.arqfi.com; APS Authentication (3-legged and 2-legged), Data Management, OSS, and Model Derivative.",
+            "scope": "MIT monorepo in production: authenticated Docs/ACC flow, app-owned OSS flow (buckets, upload, extract), and configurable public demo (DEMO_URN_BASE64, CAPTCHA); verified with frontend build and backend node --check.",
+            "stack": ["Autodesk Platform Services", "Model Derivative", "Data Management", "OSS", "OAuth 2.0", "React", "Express", "Node.js", "Docker"],
             "link": "https://arqfi.com",
             "github": "https://github.com/marianorluna/aps-data-extractor",
             "demo": "https://aps-data.arqfi.com/"
@@ -408,6 +424,7 @@
     "pages": {
       "legalNotice": {
         "metadataTitle": "Legal Notice",
+        "metadataDescription": "Legal notice for marianorluna.com: site owner, terms of use, and intellectual property.",
         "title": "Legal notice",
         "sections": [
           {
@@ -434,6 +451,7 @@
       },
       "privacy": {
         "metadataTitle": "Privacy",
+        "metadataDescription": "Privacy policy for marianorluna.com under GDPR: data collected, purpose, retention, and your rights.",
         "title": "Privacy policy",
         "sections": [
           {
@@ -473,6 +491,7 @@
       },
       "cookies": {
         "metadataTitle": "Cookies",
+        "metadataDescription": "Cookie policy for marianorluna.com: cookie types, consent, and preference management.",
         "title": "Cookie policy",
         "sections": [
           {
@@ -503,5 +522,14 @@
         ]
       }
     }
+  },
+  "notFound": {
+    "metadataTitle": "Page not found",
+    "metadataDescription": "The page you are looking for does not exist or has been moved. Return to the Mariano Luna portfolio home.",
+    "title": "404",
+    "heading": "Page not found",
+    "description": "This URL does not exist or has been moved. You can go back home or switch language.",
+    "backToHome": "Back to home",
+    "otherLocaleLabel": "View site in Spanish"
   }
 }

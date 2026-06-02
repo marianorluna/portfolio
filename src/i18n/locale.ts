@@ -17,3 +17,15 @@ export function isLocale(value: string): value is Locale {
 export function getPortfolioDataByLocale(locale: Locale): PortfolioData {
   return dataByLocale[locale];
 }
+
+export const SITE_LOCALE_HEADER = "x-site-locale";
+
+/** Primer segmento de pathname; locale válido o default. */
+export function resolveLocaleFromPathname(pathname: string): Locale {
+  const segment = pathname.split("/").filter(Boolean)[0];
+  return segment != null && isLocale(segment) ? segment : DEFAULT_LOCALE;
+}
+
+export function getOtherLocale(locale: Locale): Locale {
+  return locale === "es" ? "en" : "es";
+}

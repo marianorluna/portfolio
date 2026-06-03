@@ -292,7 +292,7 @@
             "demo": "https://www.stockearly.online/"
           },
           {
-            "id": "eva-mendez-web",
+            "id": "emp-web",
             "name": "EMP Website",
             "summary": "Web profesional Next.js + Sanity",
             "description": "Sitio web para Eva Méndez Pérez, psicóloga general sanitaria y creadora de Terapia de Sentido: migración desde WordPress a un monorepo con Next.js 15 (App Router, ISR) y Sanity Studio v3 para que gestione blog, servicios y páginas sin plugins.",

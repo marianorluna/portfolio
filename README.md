@@ -1,14 +1,15 @@
 # Mariano Luna · Portfolio 3D
 
-Portfolio profesional bilingüe (ES/EN) construido sobre `Next.js` con interfaz 3D interactiva, formulario de contacto endurecido y enfoque de arquitectura limpia en la capa de dominio.
+Portfolio profesional bilingüe (ES/EN) construido sobre `Next.js` con interfaz 3D interactiva, URLs compartibles por proyecto, formulario de contacto endurecido y enfoque de arquitectura limpia en la capa de dominio.
 
 ## Objetivo del proyecto
 
 Este repositorio implementa un portfolio personal con foco en:
 
-- Experiencia visual 3D con narrativa de proyectos.
-- Internacionalización por rutas (`/es` y `/en`).
-- Captación de contacto con validación robusta y mitigación anti-spam.
+- Experiencia visual 3D con narrativa de proyectos y hotspots por planta.
+- Internacionalización por rutas (`/es` y `/en`) con segmentos localizados.
+- Deep linking a proyectos concretos (`/es/proyectos/:slug`, `/en/projects/:slug`).
+- Captación de contacto y reservas (Cal.com) con validación robusta y mitigación anti-spam.
 - Base mantenible para evolucionar contenido, UI y flujo comercial.
 
 ## Stack principal
@@ -19,6 +20,8 @@ Este repositorio implementa un portfolio personal con foco en:
 - `Zod` para validación tipada del payload
 - `Resend` para envío de correo
 - `Cloudflare Turnstile` para verificación anti-bot
+- `@calcom/embed-react` para reservas embebidas
+- `lucide-react` para iconografía UI
 - `Vitest` + `Testing Library` para pruebas
 - `ESLint` para calidad estática
 
@@ -26,17 +29,41 @@ Este repositorio implementa un portfolio personal con foco en:
 
 ```
 .
-|- app/                      # App Router, layout, rutas y API route
-|  |- [locale]/              # Páginas localizadas (es/en)
-|  |- api/contact/route.ts   # Endpoint de contacto
+|- app/                           # App Router, layout, rutas y API route
+|  |- [locale]/                   # Páginas localizadas (es/en)
+|  |  |- page.tsx                 # Home con escena 3D
+|  |  |- proyectos/[slug]/        # Deep link ES → proyecto concreto
+|  |  |- projects/[slug]/         # Deep link EN → proyecto concreto
+|  |  |- legal/                   # Aviso legal, privacidad, cookies
+|  |  |- [...slug]/              # Catch-all → 404 localizado
+|  |- api/contact/route.ts        # Endpoint de contacto
+|  |- sitemap.ts                  # Sitemap (home, legal, proyectos)
+|  |- robots.ts
+|- middleware.ts                  # Resolución de locale → cabecera x-site-locale
 |- src/
-|  |- components/            # UI y escena del portfolio
-|  |- lib/contact/           # Dominio y servicios del formulario
-|  |- lib/legal/             # Consentimiento y soporte legal
-|  |- data/                  # Contenido traducido (JSON)
-|  |- i18n/                  # Resolución de locale
-|- public/                   # Assets estáticos
+|  |- components/                 # UI, escena 3D, SEO, legal, errores
+|  |- config/                     # SEO, tema, scripts de bootstrap
+|  |- lib/contact/                # Dominio y servicios del formulario
+|  |- lib/legal/                  # Consentimiento y soporte legal
+|  |- data/                       # Contenido traducido (data-es.json, data-en.json)
+|  |- i18n/                       # Locale, segmentos de URL y datos por idioma
+|  |- utils/                      # Escena 3D, hotspots, helpers de proyecto
+|  |- types/                      # Tipos compartidos del portfolio
+|- public/                        # Assets estáticos (incl. og-social-preview.png)
 ```
+
+## Rutas principales
+
+| Ruta | Descripción |
+|------|-------------|
+| `/` | Redirige a `/es` |
+| `/es`, `/en` | Home con escena 3D interactiva |
+| `/es/proyectos/:slug` | Proyecto concreto (ES); abre la escena en ese hotspot |
+| `/en/projects/:slug` | Proyecto concreto (EN); misma lógica |
+| `/es/legal/*`, `/en/legal/*` | Páginas legales |
+| `/api/contact` | POST del formulario de contacto |
+
+Los `slug` de proyecto coinciden con el campo `id` en `src/data/data-*.json` (p. ej. `control-manager`, `ribbon-revit`, `visor-ifc`).
 
 ## Requisitos previos
 
@@ -55,6 +82,8 @@ Aplicación en desarrollo:
 
 - [http://localhost:3000/es](http://localhost:3000/es)
 - [http://localhost:3000/en](http://localhost:3000/en)
+- [http://localhost:3000/es/proyectos/control-manager](http://localhost:3000/es/proyectos/control-manager)
+- [http://localhost:3000/en/projects/control-manager](http://localhost:3000/en/projects/control-manager)
 
 ## Variables de entorno
 
@@ -80,6 +109,14 @@ Si falta alguna variable crítica, el endpoint responde con error de configuraci
 - `npm run test`: tests en modo watch.
 - `npm run test:run`: tests con coverage.
 - `npm run ci:check`: `lint` + `typecheck` + `test:run`.
+
+## Escena 3D y proyectos
+
+- La escena (`PortfolioScene`) renderiza un edificio navegable por plantas con hotspots vinculados a proyectos (`src/utils/floor-project-hotspots.ts`).
+- Al seleccionar un proyecto, la URL se sincroniza con el segmento localizado (`proyectos` / `projects`).
+- Las rutas con `slug` cargan la escena con `initialProjectId` y abren directamente el inspector del proyecto.
+- `PortfolioSceneLoadGate` gestiona la carga progresiva de la escena antes de mostrar la UI.
+- Los embeds de demo (YouTube, Cal.com) respetan el consentimiento de cookies de terceros.
 
 ## Arquitectura (contacto)
 
@@ -108,10 +145,18 @@ Configuraciones activas relevantes:
 
 ## SEO e internacionalización
 
-- Metadatos por locale (`/es`, `/en`) con `canonical` y `alternate`.
-- Open Graph y Twitter cards configurados.
-- `JSON-LD` para entidad personal y página de colección.
-- `sitemap` y `robots` en App Router.
+La configuración SEO está centralizada en `src/config/site-seo.ts`:
+
+- Metadatos por locale con `canonical` y `alternate` (`hreflang`).
+- Open Graph y Twitter cards en home, proyectos y páginas legales.
+- Imagen social por defecto (`/images/og-social-preview.png`) compartida en todas las URLs; título y descripción varían por página.
+- `JSON-LD`:
+  - `Person` y `WebSite` en el layout raíz.
+  - `CollectionPage` en la home.
+  - `CreativeWork` en cada página de proyecto.
+- `sitemap.ts` incluye home, legal y **todas las URLs de proyectos** por locale.
+- `robots.ts` en App Router.
+- `middleware.ts` resuelve el locale desde el pathname e inyecta `x-site-locale` para uso en servidor.
 
 ## Testing y control de calidad
 

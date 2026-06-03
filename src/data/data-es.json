@@ -243,7 +243,7 @@
           {
             "id": "ribbon-revit",
             "name": "Ribbon Revit",
-            "summary": "Pestaña ARQFI en pyRevit para aprender la API de Revit",
+            "summary": "Ribbon en pyRevit para crear scripts con la API",
             "description": "Extensión de pyRevit con la pestaña de cinta ARQFI: ejemplos organizados para practicar transacciones, parámetros, selección, FilteredElementCollector, diálogos, vistas, hojas y anulaciones gráficas sobre el modelo activo.",
             "context": "Aprender la API de Revit suele implicar scripts sueltos, difíciles de localizar y sin una estructura común en la cinta; falta un entorno práctico que agrupe ejemplos por temas y enlaces a documentación.",
             "impact": "Centraliza el aprendizaje dentro de Revit con herramientas agrupadas por tema, snippets reutilizables en lib/Snippets y accesos directos a Learn Revit API, Revit API Docs y documentación de pyRevit, reduciendo el tiempo para probar cada concepto sin montar scripts desde cero.",

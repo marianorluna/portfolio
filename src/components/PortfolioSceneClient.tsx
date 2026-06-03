@@ -8,8 +8,8 @@ const PortfolioScene = dynamic(
   { ssr: false }
 );
 
-type Props = { data: PortfolioData; locale: Locale };
+type Props = { data: PortfolioData; locale: Locale; initialProjectId?: string };
 
-export function PortfolioSceneClient({ data, locale }: Props) {
-  return <PortfolioScene data={data} locale={locale} />;
+export function PortfolioSceneClient({ data, locale, initialProjectId }: Props) {
+  return <PortfolioScene data={data} locale={locale} initialProjectId={initialProjectId} />;
 }

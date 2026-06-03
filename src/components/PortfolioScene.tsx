@@ -21,6 +21,7 @@ import {
   PROJECT_HOTSPOT_COLORS,
   tagMeshUserDataWithProject,
 } from "@/utils/floor-project-hotspots";
+import { PROJECT_SEGMENT } from "@/i18n/locale";
 import { getViewTarget, type ViewPreset } from "@/utils/view-variants";
 import { HERO_VARIANTS, pickHeroVariant, type HeroStartupVariant } from "@/utils/hero-variants";
 import { simulateLoad } from "@/utils/simulate-load";
@@ -288,7 +289,7 @@ function applyHeroVariantToCameras(
   };
 }
 
-type Props = { data: PortfolioData; locale: Locale };
+type Props = { data: PortfolioData; locale: Locale; initialProjectId?: string };
 type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][number];
 type TextSizeByDevice = Record<DeviceMode, TextSizeLevel>;
 
@@ -326,11 +327,14 @@ function parseStoredTextSizeByDevice(raw: string | null): TextSizeByDevice {
   }
 }
 
-export function PortfolioScene({ data, locale }: Props) {
+export function PortfolioScene({ data, locale, initialProjectId }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const defaultInspectorContent = buildIdleInspectorContent(data.ui.inspector);
   const dataRef = useRef(data);
+
+  /** Captura el initialProjectId en una ref para usarlo en el setup effect sin añadirlo como dep. */
+  const initialProjectIdRef = useRef(initialProjectId);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -461,7 +465,8 @@ export function PortfolioScene({ data, locale }: Props) {
     setHeroFloorPreview(null);
     setMobileProjectPanel(null);
     setInspectorContent(defaultInspectorContent);
-  }, [defaultInspectorContent, setPersistentSelectedFloor]);
+    window.history.replaceState(null, '', `/${locale}`);
+  }, [defaultInspectorContent, locale, setPersistentSelectedFloor]);
 
   const clearProjectSelectionRef = useRef(clearProjectSelection);
 
@@ -857,6 +862,11 @@ export function PortfolioScene({ data, locale }: Props) {
     (nextLocale: Locale) => {
       if (nextLocale === locale) return;
       const path = pathname ?? "/";
+      const projectMatch = path.match(/^\/(es|en)\/(proyectos|projects)\/(.+)$/);
+      if (projectMatch) {
+        router.push(`/${nextLocale}/${PROJECT_SEGMENT[nextLocale]}/${projectMatch[3]}`);
+        return;
+      }
       const nextPath = path.replace(/^\/(es|en)(?=\/|$)/, `/${nextLocale}`);
       router.push(nextPath);
     },
@@ -889,8 +899,12 @@ export function PortfolioScene({ data, locale }: Props) {
         controls.autoRotate = false;
         setAutoRotate(false);
       }
+      const targetPath = `/${locale}/${PROJECT_SEGMENT[locale]}/${project.id}`;
+      if (window.location.pathname !== targetPath) {
+        window.history.replaceState(null, '', targetPath);
+      }
     },
-    [setPersistentSelectedFloor]
+    [locale, setPersistentSelectedFloor]
   );
 
   const handleProjectSelectRef = useRef(handleProjectSelect);
@@ -1426,6 +1440,13 @@ export function PortfolioScene({ data, locale }: Props) {
           window.sessionStorage.setItem(LOADING_SCREEN_SEEN_STORAGE_KEY, "1");
         }
       );
+    }
+
+    if (initialProjectIdRef.current) {
+      const found = findProjectWithCategory(data, initialProjectIdRef.current);
+      if (found) {
+        handleProjectSelectRef.current(found.project, found.categoryLabel);
+      }
     }
 
     return () => {

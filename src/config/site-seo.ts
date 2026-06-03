@@ -132,6 +132,35 @@ export function buildHomeMetadata(
   };
 }
 
+export function buildProjectMetadata(
+  locale: Locale,
+  slug: string,
+  project: { name: string; summary: string },
+): Metadata {
+  const segment = locale === "es" ? "proyectos" : "projects";
+  const pagePath = `/${locale}/${segment}/${slug}`;
+
+  return {
+    title: project.name,
+    description: project.summary,
+    authors: [{ name: SITE_NAME, url: SITE_URL }],
+    creator: SITE_NAME,
+    alternates: {
+      canonical: pagePath,
+      languages: {
+        es: `/es/proyectos/${slug}`,
+        en: `/en/projects/${slug}`,
+      },
+    },
+    ...buildSocialMetadata({
+      title: `${project.name} · ${SITE_NAME}`,
+      description: project.summary,
+      locale,
+      url: `${SITE_URL}${pagePath}`,
+    }),
+  };
+}
+
 export function buildLegalPageMetadata(
   locale: Locale,
   pathSuffix: string,

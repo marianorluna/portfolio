@@ -243,7 +243,7 @@
           {
             "id": "ribbon-revit",
             "name": "Ribbon Revit",
-            "summary": "ARQFI pyRevit tab for learning the Revit API",
+            "summary": "Ribbon in pyRevit to create scripts with the API",
             "description": "pyRevit extension with the ARQFI ribbon tab: organized examples to practice transactions, parameters, selection, FilteredElementCollector, dialogs, views, sheets, and graphic overrides on the active model.",
             "context": "Learning the Revit API often means scattered scripts that are hard to find and share, with no consistent ribbon structure or examples grouped by topic.",
             "impact": "Keeps learning inside Revit with tools grouped by theme, reusable helpers in lib/Snippets, and quick links to Learn Revit API, Revit API Docs, and pyRevit developer docs—less setup time before trying each API concept.",

@@ -20,6 +20,12 @@ export function getPortfolioDataByLocale(locale: Locale): PortfolioData {
 
 export const SITE_LOCALE_HEADER = "x-site-locale";
 
+/** Segmento de URL localizado para la sección de proyectos. */
+export const PROJECT_SEGMENT: Record<Locale, string> = {
+  es: "proyectos",
+  en: "projects",
+};
+
 /** Primer segmento de pathname; locale válido o default. */
 export function resolveLocaleFromPathname(pathname: string): Locale {
   const segment = pathname.split("/").filter(Boolean)[0];

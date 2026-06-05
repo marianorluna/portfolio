@@ -7,7 +7,7 @@ export function simulateLoad(
   if (messages.length === 0) {
     onMessage("");
     onProgress(100);
-    setTimeout(onComplete, 200);
+    setTimeout(onComplete, 80);
     return;
   }
 
@@ -19,11 +19,11 @@ export function simulateLoad(
     onProgress(p);
     onMessage(messages[Math.min(Math.floor(p / 20), messages.length - 1)]);
     if (p < 100) {
-      setTimeout(step, 200 + Math.random() * 200);
+      setTimeout(step, 60 + Math.random() * 60);
     } else {
-      setTimeout(onComplete, 400);
+      setTimeout(onComplete, 100);
     }
   }
 
-  setTimeout(step, 300);
+  setTimeout(step, 80);
 }

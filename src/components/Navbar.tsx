@@ -13,11 +13,20 @@ import type {
   PortfolioData,
   TextSizeLevel,
 } from "@/types/portfolio";
+import dynamic from "next/dynamic";
 import { NavIcon } from "./NavIcon";
-import { CalBookingEmbed } from "./CalBookingEmbed";
-import { ContactForm } from "./ContactForm";
 import { ContactSocialRow } from "./ContactSocialRow";
 import type { SceneTheme } from "@/config/scene-theme";
+
+const ContactForm = dynamic(
+  () => import("./ContactForm").then((m) => ({ default: m.ContactForm })),
+  { ssr: false },
+);
+
+const CalBookingEmbed = dynamic(
+  () => import("./CalBookingEmbed").then((m) => ({ default: m.CalBookingEmbed })),
+  { ssr: false },
+);
 
 export type NavActivePanel = "brand" | string | null;
 
@@ -322,12 +331,9 @@ export function Navbar({
             )}
           </div>
         )}
-        {contactLink && (
+        {contactLink && activePanel === "contacto" && (
           <div
             className="nav-rail__flyout-inner nav-rail__flyout-inner--projects nav-rail__flyout-inner--contact"
-            hidden={activePanel !== "contacto"}
-            aria-hidden={activePanel !== "contacto"}
-            style={{ display: activePanel === "contacto" ? "flex" : "none" }}
           >
             <p className="nav-rail__flyout-kicker">{uiText.sectionKicker}</p>
             <h2 className="nav-rail__flyout-title">{contactLink.label}</h2>

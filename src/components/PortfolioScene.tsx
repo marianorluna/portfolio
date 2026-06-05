@@ -430,6 +430,7 @@ export function PortfolioScene({ data, locale, initialProjectId }: Props) {
   useEffect(() => {
     if (!loadHidden) return;
     notifyPortfolioSceneLoadDismissed();
+    document.getElementById("loading-ssr")?.classList.add("hidden");
   }, [loadHidden, notifyPortfolioSceneLoadDismissed]);
 
   const closeMobileProjectPanel = useCallback(() => {

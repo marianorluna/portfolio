@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { LoadingScreenShell } from "@/components/LoadingScreenShell";
 import { PortfolioSceneClient } from "@/components/PortfolioSceneClient";
 import { ServerInsertedScripts } from "@/components/seo/ServerInsertedScripts";
 import { buildHomeMetadata, OG_IMAGE_PATH, SITE_URL } from "@/config/site-seo";
@@ -45,6 +46,10 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   };
   return (
     <>
+      <LoadingScreenShell
+        brandMain={data.ui.loading.brandMain}
+        brandAccent={data.ui.loading.brandAccent}
+      />
       <PortfolioSceneClient data={data} locale={locale} />
       <ServerInsertedScripts
         scripts={[

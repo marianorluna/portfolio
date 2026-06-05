@@ -26,14 +26,27 @@ import { getViewTarget, type ViewPreset } from "@/utils/view-variants";
 import { HERO_VARIANTS, pickHeroVariant, type HeroStartupVariant } from "@/utils/hero-variants";
 import { simulateLoad } from "@/utils/simulate-load";
 import { useNotifyPortfolioSceneLoadDismissed } from "@/components/portfolio-scene-load/PortfolioSceneLoadGate";
+import dynamic from "next/dynamic";
 import { LoadingScreen } from "./LoadingScreen";
 import { Navbar, type NavActivePanel } from "./Navbar";
 import { HeroText } from "./HeroText";
-import { ProjectViewerModal } from "./ProjectViewerModal";
-import { NodeInspector } from "./NodeInspector";
 import { ViewControls } from "./ViewControls";
 import { LevelControls } from "./LevelControls";
-import { SideDrawer } from "./SideDrawer";
+
+const NodeInspector = dynamic(
+  () => import("./NodeInspector").then((m) => ({ default: m.NodeInspector })),
+  { ssr: false, loading: () => null },
+);
+
+const ProjectViewerModal = dynamic(
+  () => import("./ProjectViewerModal").then((m) => ({ default: m.ProjectViewerModal })),
+  { ssr: false, loading: () => null },
+);
+
+const SideDrawer = dynamic(
+  () => import("./SideDrawer").then((m) => ({ default: m.SideDrawer })),
+  { ssr: false, loading: () => null },
+);
 import {
   buildFloorInspectorContent,
   buildIdleInspectorContent,
@@ -1142,7 +1155,9 @@ export function PortfolioScene({ data, locale, initialProjectId }: Props) {
       rafRef.current = requestAnimationFrame(animate);
       const strategy = renderStrategyRef.current;
       const activeInteraction =
-        isFlyingRef.current || now - lastInteractionTsRef.current < ACTIVE_INTERACTION_WINDOW_MS;
+        isFlyingRef.current ||
+        autoRotateRef.current ||
+        now - lastInteractionTsRef.current < ACTIVE_INTERACTION_WINDOW_MS;
       const targetFps = activeInteraction ? ACTIVE_RENDER_FPS : strategy.idleRenderFps;
       const minFrameIntervalMs = 1000 / targetFps;
       if (now - lastRenderTsRef.current < minFrameIntervalMs) {

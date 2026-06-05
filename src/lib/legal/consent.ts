@@ -4,6 +4,7 @@ export type ConsentChoice = "accepted_all" | "rejected_optional" | "custom";
 
 export type ConsentState = {
   necessary: true;
+  analytics: boolean;
   thirdParty: boolean;
   choice: ConsentChoice;
   updatedAt: string;
@@ -20,9 +21,42 @@ function getNowIso(): string {
 function getDefaultState(): ConsentState {
   return {
     necessary: true,
+    analytics: false,
     thirdParty: false,
     choice: "rejected_optional",
     updatedAt: getNowIso(),
+  };
+}
+
+function resolveAnalyticsFromLegacy(choice: ConsentChoice): boolean {
+  return choice === "accepted_all";
+}
+
+function normalizeConsent(candidate: Partial<ConsentState>): ConsentState | null {
+  if (candidate.necessary !== true) return null;
+  if (typeof candidate.thirdParty !== "boolean") return null;
+  if (
+    candidate.choice !== "accepted_all" &&
+    candidate.choice !== "rejected_optional" &&
+    candidate.choice !== "custom"
+  ) {
+    return null;
+  }
+  if (typeof candidate.updatedAt !== "string" || candidate.updatedAt.length < 1) {
+    return null;
+  }
+
+  const analytics =
+    typeof candidate.analytics === "boolean"
+      ? candidate.analytics
+      : resolveAnalyticsFromLegacy(candidate.choice);
+
+  return {
+    necessary: true,
+    analytics,
+    thirdParty: candidate.thirdParty,
+    choice: candidate.choice,
+    updatedAt: candidate.updatedAt,
   };
 }
 
@@ -33,25 +67,7 @@ export function getStoredConsent(): ConsentState | null {
     if (!raw) return null;
     const parsed: unknown = JSON.parse(raw);
     if (parsed == null || typeof parsed !== "object") return null;
-    const candidate = parsed as Partial<ConsentState>;
-    if (candidate.necessary !== true) return null;
-    if (typeof candidate.thirdParty !== "boolean") return null;
-    if (
-      candidate.choice !== "accepted_all" &&
-      candidate.choice !== "rejected_optional" &&
-      candidate.choice !== "custom"
-    ) {
-      return null;
-    }
-    if (typeof candidate.updatedAt !== "string" || candidate.updatedAt.length < 1) {
-      return null;
-    }
-    return {
-      necessary: true,
-      thirdParty: candidate.thirdParty,
-      choice: candidate.choice,
-      updatedAt: candidate.updatedAt,
-    };
+    return normalizeConsent(parsed as Partial<ConsentState>);
   } catch {
     return null;
   }
@@ -62,9 +78,12 @@ function dispatchConsentChanged(state: ConsentState): void {
   window.dispatchEvent(new CustomEvent<ConsentState>(CHANGE_EVENT, { detail: state }));
 }
 
-export function saveConsent(input: Omit<ConsentState, "necessary" | "updatedAt">): ConsentState {
+export function saveConsent(
+  input: Omit<ConsentState, "necessary" | "updatedAt">
+): ConsentState {
   const state: ConsentState = {
     necessary: true,
+    analytics: input.analytics,
     thirdParty: input.thirdParty,
     choice: input.choice,
     updatedAt: getNowIso(),
@@ -81,15 +100,35 @@ export function saveConsent(input: Omit<ConsentState, "necessary" | "updatedAt">
 }
 
 export function acceptAllConsent(): ConsentState {
-  return saveConsent({ thirdParty: true, choice: "accepted_all" });
+  return saveConsent({ analytics: true, thirdParty: true, choice: "accepted_all" });
 }
 
 export function rejectOptionalConsent(): ConsentState {
-  return saveConsent({ thirdParty: false, choice: "rejected_optional" });
+  return saveConsent({ analytics: false, thirdParty: false, choice: "rejected_optional" });
+}
+
+export function setCustomConsent(input: {
+  analytics: boolean;
+  thirdParty: boolean;
+}): ConsentState {
+  return saveConsent({
+    analytics: input.analytics,
+    thirdParty: input.thirdParty,
+    choice: "custom",
+  });
 }
 
 export function setThirdPartyConsent(enabled: boolean): ConsentState {
-  return saveConsent({ thirdParty: enabled, choice: "custom" });
+  const existing = getStoredConsent() ?? getDefaultState();
+  return setCustomConsent({
+    analytics: existing.analytics,
+    thirdParty: enabled,
+  });
+}
+
+export function hasAnalyticsConsent(): boolean {
+  const state = getStoredConsent();
+  return state?.analytics === true;
 }
 
 export function hasThirdPartyConsent(): boolean {

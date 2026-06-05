@@ -13,7 +13,7 @@ import {
   getStoredConsent,
   onOpenCookiePreferences,
   rejectOptionalConsent,
-  setThirdPartyConsent,
+  setCustomConsent,
 } from "@/lib/legal/consent";
 import type { Locale } from "@/types/portfolio";
 
@@ -30,6 +30,8 @@ type Copy = {
   configureLabel: string;
   saveLabel: string;
   cancelLabel: string;
+  analyticsLabel: string;
+  analyticsDescription: string;
   thirdPartyLabel: string;
   thirdPartyDescription: string;
 };
@@ -38,13 +40,16 @@ const copyByLocale: Record<Locale, Copy> = {
   es: {
     title: "Cookies y privacidad",
     description:
-      "Usamos cookies técnicas necesarias para el funcionamiento del sitio. También podemos cargar contenido de terceros (YouTube y Cal.com), que puede instalar cookies adicionales si lo aceptas.",
+      "Usamos cookies técnicas necesarias para el funcionamiento del sitio. Con tu consentimiento podemos medir visitas y rendimiento (Vercel Analytics y Speed Insights) y cargar contenido de terceros (YouTube y Cal.com).",
     policyLabel: "Ver política de cookies",
     acceptAllLabel: "Aceptar todas",
     rejectOptionalLabel: "Rechazar no esenciales",
     configureLabel: "Configurar",
     saveLabel: "Guardar preferencias",
     cancelLabel: "Cancelar",
+    analyticsLabel: "Medición de visitas y rendimiento",
+    analyticsDescription:
+      "Permite analizar el uso del sitio y su rendimiento mediante Vercel Analytics y Speed Insights.",
     thirdPartyLabel: "Cookies de terceros y contenido embebido",
     thirdPartyDescription:
       "Permite cargar contenido externo y servicios de terceros que pueden tratar datos de navegación.",
@@ -52,13 +57,16 @@ const copyByLocale: Record<Locale, Copy> = {
   en: {
     title: "Cookies and privacy",
     description:
-      "We use necessary technical cookies for site functionality. We can also load third-party embeds (YouTube and Cal.com), which may set additional cookies if you accept.",
+      "We use necessary technical cookies for site functionality. With your consent we can measure visits and performance (Vercel Analytics and Speed Insights) and load third-party embeds (YouTube and Cal.com).",
     policyLabel: "View cookie policy",
     acceptAllLabel: "Accept all",
     rejectOptionalLabel: "Reject non-essential",
     configureLabel: "Configure",
     saveLabel: "Save preferences",
     cancelLabel: "Cancel",
+    analyticsLabel: "Visit and performance measurement",
+    analyticsDescription:
+      "Allows site usage and performance analysis through Vercel Analytics and Speed Insights.",
     thirdPartyLabel: "Third-party cookies and embedded content",
     thirdPartyDescription:
       "Allows external embedded content and third-party services that may process browsing data.",
@@ -72,6 +80,7 @@ export function CookieBanner({ locale }: Props) {
   const [isHydrated, setIsHydrated] = useState(false);
   const [isVisible, setIsVisible] = useState(false);
   const [isConfigOpen, setIsConfigOpen] = useState(false);
+  const [analyticsEnabled, setAnalyticsEnabled] = useState(false);
   const [thirdPartyEnabled, setThirdPartyEnabled] = useState(false);
 
   const isPortfolioHome = matchesPortfolioHome(pathname, locale);
@@ -79,6 +88,7 @@ export function CookieBanner({ locale }: Props) {
   useEffect(() => {
     queueMicrotask(() => {
       const existing = getStoredConsent();
+      setAnalyticsEnabled(existing?.analytics ?? false);
       setThirdPartyEnabled(existing?.thirdParty ?? false);
       setIsHydrated(true);
     });
@@ -101,6 +111,7 @@ export function CookieBanner({ locale }: Props) {
   useEffect(() => {
     return onOpenCookiePreferences(() => {
       const state = ensureConsentInitialized();
+      setAnalyticsEnabled(state.analytics);
       setThirdPartyEnabled(state.thirdParty);
       setIsConfigOpen(true);
       setIsVisible(true);
@@ -109,6 +120,7 @@ export function CookieBanner({ locale }: Props) {
 
   const handleAcceptAll = () => {
     acceptAllConsent();
+    setAnalyticsEnabled(true);
     setThirdPartyEnabled(true);
     setIsVisible(false);
     setIsConfigOpen(false);
@@ -116,13 +128,17 @@ export function CookieBanner({ locale }: Props) {
 
   const handleRejectOptional = () => {
     rejectOptionalConsent();
+    setAnalyticsEnabled(false);
     setThirdPartyEnabled(false);
     setIsVisible(false);
     setIsConfigOpen(false);
   };
 
   const handleSave = () => {
-    setThirdPartyConsent(thirdPartyEnabled);
+    setCustomConsent({
+      analytics: analyticsEnabled,
+      thirdParty: thirdPartyEnabled,
+    });
     setIsVisible(false);
     setIsConfigOpen(false);
   };
@@ -138,6 +154,15 @@ export function CookieBanner({ locale }: Props) {
       </p>
       {isConfigOpen && (
         <div className="cookie-banner__config">
+          <label className="cookie-banner__check">
+            <input
+              type="checkbox"
+              checked={analyticsEnabled}
+              onChange={(event) => setAnalyticsEnabled(event.target.checked)}
+            />
+            <span>{copy.analyticsLabel}</span>
+          </label>
+          <p className="cookie-banner__config-help">{copy.analyticsDescription}</p>
           <label className="cookie-banner__check">
             <input
               type="checkbox"

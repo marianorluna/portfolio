@@ -478,6 +478,7 @@
             "bullets": [
               "Resend (email delivery).",
               "Cloudflare Turnstile (spam prevention).",
+              "Vercel Analytics and Speed Insights (if visit and performance measurement is accepted).",
               "Cal.com and YouTube (if third-party cookies are accepted)."
             ]
           },
@@ -503,7 +504,8 @@
           {
             "title": "Cookies used by this website",
             "bullets": [
-              "Necessary technical: functional preferences (for example, theme mode).",
+              "Necessary technical: functional preferences (for example, theme mode and cookie consent).",
+              "Analytics (optional): visit and performance measurement with Vercel Analytics and Speed Insights.",
               "Third-party (optional): embedded content from YouTube and Cal.com."
             ]
           },
@@ -516,7 +518,7 @@
           {
             "title": "Third-party information",
             "paragraphs": [
-              "Review each provider's privacy/cookie policies: Cloudflare, Cal.com, and YouTube."
+              "Review each provider's privacy/cookie policies: Vercel, Cloudflare, Cal.com, and YouTube."
             ]
           }
         ]

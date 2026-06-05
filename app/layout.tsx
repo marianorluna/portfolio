@@ -1,4 +1,5 @@
 import type { CSSProperties } from "react";
+import { VercelTelemetry } from "@/components/legal/VercelTelemetry";
 import { ServerInsertedScripts } from "@/components/seo/ServerInsertedScripts";
 import {
   HYDRATION_SANITIZER_SCRIPT,
@@ -41,6 +42,7 @@ export default function RootLayout({
           ]}
         />
         {children}
+        <VercelTelemetry />
       </body>
     </html>
   );

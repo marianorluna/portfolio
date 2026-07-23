@@ -3,11 +3,18 @@ import path from "node:path";
 import matter from "gray-matter";
 import { compileMDX } from "next-mdx-remote/rsc";
 import type { Locale } from "@/types/portfolio";
-import type { LabFrontmatter, LabResource, LabResourceSummary } from "@/types/lab";
+import type {
+  LabFrontmatter,
+  LabIndexEntry,
+  LabResource,
+  LabResourceSummary,
+} from "@/types/lab";
 import { labMdxComponents } from "@/components/lab/mdx-components";
-import { labFrontmatterSchema } from "./schema";
+import { getLabEffectiveDate } from "./dates";
+import { labFrontmatterSchema, labIndexSchema } from "./schema";
 
 const CONTENT_ROOT = path.join(process.cwd(), "content", "lab");
+const INDEX_PATH = path.join(CONTENT_ROOT, "index.json");
 /** Número de entradas recientes que se muestran en el flyout del rail. */
 const DEFAULT_NAV_LIMIT = 4;
 
@@ -15,6 +22,56 @@ type RawEntry = { frontmatter: LabFrontmatter; body: string; filePath: string };
 
 function entryFilePath(locale: Locale, slug: string): string {
   return path.join(CONTENT_ROOT, locale, `${slug}.mdx`);
+}
+
+/** Lee y valida el registro central de ids/fechas. */
+async function loadLabIndex(): Promise<Map<string, LabIndexEntry>> {
+  let raw: string;
+  try {
+    raw = await readFile(INDEX_PATH, "utf8");
+  } catch {
+    throw new Error(`No se pudo leer el índice del Lab en ${INDEX_PATH}`);
+  }
+
+  let json: unknown;
+  try {
+    json = JSON.parse(raw) as unknown;
+  } catch {
+    throw new Error(`JSON inválido en ${INDEX_PATH}`);
+  }
+
+  const parsed = labIndexSchema.safeParse(json);
+  if (!parsed.success) {
+    throw new Error(
+      `Índice Lab inválido en ${INDEX_PATH}: ${parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`
+    );
+  }
+
+  const bySlug = new Map<string, LabIndexEntry>();
+  for (const entry of parsed.data.entries) {
+    bySlug.set(entry.slug, entry);
+  }
+  return bySlug;
+}
+
+function mergeWithIndex(
+  frontmatter: LabFrontmatter,
+  locale: Locale,
+  indexBySlug: Map<string, LabIndexEntry>
+): LabResourceSummary {
+  const indexEntry = indexBySlug.get(frontmatter.slug);
+  if (indexEntry == null) {
+    throw new Error(
+      `El slug "${frontmatter.slug}" no está registrado en content/lab/index.json`
+    );
+  }
+  return {
+    ...frontmatter,
+    locale,
+    id: indexEntry.id,
+    createdAt: indexEntry.createdAt,
+    updatedAt: indexEntry.updatedAt,
+  };
 }
 
 /** Lee y valida un `.mdx` de disco. Devuelve `null` si el archivo no existe. */
@@ -31,7 +88,7 @@ async function readEntryFile(locale: Locale, slug: string): Promise<RawEntry | n
   const parsed = labFrontmatterSchema.safeParse(data);
   if (!parsed.success) {
     throw new Error(
-      `Frontmatter inválido en ${filePath}: ${parsed.error.issues.map(i => `${i.path.join(".")}: ${i.message}`).join("; ")}`
+      `Frontmatter inválido en ${filePath}: ${parsed.error.issues.map((i) => `${i.path.join(".")}: ${i.message}`).join("; ")}`
     );
   }
   if (parsed.data.slug !== slug) {
@@ -52,17 +109,21 @@ async function readSlugsFromDisk(locale: Locale): Promise<string[]> {
   } catch {
     return [];
   }
-  return files.filter(f => f.endsWith(".mdx")).map(f => f.replace(/\.mdx$/, ""));
+  return files.filter((f) => f.endsWith(".mdx")).map((f) => f.replace(/\.mdx$/, ""));
 }
 
 /** Lista de recursos publicados (sin `draft`), ordenados del más reciente al más antiguo. */
 export async function listLabResources(locale: Locale): Promise<LabResourceSummary[]> {
-  const slugs = await readSlugsFromDisk(locale);
-  const entries = await Promise.all(slugs.map(slug => readEntryFile(locale, slug)));
+  const [slugs, indexBySlug] = await Promise.all([readSlugsFromDisk(locale), loadLabIndex()]);
+  const entries = await Promise.all(slugs.map((slug) => readEntryFile(locale, slug)));
   return entries
     .filter((entry): entry is RawEntry => entry != null && !entry.frontmatter.draft)
-    .map(entry => ({ ...entry.frontmatter, locale }))
-    .sort((a, b) => (a.publishedAt < b.publishedAt ? 1 : a.publishedAt > b.publishedAt ? -1 : 0));
+    .map((entry) => mergeWithIndex(entry.frontmatter, locale, indexBySlug))
+    .sort((a, b) => {
+      const dateA = getLabEffectiveDate(a);
+      const dateB = getLabEffectiveDate(b);
+      return dateA < dateB ? 1 : dateA > dateB ? -1 : 0;
+    });
 }
 
 /** Subconjunto reciente para el flyout del rail (Navbar), sin exponer todo el índice. */
@@ -79,6 +140,9 @@ export async function getLabResource(locale: Locale, slug: string): Promise<LabR
   const entry = await readEntryFile(locale, slug);
   if (entry == null || entry.frontmatter.draft) return null;
 
+  const indexBySlug = await loadLabIndex();
+  const summary = mergeWithIndex(entry.frontmatter, locale, indexBySlug);
+
   const { content } = await compileMDX({
     source: entry.body,
     components: labMdxComponents,
@@ -91,5 +155,12 @@ export async function getLabResource(locale: Locale, slug: string): Promise<LabR
     },
   });
 
-  return { frontmatter: entry.frontmatter, locale, content };
+  return {
+    frontmatter: entry.frontmatter,
+    locale,
+    id: summary.id,
+    createdAt: summary.createdAt,
+    updatedAt: summary.updatedAt,
+    content,
+  };
 }

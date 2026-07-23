@@ -320,6 +320,7 @@ export function Navbar({
                                         width={240}
                                         height={80}
                                         loading="lazy"
+                                        draggable={false}
                                       />
                                     </div>
                                   )}

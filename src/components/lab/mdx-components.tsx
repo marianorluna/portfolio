@@ -1,8 +1,10 @@
 import type { MDXComponents } from "mdx/types";
-import { CodeBlock } from "./CodeBlock";
-import { Step } from "./Step";
 import { Callout } from "./Callout";
+import { CodeBlock } from "./CodeBlock";
+import { CardGrid, ReqCard, ToolCard } from "./LabCards";
 import { PromptExample } from "./PromptExample";
+import { Section } from "./Section";
+import { Step } from "./Step";
 
 /**
  * Componentes disponibles en el MDX del Lab.
@@ -14,4 +16,8 @@ export const labMdxComponents: MDXComponents = {
   Step,
   Callout,
   PromptExample,
+  ReqCard,
+  ToolCard,
+  CardGrid,
+  Section,
 };

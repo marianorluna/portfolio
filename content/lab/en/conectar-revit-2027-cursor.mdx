@@ -5,8 +5,12 @@ type: tutorial
 slug: conectar-revit-2027-cursor
 level: intro
 tags: ["Revit", "Cursor", "AI", "MCP", "pyRevit"]
-publishedAt: "2026-07-23"
+coverImage: "/lab/covers/conectar-revit-2027-cursor.webp"
+coverAlt: "BIM wireframe linked to AI nodes"
+size: lg
 ---
+
+<Section id="requisitos">
 
 Discover how to transform your BIM workflow by bringing artificial intelligence directly into your models. Using the **MCP** (Model Context Protocol), **pyRevit**, and **Cursor**, you can talk to your model, audit parameters, automate modeling, and write scripts on the fly without leaving the chat.
 
@@ -16,17 +20,33 @@ This guide walks you through everything from installation to running your first 
 
 Before you start, make sure you have this ready:
 
-**1. Global Python environment.** The MCP protocol needs Python as an intermediary server. Once installed, open your terminal (CMD or PowerShell) and install the base libraries:
+<CardGrid variant="req">
+
+<ReqCard icon="python" title="Python installed">
+
+You need a global Python install. MCP uses it as an intermediary server. Once installed, open your terminal (CMD or PowerShell) and install the base libraries:
 
 ```bash
 pip install mcp httpx
 ```
 
-**2. Autodesk Revit 2027.** You need this exact version installed.
+</ReqCard>
+
+<ReqCard icon="cuboid" title="Revit 2027">
+
+Version 2027 installed. During testing you must not be on the Home screen: the MCP server needs an open project or family.
+
+</ReqCard>
+
+</CardGrid>
+
+</Section>
+
+<Section id="tutorial">
 
 ## Step-by-step guide
 
-<Step number={1} title="Install pyRevit">
+<Step number={1} title="Install pyRevit" defaultOpen>
 
 Download the pyRevit installer from its official GitHub repository. The first time you open Revit after installing it, make sure to tell it to **always load** this add-in.
 
@@ -49,23 +69,23 @@ Go to the **pyRevit** tab → **Settings**.
 
 <Step number={3} title="Install the MCP extension">
 
-Go to **pyRevit → Extensions**. Find and install the extension named `mcp-server-for-revit-python`. Once installed, reload Revit or pyRevit again.
+Go to **pyRevit → Extensions**. Find and install the extension named `mcp-server-for-revit-python`. After installing, reload Revit or pyRevit again.
 
 </Step>
 
 <Step number={4} title="Verify the Revit connection">
 
 <Callout variant="critical">
-**Critical!** Open a project or family in Revit. The server won't work while you're on the Home screen.
+**Critical!** Open a project or family in Revit. The server will not work if you are on the Home screen.
 </Callout>
 
-Open your browser and go to:
+Open your browser and visit:
 
 ```text
 http://localhost:48884/revit_mcp/status/
 ```
 
-If everything is correct, you should see a JSON response like this:
+If everything is correct you should see a JSON response like this:
 
 ```json
 {
@@ -79,75 +99,85 @@ If everything is correct, you should see a JSON response like this:
 
 <Step number={5} title="Configure Cursor">
 
-Download Cursor from its official website if you don't have it yet. Inside Cursor, open **Settings → Features → MCP** and click **+ Add New MCP Server**. Configure it as "command" with the following JSON (replace `your_username` with your actual Windows username):
+Download Cursor from its official site if you do not have it yet. In Cursor, open **Settings → Features → MCP** and click **+ Add New MCP Server**. Configure it as "command" with the following JSON (replace `your_user` with your real Windows username):
 
 ```json
 {
   "mcp-server-for-revit-python": {
     "command": "python",
     "args": [
-      "C:\\Users\\your_username\\AppData\\Roaming\\pyRevit\\Extensions\\mcp-server-for-revit-python.extension\\main.py"
+      "C:\\Users\\your_user\\AppData\\Roaming\\pyRevit\\Extensions\\mcp-server-for-revit-python.extension\\main.py"
     ]
   }
 }
 ```
 
-Check that a **green dot** appears next to the server name: it means Cursor has successfully handshaken with pyRevit.
+Check that a **green dot** appears next to the server name: that means Cursor completed the handshake with pyRevit.
 
 </Step>
 
 <Step number={6} title="First test!">
 
-Open the Cursor chat and send this prompt to check the connection:
+Open the Cursor chat and send this prompt to verify the connection:
 
 <PromptExample label="Example prompt">
-"Check the status of Revit 2027 and tell me the name of the active document and its project units."
+"Check the status of Revit 2027 and tell me the name of the active document and its project unit."
 </PromptExample>
 
-You'll see Cursor automatically invoke the `get_revit_status` tool, pull information from your model, and describe it back to you in plain language.
+You will see Cursor automatically invoke the `get_revit_status` tool, pull information from your model, and write it back in natural language.
 
 </Step>
 
+</Section>
+
+<Section id="casos-uso">
+
 ## Use cases and tools
 
-The MCP server exposes around 20 tools that Cursor's AI can use autonomously based on what you ask it.
+The MCP server exposes around 20 tools that Cursor's AI can use on its own based on what you ask.
 
-### Data auditing and extraction
+<CardGrid variant="tool">
 
-Extract valuable information without creating temporary schedules.
+<ToolCard icon="search" title="Audit and data extraction" tools={["get_current_view_elements", "list_category_parameters", "get_revit_model_info"]}>
 
-Key tools: `get_current_view_elements`, `list_category_parameters`, `get_revit_model_info`.
+Pull valuable information without creating temporary schedule tables.
 
 <PromptExample label="Example prompt">
-"List all the walls visible in the current view, group them by family type, and tell me the total 'Volume' parameter value for each group."
+"List all walls visible in the current view, group them by family type, and tell me the total 'Volume' parameter value for each group."
 </PromptExample>
 
-### Modeling automation
+</ToolCard>
+
+<ToolCard icon="boxes" title="Modeling automation" tools={["place_family", "list_levels", "list_families"]}>
 
 Delegate repetitive element placement or project structuring.
 
-Key tools: `place_family`, `list_levels`, `list_families`.
-
 <PromptExample label="Example prompt">
-"Find the 'Meeting Table' family in the model and place one on Level 1, exactly at coordinates X:10, Y:5, Z:0."
+"Find the 'Conference Table' family in the model and place one on Level 1 at exactly X:10, Y:5, Z:0."
 </PromptExample>
 
-### Graphics management and quality control
+</ToolCard>
 
-Apply visual overrides instantly to highlight errors or classify elements.
+<ToolCard icon="palette" title="Graphics and quality control" tools={["color_splash", "clear_colors", "list_revit_views"]}>
 
-Key tools: `color_splash`, `clear_colors`, `list_revit_views`.
-
-<PromptExample label="Example prompt">
-"Paint all elements in the 'Doors' category bright red in this view so I can find them quickly. Once I'm done reviewing them, clear the overrides."
-</PromptExample>
-
-### The ultimate wildcard: direct code
-
-If there's no predefined tool for what you need, Cursor can write and run a Revit API script on the fly.
-
-Key tools: `execute_revit_code`.
+Apply color overrides instantly to highlight errors or classify elements.
 
 <PromptExample label="Example prompt">
-"Write and run a Python script in Revit that selects all the walls in the project and copies the text from the 'Type Mark' parameter into the 'Comments' parameter."
+"Paint all 'Doors' category elements bright red in this view so I can spot them quickly. When I am done reviewing, clear the colors."
 </PromptExample>
+
+</ToolCard>
+
+<ToolCard icon="code" title="The wildcard: direct code" tools={["execute_revit_code"]}>
+
+If no predefined tool exists, Cursor can write and run a Revit API script on the fly.
+
+<PromptExample label="Example prompt">
+"Write and run a Python script in Revit that selects all walls in the project and copies the 'Type Mark' parameter text into the 'Comments' parameter."
+</PromptExample>
+
+</ToolCard>
+
+</CardGrid>
+
+</Section>

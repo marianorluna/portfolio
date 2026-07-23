@@ -1,5 +1,6 @@
 import type { CSSProperties } from "react";
 import { Inter, JetBrains_Mono } from "next/font/google";
+import { ImageInteractionGuard } from "@/components/ImageInteractionGuard";
 import { VercelTelemetry } from "@/components/legal/VercelTelemetry";
 import { ServerInsertedScripts } from "@/components/seo/ServerInsertedScripts";
 import {
@@ -57,6 +58,7 @@ export default function RootLayout({
           ]}
         />
         {children}
+        <ImageInteractionGuard />
         <VercelTelemetry />
       </body>
     </html>

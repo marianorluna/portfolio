@@ -53,6 +53,21 @@ export const SCENE_COLORS = {
   },
 } as const satisfies Record<SceneTheme, unknown>;
 
+/**
+ * Aplica el tema al documento (localStorage + CSS vars inline + data-theme).
+ * Debe actualizar `--bg-color` inline: el bootstrap y PortfolioScene lo fijan
+ * ahí, y si solo cambia `data-theme` el fondo queda desincronizado del texto.
+ */
+export function applyDocumentTheme(theme: SceneTheme): void {
+  if (typeof window === "undefined") return;
+  const colors = SCENE_COLORS[theme];
+  window.localStorage.setItem("portfolio-theme", theme);
+  const doc = document.documentElement;
+  doc.setAttribute("data-theme", theme);
+  doc.style.setProperty("--bg-color", colors.backgroundCSS);
+  doc.style.setProperty("--loading-bg", colors.loadingBgCSS);
+}
+
 // Compat: otros módulos que importan la constante anterior siguen funcionando.
 export const SCENE_BACKGROUND     = SCENE_COLORS.dark.background;
 export const SCENE_BACKGROUND_CSS = SCENE_COLORS.dark.backgroundCSS;

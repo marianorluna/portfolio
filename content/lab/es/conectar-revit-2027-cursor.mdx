@@ -5,8 +5,12 @@ type: tutorial
 slug: conectar-revit-2027-cursor
 level: intro
 tags: ["Revit", "Cursor", "IA", "MCP", "pyRevit"]
-publishedAt: "2026-07-23"
+coverImage: "/lab/covers/conectar-revit-2027-cursor.webp"
+coverAlt: "Wireframe BIM conectado a nodos de IA"
+size: lg
 ---
+
+<Section id="requisitos">
 
 Descubre cómo transformar tu entorno BIM integrando la inteligencia artificial directamente en tus modelos. Utilizando el protocolo **MCP** (Model Context Protocol), **pyRevit** y **Cursor**, podrás conversar con tu modelo, auditar parámetros, automatizar el modelado y crear scripts al vuelo sin salir del chat.
 
@@ -16,17 +20,33 @@ Esta guía te lleva paso a paso desde la instalación hasta la ejecución de tu 
 
 Antes de comenzar, asegúrate de tener esto listo:
 
-**1. Entorno Python global.** El protocolo MCP necesita Python como servidor intermediario. Una vez instalado, abre tu terminal (CMD o PowerShell) e instala las librerías base:
+<CardGrid variant="req">
+
+<ReqCard icon="python" title="Python instalado">
+
+Necesitas Python global en tu sistema. El protocolo MCP lo usa como servidor intermediario. Una vez instalado, abre tu terminal (CMD o PowerShell) e instala las librerías base:
 
 ```bash
 pip install mcp httpx
 ```
 
-**2. Autodesk Revit 2027.** Es imprescindible contar con esta versión instalada.
+</ReqCard>
+
+<ReqCard icon="cuboid" title="Revit 2027">
+
+Versión 2027 instalada. Es vital que durante las pruebas no estés en la pantalla de inicio ("Home"): el servidor MCP necesita un documento o familia abierto.
+
+</ReqCard>
+
+</CardGrid>
+
+</Section>
+
+<Section id="tutorial">
 
 ## Guía paso a paso
 
-<Step number={1} title="Instalar pyRevit">
+<Step number={1} title="Instalar pyRevit" defaultOpen>
 
 Descarga el instalador de pyRevit desde su repositorio oficial en GitHub. Al abrir Revit por primera vez tras la instalación, asegúrate de indicarle que **siempre cargue** este complemento.
 
@@ -108,46 +128,56 @@ Verás cómo Cursor invoca automáticamente la herramienta `get_revit_status`, e
 
 </Step>
 
+</Section>
+
+<Section id="casos-uso">
+
 ## Casos de uso y herramientas (tools)
 
 El servidor MCP expone alrededor de 20 herramientas que la IA de Cursor puede usar de forma autónoma según lo que le pidas.
 
-### Auditoría y extracción de datos
+<CardGrid variant="tool">
+
+<ToolCard icon="search" title="Auditoría y extracción de datos" tools={["get_current_view_elements", "list_category_parameters", "get_revit_model_info"]}>
 
 Extrae información valiosa sin crear tablas de planificación temporales.
-
-Tools clave: `get_current_view_elements`, `list_category_parameters`, `get_revit_model_info`.
 
 <PromptExample label="Prompt de ejemplo">
 "Enumera todos los muros visibles en la vista actual, agrúpalos por tipo de familia y dime el valor del parámetro 'Volumen' total de cada grupo."
 </PromptExample>
 
-### Automatización de modelado
+</ToolCard>
+
+<ToolCard icon="boxes" title="Automatización de modelado" tools={["place_family", "list_levels", "list_families"]}>
 
 Delega la colocación repetitiva de elementos o la estructuración del proyecto.
-
-Tools clave: `place_family`, `list_levels`, `list_families`.
 
 <PromptExample label="Prompt de ejemplo">
 "Busca la familia 'Mesa de Reuniones' en el modelo y coloca una en el Nivel 1, exactamente en las coordenadas X:10, Y:5, Z:0."
 </PromptExample>
 
-### Gestión gráfica y control de calidad
+</ToolCard>
+
+<ToolCard icon="palette" title="Gestión gráfica y control de calidad" tools={["color_splash", "clear_colors", "list_revit_views"]}>
 
 Aplica overrides de color al instante para resaltar errores o clasificar elementos.
-
-Tools clave: `color_splash`, `clear_colors`, `list_revit_views`.
 
 <PromptExample label="Prompt de ejemplo">
 "Pinta de color rojo brillante todos los elementos de la categoría 'Puertas' en esta vista para poder ubicarlos rápidamente. Cuando termine de revisarlo, límpialos."
 </PromptExample>
 
-### El comodín definitivo: código directo
+</ToolCard>
 
-Si no existe una herramienta predefinida para lo que necesitas, Cursor puede escribir y ejecutar un script de la API de Revit al vuelo.
+<ToolCard icon="code" title="El comodín: código directo" tools={["execute_revit_code"]}>
 
-Tools clave: `execute_revit_code`.
+Si no existe una herramienta predefinida, Cursor puede escribir y ejecutar un script de la API de Revit al vuelo.
 
 <PromptExample label="Prompt de ejemplo">
 "Escribe y ejecuta un script de Python en Revit que seleccione todos los muros del proyecto y copie el texto del parámetro 'Marca de Tipo' hacia el parámetro 'Comentarios'."
 </PromptExample>
+
+</ToolCard>
+
+</CardGrid>
+
+</Section>

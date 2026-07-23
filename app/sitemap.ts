@@ -1,6 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getPortfolioDataByLocale, LOCALES, PROJECT_SEGMENT } from "@/i18n/locale";
-import { listLabResources } from "@/lib/lab";
+import { getLabEffectiveDate, labMonthToDate, listLabResources } from "@/lib/lab";
 
 const SITE_URL = "https://marianorluna.com";
 const LOCALIZED_PATH_SUFFIXES = [
@@ -42,7 +42,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
         const resources = await listLabResources(locale);
         return resources.map((resource) => ({
           url: `${SITE_URL}/${locale}/lab/${resource.slug}`,
-          lastModified: new Date(resource.publishedAt),
+          lastModified: labMonthToDate(getLabEffectiveDate(resource)),
           changeFrequency: "monthly" as const,
           priority: 0.8,
         }));

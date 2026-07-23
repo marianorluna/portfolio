@@ -100,7 +100,9 @@ export function CookieBanner({ locale }: Props) {
     if (isConfigOpen) return;
 
     const sceneOk = !isPortfolioHome || loadGate.initialSceneLoadDismissed;
-    setIsVisible(sceneOk);
+    queueMicrotask(() => {
+      setIsVisible(sceneOk);
+    });
   }, [
     isHydrated,
     isConfigOpen,

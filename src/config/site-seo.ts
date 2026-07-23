@@ -188,6 +188,60 @@ export function buildLegalPageMetadata(
   };
 }
 
+export function buildLabIndexMetadata(
+  locale: Locale,
+  title: string,
+  description: string
+): Metadata {
+  const pagePath = `/${locale}/lab`;
+
+  return {
+    title,
+    description,
+    alternates: {
+      canonical: pagePath,
+      languages: {
+        es: "/es/lab",
+        en: "/en/lab",
+      },
+    },
+    ...buildSocialMetadata({
+      title: `${SITE_NAME} · ${title}`,
+      description,
+      locale,
+      url: `${SITE_URL}${pagePath}`,
+    }),
+  };
+}
+
+export function buildLabEntryMetadata(
+  locale: Locale,
+  slug: string,
+  frontmatter: { title: string; description: string }
+): Metadata {
+  const pagePath = `/${locale}/lab/${slug}`;
+
+  return {
+    title: frontmatter.title,
+    description: frontmatter.description,
+    authors: [{ name: SITE_NAME, url: SITE_URL }],
+    creator: SITE_NAME,
+    alternates: {
+      canonical: pagePath,
+      languages: {
+        es: `/es/lab/${slug}`,
+        en: `/en/lab/${slug}`,
+      },
+    },
+    ...buildSocialMetadata({
+      title: `${frontmatter.title} · ${SITE_NAME}`,
+      description: frontmatter.description,
+      locale,
+      url: `${SITE_URL}${pagePath}`,
+    }),
+  };
+}
+
 export function buildNotFoundMetadata(
   locale: Locale,
   title: string,

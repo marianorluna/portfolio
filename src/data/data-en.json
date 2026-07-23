@@ -30,6 +30,12 @@
         "icon": "layers"
       },
       {
+        "id": "lab",
+        "label": "Lab",
+        "description": "Practical tutorials, guides, checklists, and infographics on BIM, AI, and development.",
+        "icon": "flask"
+      },
+      {
         "id": "contacto",
         "label": "Contact",
         "description": "Collaboration, consulting, or proposals: fill in the form or reach out via email and social.",

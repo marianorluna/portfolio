@@ -5,6 +5,8 @@ import { PortfolioSceneClient } from "@/components/PortfolioSceneClient";
 import { ServerInsertedScripts } from "@/components/seo/ServerInsertedScripts";
 import { buildHomeMetadata, OG_IMAGE_PATH, SITE_URL } from "@/config/site-seo";
 import { getPortfolioDataByLocale, isLocale, LOCALES } from "@/i18n/locale";
+import { getLabCopy } from "@/i18n/lab-copy";
+import { getLabIndexForNav } from "@/lib/lab";
 import type { Locale } from "@/types/portfolio";
 
 type PageProps = {
@@ -26,6 +28,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
   const { locale } = await params;
   if (!isLocale(locale)) notFound();
   const data = getPortfolioDataByLocale(locale);
+  const labItems = await getLabIndexForNav(locale);
   const portfolioJsonLd = {
     "@context": "https://schema.org",
     "@type": "CollectionPage",
@@ -50,7 +53,7 @@ export default async function LocalizedHomePage({ params }: PageProps) {
         brandMain={data.ui.loading.brandMain}
         brandAccent={data.ui.loading.brandAccent}
       />
-      <PortfolioSceneClient data={data} locale={locale} />
+      <PortfolioSceneClient data={data} locale={locale} labItems={labItems} labCopy={getLabCopy(locale)} />
       <ServerInsertedScripts
         scripts={[
           {

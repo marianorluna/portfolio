@@ -1,5 +1,6 @@
 import type { MetadataRoute } from "next";
 import { getPortfolioDataByLocale, LOCALES, PROJECT_SEGMENT } from "@/i18n/locale";
+import { listLabResources } from "@/lib/lab";
 
 const SITE_URL = "https://marianorluna.com";
 const LOCALIZED_PATH_SUFFIXES = [
@@ -7,17 +8,18 @@ const LOCALIZED_PATH_SUFFIXES = [
   "/legal/aviso-legal",
   "/legal/privacidad",
   "/legal/cookies",
+  "/lab",
 ] as const;
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const now = new Date();
 
   const localizedEntries: MetadataRoute.Sitemap = LOCALES.flatMap((locale) =>
     LOCALIZED_PATH_SUFFIXES.map((suffix) => ({
       url: `${SITE_URL}/${locale}${suffix}`,
       lastModified: now,
-      changeFrequency: suffix === "" ? "monthly" : "yearly",
-      priority: suffix === "" ? 1 : 0.6,
+      changeFrequency: suffix === "" ? "monthly" : suffix === "/lab" ? "weekly" : "yearly",
+      priority: suffix === "" ? 1 : suffix === "/lab" ? 0.7 : 0.6,
     }))
   );
 
@@ -34,6 +36,20 @@ export default function sitemap(): MetadataRoute.Sitemap {
     );
   });
 
+  const labEntries: MetadataRoute.Sitemap = (
+    await Promise.all(
+      LOCALES.map(async (locale) => {
+        const resources = await listLabResources(locale);
+        return resources.map((resource) => ({
+          url: `${SITE_URL}/${locale}/lab/${resource.slug}`,
+          lastModified: new Date(resource.publishedAt),
+          changeFrequency: "monthly" as const,
+          priority: 0.8,
+        }));
+      })
+    )
+  ).flat();
+
   return [
     {
       url: SITE_URL,
@@ -43,5 +59,6 @@ export default function sitemap(): MetadataRoute.Sitemap {
     },
     ...localizedEntries,
     ...projectEntries,
+    ...labEntries,
   ];
 }

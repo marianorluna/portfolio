@@ -1,0 +1,153 @@
+---
+title: "Conecta Revit 2027 con Cursor IA mediante MCP"
+description: "Integra IA en tus modelos BIM con pyRevit y el protocolo MCP: instala, conecta y automatiza consultas en Revit desde el chat de Cursor."
+type: tutorial
+slug: conectar-revit-2027-cursor
+level: intro
+tags: ["Revit", "Cursor", "IA", "MCP", "pyRevit"]
+publishedAt: "2026-07-23"
+---
+
+Descubre cómo transformar tu entorno BIM integrando la inteligencia artificial directamente en tus modelos. Utilizando el protocolo **MCP** (Model Context Protocol), **pyRevit** y **Cursor**, podrás conversar con tu modelo, auditar parámetros, automatizar el modelado y crear scripts al vuelo sin salir del chat.
+
+Esta guía te lleva paso a paso desde la instalación hasta la ejecución de tu primer prompt de IA interactuando en tiempo real con Revit. Está escrita para quien no está habituado a estas herramientas: cada paso explica qué hacer y por qué.
+
+## Requisitos previos
+
+Antes de comenzar, asegúrate de tener esto listo:
+
+**1. Entorno Python global.** El protocolo MCP necesita Python como servidor intermediario. Una vez instalado, abre tu terminal (CMD o PowerShell) e instala las librerías base:
+
+```bash
+pip install mcp httpx
+```
+
+**2. Autodesk Revit 2027.** Es imprescindible contar con esta versión instalada.
+
+## Guía paso a paso
+
+<Step number={1} title="Instalar pyRevit">
+
+Descarga el instalador de pyRevit desde su repositorio oficial en GitHub. Al abrir Revit por primera vez tras la instalación, asegúrate de indicarle que **siempre cargue** este complemento.
+
+<Callout variant="tip">
+Usa el instalador "Admin / All Users" para evitar problemas de permisos.
+</Callout>
+
+</Step>
+
+<Step number={2} title="Configurar Routes en pyRevit">
+
+Ve a la pestaña **pyRevit** → **Settings**.
+
+- En el panel izquierdo, busca **Routes**.
+- Activa el interruptor **Enable Routes Server (Beta)**.
+- Marca la casilla **pyrevit-core/**.
+- Haz clic en **Save Settings and Reload** para aplicar los cambios.
+
+</Step>
+
+<Step number={3} title="Instalar la extensión MCP">
+
+Ve a **pyRevit → Extensions**. Busca e instala la extensión llamada `mcp-server-for-revit-python`. Una vez instalada, recarga Revit o pyRevit de nuevo.
+
+</Step>
+
+<Step number={4} title="Verificar la conexión de Revit">
+
+<Callout variant="critical">
+**¡Crítico!** Abre un proyecto o una familia en Revit. El servidor no funcionará si estás en la pantalla de inicio ("Home").
+</Callout>
+
+Abre tu navegador y visita:
+
+```text
+http://localhost:48884/revit_mcp/status/
+```
+
+Si todo está correcto deberías ver una respuesta JSON como esta:
+
+```json
+{
+  "status": "healthy",
+  "api_name": "revit_mcp",
+  "revit_available": true
+}
+```
+
+</Step>
+
+<Step number={5} title="Configurar Cursor">
+
+Descarga Cursor desde su web oficial si aún no lo tienes. Dentro de Cursor, abre **Settings → Features → MCP** y haz clic en **+ Add New MCP Server**. Configúralo como "command" con el siguiente JSON (cambia `tu_usuario` por tu usuario real de Windows):
+
+```json
+{
+  "mcp-server-for-revit-python": {
+    "command": "python",
+    "args": [
+      "C:\\Users\\tu_usuario\\AppData\\Roaming\\pyRevit\\Extensions\\mcp-server-for-revit-python.extension\\main.py"
+    ]
+  }
+}
+```
+
+Verifica que aparezca el **punto verde** junto al nombre del servidor: indica que Cursor ha hecho el "handshake" correctamente con pyRevit.
+
+</Step>
+
+<Step number={6} title="¡Primera prueba!">
+
+Abre el chat de Cursor y envía este prompt para comprobar la conexión:
+
+<PromptExample label="Prompt de ejemplo">
+"Consulta el estado de Revit 2027 y dime el nombre del documento activo y su unidad de proyecto."
+</PromptExample>
+
+Verás cómo Cursor invoca automáticamente la herramienta `get_revit_status`, extrae la información de tu modelo y te la redacta en lenguaje natural.
+
+</Step>
+
+## Casos de uso y herramientas (tools)
+
+El servidor MCP expone alrededor de 20 herramientas que la IA de Cursor puede usar de forma autónoma según lo que le pidas.
+
+### Auditoría y extracción de datos
+
+Extrae información valiosa sin crear tablas de planificación temporales.
+
+Tools clave: `get_current_view_elements`, `list_category_parameters`, `get_revit_model_info`.
+
+<PromptExample label="Prompt de ejemplo">
+"Enumera todos los muros visibles en la vista actual, agrúpalos por tipo de familia y dime el valor del parámetro 'Volumen' total de cada grupo."
+</PromptExample>
+
+### Automatización de modelado
+
+Delega la colocación repetitiva de elementos o la estructuración del proyecto.
+
+Tools clave: `place_family`, `list_levels`, `list_families`.
+
+<PromptExample label="Prompt de ejemplo">
+"Busca la familia 'Mesa de Reuniones' en el modelo y coloca una en el Nivel 1, exactamente en las coordenadas X:10, Y:5, Z:0."
+</PromptExample>
+
+### Gestión gráfica y control de calidad
+
+Aplica overrides de color al instante para resaltar errores o clasificar elementos.
+
+Tools clave: `color_splash`, `clear_colors`, `list_revit_views`.
+
+<PromptExample label="Prompt de ejemplo">
+"Pinta de color rojo brillante todos los elementos de la categoría 'Puertas' en esta vista para poder ubicarlos rápidamente. Cuando termine de revisarlo, límpialos."
+</PromptExample>
+
+### El comodín definitivo: código directo
+
+Si no existe una herramienta predefinida para lo que necesitas, Cursor puede escribir y ejecutar un script de la API de Revit al vuelo.
+
+Tools clave: `execute_revit_code`.
+
+<PromptExample label="Prompt de ejemplo">
+"Escribe y ejecuta un script de Python en Revit que seleccione todos los muros del proyecto y copie el texto del parámetro 'Marca de Tipo' hacia el parámetro 'Comentarios'."
+</PromptExample>

@@ -41,9 +41,12 @@ function zodToMessages(err: ZodError, c: ContactFormCopy): FieldErrors {
 
 type ApiFieldErrors = Partial<Record<FieldKey, ContactFieldErrorCode>>;
 
-const turnstileSiteKey = process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+function getTurnstileSiteKey(): string {
+  return process.env.NEXT_PUBLIC_TURNSTILE_SITE_KEY ?? "";
+}
 
 export function ContactForm({ copy }: Props) {
+  const turnstileSiteKey = getTurnstileSiteKey();
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");

@@ -89,14 +89,18 @@ export function InspectorAccordionBody({ content, collapseAllLabel }: Props) {
     defaultOpenSectionId != null ? new Set([defaultOpenSectionId]) : new Set(),
   );
 
+  const sections = content.variant === "sections" ? content.sections : undefined;
+
   useEffect(() => {
-    if (content.variant === "sections") {
-      const sectionId = getDefaultOpenSectionId(content.sections);
-      setOpenIds(sectionId != null ? new Set([sectionId]) : new Set());
-    } else {
-      setOpenIds(new Set());
-    }
-  }, [content.key, content.variant]);
+    queueMicrotask(() => {
+      if (content.variant === "sections" && sections != null) {
+        const sectionId = getDefaultOpenSectionId(sections);
+        setOpenIds(sectionId != null ? new Set([sectionId]) : new Set());
+      } else {
+        setOpenIds(new Set());
+      }
+    });
+  }, [content.key, content.variant, sections]);
 
   if (content.variant === "idle") {
     return <p className="inspector-idle">{content.message}</p>;

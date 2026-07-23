@@ -1,4 +1,4 @@
-export type NavIconName = "folder" | "layers" | "calendar" | "mail";
+export type NavIconName = "folder" | "layers" | "flask" | "calendar" | "mail";
 export type DeviceMode = "mobile" | "tablet" | "desktop";
 export type TextSizeLevel = -2 | -1 | 0 | 1 | 2;
 export type Locale = "es" | "en";

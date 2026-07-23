@@ -10,6 +10,7 @@ Este repositorio implementa un portfolio personal con foco en:
 - Internacionalización por rutas (`/es` y `/en`) con segmentos localizados.
 - Deep linking a proyectos concretos (`/es/proyectos/:slug`, `/en/projects/:slug`).
 - Captación de contacto y reservas (Cal.com) con validación robusta y mitigación anti-spam.
+- **Lab**: hub de recursos (tutoriales, guías, checklists, infografías, dashboards y notas) en MDX.
 - Base mantenible para evolucionar contenido, UI y flujo comercial.
 
 ## Stack principal
@@ -22,6 +23,7 @@ Este repositorio implementa un portfolio personal con foco en:
 - `Cloudflare Turnstile` para verificación anti-bot
 - `@calcom/embed-react` para reservas embebidas
 - `lucide-react` para iconografía UI
+- `next-mdx-remote` + `gray-matter` para el Lab (MDX con frontmatter)
 - `Vitest` + `Testing Library` para pruebas
 - `ESLint` para calidad estática
 
@@ -34,21 +36,25 @@ Este repositorio implementa un portfolio personal con foco en:
 |  |  |- page.tsx                 # Home con escena 3D
 |  |  |- proyectos/[slug]/        # Deep link ES → proyecto concreto
 |  |  |- projects/[slug]/         # Deep link EN → proyecto concreto
+|  |  |- lab/                     # Índice Lab
+|  |  |- lab/[slug]/             # Entrada Lab (MDX)
 |  |  |- legal/                   # Aviso legal, privacidad, cookies
 |  |  |- [...slug]/              # Catch-all → 404 localizado
 |  |- api/contact/route.ts        # Endpoint de contacto
-|  |- sitemap.ts                  # Sitemap (home, legal, proyectos)
+|  |- sitemap.ts                  # Sitemap (home, legal, lab, proyectos)
 |  |- robots.ts
+|- content/lab/                   # Fuente de verdad MDX del Lab (es/ + en/)
 |- middleware.ts                  # Resolución de locale → cabecera x-site-locale
 |- src/
-|  |- components/                 # UI, escena 3D, SEO, legal, errores
+|  |- components/                 # UI, escena 3D, Lab, SEO, legal, errores
 |  |- config/                     # SEO, tema, scripts de bootstrap
 |  |- lib/contact/                # Dominio y servicios del formulario
+|  |- lib/lab/                    # Loader MDX, schema Zod, índice para el rail
 |  |- lib/legal/                  # Consentimiento y soporte legal
 |  |- data/                       # Contenido traducido (data-es.json, data-en.json)
-|  |- i18n/                       # Locale, segmentos de URL y datos por idioma
+|  |- i18n/                       # Locale, Lab copy, segmentos de URL
 |  |- utils/                      # Escena 3D, hotspots, helpers de proyecto
-|  |- types/                      # Tipos compartidos del portfolio
+|  |- types/                      # Tipos compartidos (portfolio + lab)
 |- public/                        # Assets estáticos (incl. og-social-preview.png)
 ```
 
@@ -60,10 +66,14 @@ Este repositorio implementa un portfolio personal con foco en:
 | `/es`, `/en` | Home con escena 3D interactiva |
 | `/es/proyectos/:slug` | Proyecto concreto (ES); abre la escena en ese hotspot |
 | `/en/projects/:slug` | Proyecto concreto (EN); misma lógica |
+| `/es/lab`, `/en/lab` | Índice del Lab (filtros por `?type=`) |
+| `/es/lab/:slug`, `/en/lab/:slug` | Entrada del Lab |
 | `/es/legal/*`, `/en/legal/*` | Páginas legales |
 | `/api/contact` | POST del formulario de contacto |
 
 Los `slug` de proyecto coinciden con el campo `id` en `src/data/data-*.json` (p. ej. `control-manager`, `ribbon-revit`, `visor-ifc`).
+
+Los `slug` del Lab coinciden con el nombre de archivo en `content/lab/{locale}/` (p. ej. `conectar-revit-2027-cursor`).
 
 ## Requisitos previos
 
@@ -84,6 +94,8 @@ Aplicación en desarrollo:
 - [http://localhost:3000/en](http://localhost:3000/en)
 - [http://localhost:3000/es/proyectos/control-manager](http://localhost:3000/es/proyectos/control-manager)
 - [http://localhost:3000/en/projects/control-manager](http://localhost:3000/en/projects/control-manager)
+- [http://localhost:3000/es/lab](http://localhost:3000/es/lab)
+- [http://localhost:3000/es/lab/conectar-revit-2027-cursor](http://localhost:3000/es/lab/conectar-revit-2027-cursor)
 
 ## Variables de entorno
 
@@ -118,6 +130,25 @@ Si falta alguna variable crítica, el endpoint responde con error de configuraci
 - `PortfolioSceneLoadGate` gestiona la carga progresiva de la escena antes de mostrar la UI.
 - Los embeds de demo (YouTube, Cal.com) respetan el consentimiento de cookies de terceros.
 
+## Lab (recursos MDX)
+
+El Lab no es un blog clásico: es un hub de piezas útiles tipadas (`tutorial`, `guia`, `checklist`, `infografia`, `dashboard`, `nota`). Las notas cubren el rol de “blog” sin una sección aparte.
+
+### Acceso desde la UI 3D
+
+Orden del rail: **Proyectos → Formación → Lab → Contacto → Citas**.
+
+El botón Lab abre un flyout con las entradas más recientes (desde `getLabIndexForNav`) y un CTA a `/{locale}/lab`. Al seguir un enlace se sale de la escena 3D hacia páginas de contenido (mismo patrón visual que legal).
+
+### Pipeline de contenido
+
+1. Autoría en `content/lab/{locale}/{slug}.mdx` (frontmatter YAML + cuerpo MDX).
+2. Validación con Zod en `src/lib/lab/schema.ts`.
+3. Compilación RSC con `next-mdx-remote` (`compileMDX`) y componentes en `src/components/lab/`.
+4. Rutas en `app/[locale]/lab/` con metadata y JSON-LD; sitemap incluye índice y cada entrada.
+
+Guía de autoría y checklist de publicación: [`content/lab/README.md`](content/lab/README.md).
+
 ## Arquitectura (contacto)
 
 El flujo de contacto está separado por contratos (ports) para desacoplar dominio e infraestructura:
@@ -148,13 +179,14 @@ Configuraciones activas relevantes:
 La configuración SEO está centralizada en `src/config/site-seo.ts`:
 
 - Metadatos por locale con `canonical` y `alternate` (`hreflang`).
-- Open Graph y Twitter cards en home, proyectos y páginas legales.
+- Open Graph y Twitter cards en home, proyectos, Lab y páginas legales.
 - Imagen social por defecto (`/images/og-social-preview.png`) compartida en todas las URLs; título y descripción varían por página.
 - `JSON-LD`:
   - `Person` y `WebSite` en el layout raíz.
   - `CollectionPage` en la home.
   - `CreativeWork` en cada página de proyecto.
-- `sitemap.ts` incluye home, legal y **todas las URLs de proyectos** por locale.
+  - `TechArticle` / `Article` en cada entrada del Lab.
+- `sitemap.ts` incluye home, legal, **Lab (índice + entradas)** y **todas las URLs de proyectos** por locale.
 - `robots.ts` en App Router.
 - `middleware.ts` resuelve el locale desde el pathname e inyecta `x-site-locale` para uso en servidor.
 
@@ -171,6 +203,8 @@ Para revisar cobertura local:
 ```bash
 npm run test:run
 ```
+
+Vitest usa `pool: "vmThreads"` (ver `vitest.config.ts`) por compatibilidad en Windows con Vitest 4 / Vite 8. El widget Turnstile se sustituye en tests vía alias a `src/test/mocks/turnstile.tsx`.
 
 ## Legal
 

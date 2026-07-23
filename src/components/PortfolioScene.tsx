@@ -6,6 +6,7 @@ import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
 import { MOUSE } from "three";
 import type { DeviceMode, Locale, PortfolioData, TextSizeLevel } from "@/types/portfolio";
+import type { LabResourceSummary, LabUiCopy } from "@/types/lab";
 import { setupScene } from "@/utils/three-scene";
 import type { SceneLights } from "@/utils/three-scene";
 import { SCENE_BACKGROUND, SCENE_COLORS } from "@/config/scene-theme";
@@ -302,7 +303,13 @@ function applyHeroVariantToCameras(
   };
 }
 
-type Props = { data: PortfolioData; locale: Locale; initialProjectId?: string };
+type Props = {
+  data: PortfolioData;
+  locale: Locale;
+  initialProjectId?: string;
+  labItems: LabResourceSummary[];
+  labCopy: LabUiCopy;
+};
 type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][number];
 type TextSizeByDevice = Record<DeviceMode, TextSizeLevel>;
 
@@ -340,7 +347,7 @@ function parseStoredTextSizeByDevice(raw: string | null): TextSizeByDevice {
   }
 }
 
-export function PortfolioScene({ data, locale, initialProjectId }: Props) {
+export function PortfolioScene({ data, locale, initialProjectId, labItems, labCopy }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const defaultInspectorContent = buildIdleInspectorContent(data.ui.inspector);
@@ -1577,6 +1584,8 @@ export function PortfolioScene({ data, locale, initialProjectId }: Props) {
         links={data.nav.links}
         projects={data.projects}
         formacion={data.formacion}
+        labItems={labItems}
+        labCopy={labCopy}
         contactForm={data.ui.contactForm}
         contactSocial={data.ui.contactSocial}
         legal={data.legal}

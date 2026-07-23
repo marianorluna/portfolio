@@ -13,6 +13,7 @@ import type {
   PortfolioData,
   TextSizeLevel,
 } from "@/types/portfolio";
+import type { LabResourceSummary, LabUiCopy } from "@/types/lab";
 import dynamic from "next/dynamic";
 import { NavIcon } from "./NavIcon";
 import { ContactSocialRow } from "./ContactSocialRow";
@@ -35,6 +36,8 @@ type Props = {
   links:          NavLink[];
   projects:       PortfolioData["projects"];
   formacion:      PortfolioData["formacion"];
+  labItems:       LabResourceSummary[];
+  labCopy:        LabUiCopy;
   contactForm:    PortfolioData["ui"]["contactForm"];
   contactSocial:  PortfolioData["ui"]["contactSocial"];
   legal:          PortfolioData["legal"];
@@ -63,6 +66,8 @@ export function Navbar({
   links,
   projects,
   formacion,
+  labItems,
+  labCopy,
   contactForm,
   contactSocial,
   legal,
@@ -234,7 +239,8 @@ export function Navbar({
           <div
             className={`nav-rail__flyout-inner${
               openLink.id === "proyectos" ||
-              openLink.id === "formacion"
+              openLink.id === "formacion" ||
+              openLink.id === "lab"
                 ? " nav-rail__flyout-inner--projects"
                 : ""
             }`}
@@ -327,6 +333,37 @@ export function Navbar({
                     </ul>
                   </section>
                 ))}
+              </div>
+            )}
+            {openLink.id === "lab" && (
+              <div className="nav-projects nav-lab">
+                {labItems.length === 0 ? (
+                  <p className="nav-lab__empty">{labCopy.flyoutEmptyMessage}</p>
+                ) : (
+                  <ul className="nav-projects__list">
+                    {labItems.map(item => (
+                      <li key={item.slug} className="nav-projects__item">
+                        <Link
+                          href={`/${locale}/lab/${item.slug}`}
+                          className="nav-projects__item-btn nav-lab__item-btn"
+                          onClick={() => onActivePanelChange(null)}
+                        >
+                          <span className="nav-lab__badge">{labCopy.typeLabel[item.type]}</span>
+                          <p className="nav-projects__item-name">{item.title}</p>
+                          <p className="nav-projects__item-summary">{item.description}</p>
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+                <Link
+                  href={`/${locale}/lab`}
+                  className="nav-lab__cta"
+                  onClick={() => onActivePanelChange(null)}
+                >
+                  {labCopy.flyoutCtaLabel}
+                  <span aria-hidden> →</span>
+                </Link>
               </div>
             )}
           </div>

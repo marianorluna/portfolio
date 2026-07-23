@@ -1,5 +1,5 @@
 import type { NavIconName } from "@/types/portfolio";
-import { Calendar, Folder, Layers, Mail, type LucideIcon } from "lucide-react";
+import { Calendar, FlaskConical, Folder, Layers, Mail, type LucideIcon } from "lucide-react";
 
 const SIZE = 22;
 
@@ -13,6 +13,7 @@ export function NavIcon({ name, className, title }: Props) {
   const iconMap: Record<NavIconName, LucideIcon> = {
     folder: Folder,
     layers: Layers,
+    flask: FlaskConical,
     calendar: Calendar,
     mail: Mail,
   };

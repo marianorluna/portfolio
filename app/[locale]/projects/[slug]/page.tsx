@@ -4,6 +4,8 @@ import { PortfolioSceneClient } from "@/components/PortfolioSceneClient";
 import { ServerInsertedScripts } from "@/components/seo/ServerInsertedScripts";
 import { buildProjectMetadata, SITE_URL } from "@/config/site-seo";
 import { getPortfolioDataByLocale, isLocale, LOCALES } from "@/i18n/locale";
+import { getLabCopy } from "@/i18n/lab-copy";
+import { getLabIndexForNav } from "@/lib/lab";
 import { findProjectWithCategory } from "@/utils/floor-project-hotspots";
 import type { Locale } from "@/types/portfolio";
 
@@ -36,6 +38,7 @@ export default async function ProjectPage({ params }: PageProps) {
   const data = getPortfolioDataByLocale(locale);
   const found = findProjectWithCategory(data, slug);
   if (!found) notFound();
+  const labItems = await getLabIndexForNav(locale);
 
   const projectJsonLd = {
     "@context": "https://schema.org",
@@ -53,7 +56,13 @@ export default async function ProjectPage({ params }: PageProps) {
 
   return (
     <>
-      <PortfolioSceneClient data={data} locale={locale} initialProjectId={slug} />
+      <PortfolioSceneClient
+        data={data}
+        locale={locale}
+        initialProjectId={slug}
+        labItems={labItems}
+        labCopy={getLabCopy(locale)}
+      />
       <ServerInsertedScripts
         scripts={[
           {

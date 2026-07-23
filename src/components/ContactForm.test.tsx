@@ -1,33 +1,7 @@
 import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { ContactFormCopy } from "@/types/portfolio";
-
-vi.mock("@marsidev/react-turnstile", () => ({
-  Turnstile: ({
-    onSuccess,
-    onError,
-    onExpire
-  }: {
-    onSuccess: (token: string) => void;
-    onError: (code: string) => void;
-    onExpire: () => void;
-  }) => (
-    <div>
-      <button type="button" onClick={() => onSuccess("token-test")}>
-        mock-turnstile-success
-      </button>
-      <button type="button" onClick={() => onError("110200")}>
-        mock-turnstile-error-domain
-      </button>
-      <button type="button" onClick={() => onError("200000")}>
-        mock-turnstile-error-generic
-      </button>
-      <button type="button" onClick={onExpire}>
-        mock-turnstile-expire
-      </button>
-    </div>
-  ),
-}));
+import { ContactForm } from "./ContactForm";
 
 const copy: ContactFormCopy = {
   formAriaLabel: "Formulario de contacto",
@@ -53,7 +27,6 @@ const copy: ContactFormCopy = {
 
 describe("ContactForm", () => {
   beforeEach(() => {
-    vi.resetModules();
     vi.clearAllMocks();
     vi.stubEnv("NEXT_PUBLIC_TURNSTILE_SITE_KEY", "site-key");
     vi.stubGlobal(
@@ -66,7 +39,6 @@ describe("ContactForm", () => {
   });
 
   async function loadForm() {
-    const { ContactForm } = await import("./ContactForm");
     render(<ContactForm copy={copy} />);
   }
 

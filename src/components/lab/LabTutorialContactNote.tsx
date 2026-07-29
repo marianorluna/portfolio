@@ -11,7 +11,7 @@ type Props = {
   emailHref: string;
 };
 
-/** Pie de feedback en tutoriales: formulario en inicio + correo del sitio. */
+/** Pie de feedback en tutoriales: deep-link al formulario + correo del sitio. */
 export function LabTutorialContactNote({
   locale,
   lead,
@@ -26,7 +26,7 @@ export function LabTutorialContactNote({
       <Callout variant="tip">
         <p className="lab-tutorial-contact__text">
           {lead}{" "}
-          <Link href={`/${locale}`}>{formLabel}</Link> {orLabel}{" "}
+          <Link href={`/${locale}/contacto`}>{formLabel}</Link> {orLabel}{" "}
           <a href={emailHref}>{emailAddress}</a>.
         </p>
       </Callout>

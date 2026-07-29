@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type MutableRefObject } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type MutableRefObject,
+  type SetStateAction,
+} from "react";
 import { usePathname, useRouter } from "next/navigation";
 import * as THREE from "three";
 import { OrbitControls } from "three/examples/jsm/controls/OrbitControls.js";
@@ -307,6 +314,8 @@ type Props = {
   data: PortfolioData;
   locale: Locale;
   initialProjectId?: string;
+  /** Panel del rail abierto al montar (p. ej. deep-link `/contacto`). */
+  initialActivePanel?: string;
   labItems: LabResourceSummary[];
   labCopy: LabUiCopy;
 };
@@ -347,7 +356,14 @@ function parseStoredTextSizeByDevice(raw: string | null): TextSizeByDevice {
   }
 }
 
-export function PortfolioScene({ data, locale, initialProjectId, labItems, labCopy }: Props) {
+export function PortfolioScene({
+  data,
+  locale,
+  initialProjectId,
+  initialActivePanel,
+  labItems,
+  labCopy,
+}: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const defaultInspectorContent = buildIdleInspectorContent(data.ui.inspector);
@@ -424,7 +440,37 @@ export function PortfolioScene({ data, locale, initialProjectId, labItems, labCo
   const prevHoverUiMeshRef = useRef<THREE.Mesh | null>(null);
   const defaultInspectorContentRef = useRef(defaultInspectorContent);
 
-  const [activeNavPanel, setActiveNavPanel] = useState<NavActivePanel>(null);
+  const [activeNavPanel, setActiveNavPanel] = useState<NavActivePanel>(
+    initialActivePanel ?? null
+  );
+
+  const contactPath = `/${locale}/contacto`;
+  const homePath = `/${locale}`;
+
+  /** Abre/cierra Contacto sincronizando la URL `/contacto` sin perder otros paneles al salir. */
+  const handleActivePanelChange = useCallback(
+    (update: SetStateAction<NavActivePanel>) => {
+      const prev = activeNavPanel;
+      const next = typeof update === "function" ? update(prev) : update;
+      const onContactRoute = pathname === contactPath;
+
+      setActiveNavPanel(next);
+
+      if (next === "contacto" && !onContactRoute) {
+        router.push(contactPath);
+        return;
+      }
+
+      if (prev === "contacto" && next !== "contacto" && onContactRoute) {
+        if (next == null) {
+          router.push(homePath);
+        } else {
+          window.history.replaceState(null, "", homePath);
+        }
+      }
+    },
+    [activeNavPanel, contactPath, homePath, pathname, router]
+  );
 
   const [heroSelection, setHeroSelection] = useState<{
     categoryLabel: string;
@@ -1592,7 +1638,7 @@ export function PortfolioScene({ data, locale, initialProjectId, labItems, labCo
         uiText={data.nav.uiText}
         theme={theme}
         activePanel={activeNavPanel}
-        onActivePanelChange={setActiveNavPanel}
+        onActivePanelChange={handleActivePanelChange}
         onThemeToggle={handleThemeToggle}
         locale={locale}
         onLocaleChange={handleLocaleChange}
@@ -1629,7 +1675,7 @@ export function PortfolioScene({ data, locale, initialProjectId, labItems, labCo
       <HeroText
         data={data}
         selection={heroSelection ?? heroFloorPreview}
-        onOpenProyectos={() => setActiveNavPanel("proyectos")}
+        onOpenProyectos={() => handleActivePanelChange("proyectos")}
         projectDemoOpensPanel={Boolean(heroSelection != null)}
         onProjectDemoPanel={
           heroSelection != null

@@ -68,6 +68,8 @@ Este repositorio implementa un portfolio personal con foco en:
 | `/en/projects/:slug` | Proyecto concreto (EN); misma lógica |
 | `/es/lab`, `/en/lab` | Índice del Lab (filtros por `?type=`) |
 | `/es/lab/:slug`, `/en/lab/:slug` | Entrada del Lab |
+| `/es/contacto`, `/en/contacto` | Deep-link al panel Contacto (misma escena 3D) |
+| `/contacto` | Redirige a `/es/contacto` |
 | `/es/legal/*`, `/en/legal/*` | Páginas legales |
 | `/api/contact` | POST del formulario de contacto |
 
@@ -96,6 +98,7 @@ Aplicación en desarrollo:
 - [http://localhost:3000/en/projects/control-manager](http://localhost:3000/en/projects/control-manager)
 - [http://localhost:3000/es/lab](http://localhost:3000/es/lab)
 - [http://localhost:3000/es/lab/conectar-revit-2027-cursor](http://localhost:3000/es/lab/conectar-revit-2027-cursor)
+- [http://localhost:3000/es/contacto](http://localhost:3000/es/contacto)
 
 ## Variables de entorno
 
@@ -148,6 +151,7 @@ El botón Lab abre un flyout con las entradas más recientes (desde `getLabIndex
 2. Validación con Zod en `src/lib/lab/schema.ts`.
 3. Compilación RSC con `next-mdx-remote` (`compileMDX`) y componentes en `src/components/lab/`.
 4. Rutas en `app/[locale]/lab/` con metadata y JSON-LD; sitemap incluye índice y cada entrada.
+5. Tutoriales muestran un pie de feedback (`LabTutorialContactNote`) hacia `/{locale}/contacto` y el correo del sitio.
 
 Guía de autoría y checklist de publicación: [`content/lab/README.md`](content/lab/README.md).
 
@@ -165,6 +169,15 @@ El flujo de contacto está separado por contratos (ports) para desacoplar domini
 
 Este enfoque facilita testeo, sustitución de proveedores y evolución incremental sin mezclar lógica de dominio con transporte HTTP.
 
+### Deep-link al panel Contacto
+
+El formulario vive en el flyout del rail (misma escena 3D), no en una página standalone:
+
+1. `/{locale}/contacto` monta `PortfolioSceneClient` con `initialActivePanel="contacto"`.
+2. `/contacto` redirige a `/es/contacto`.
+3. Abrir o cerrar el icono de Contacto sincroniza la URL (`/contacto` ↔ home).
+4. Los tutoriales del Lab enlazan a esa ruta desde `LabTutorialContactNote` (copy en `lab.ui.tutorialContact*`).
+
 ## Seguridad y hardening
 
 Configuraciones activas relevantes:
@@ -181,14 +194,15 @@ Configuraciones activas relevantes:
 La configuración SEO está centralizada en `src/config/site-seo.ts`:
 
 - Metadatos por locale con `canonical` y `alternate` (`hreflang`).
-- Open Graph y Twitter cards en home, proyectos, Lab y páginas legales.
+- Open Graph y Twitter cards en home, proyectos, Lab, contacto y páginas legales.
 - Imagen social por defecto (`/images/og-social-preview.png`) compartida en todas las URLs; título y descripción varían por página.
 - `JSON-LD`:
   - `Person` y `WebSite` en el layout raíz.
   - `CollectionPage` en la home.
   - `CreativeWork` en cada página de proyecto.
+  - `ContactPage` en `/{locale}/contacto`.
   - `TechArticle` / `Article` en cada entrada del Lab.
-- `sitemap.ts` incluye home, legal, **Lab (índice + entradas)** y **todas las URLs de proyectos** por locale.
+- `sitemap.ts` incluye home, legal, **contacto**, **Lab (índice + entradas)** y **todas las URLs de proyectos** por locale.
 - `robots.ts` en App Router.
 - `middleware.ts` resuelve el locale desde el pathname e inyecta `x-site-locale` para uso en servidor.
 

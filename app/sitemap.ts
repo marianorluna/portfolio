@@ -9,6 +9,7 @@ const LOCALIZED_PATH_SUFFIXES = [
   "/legal/privacidad",
   "/legal/cookies",
   "/lab",
+  "/contacto",
 ] as const;
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

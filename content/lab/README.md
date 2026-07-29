@@ -148,7 +148,9 @@ Dos capas de contenido + infra de locale:
 | Contenido editorial | `content/lab/{locale}/*.mdx` + `index.json` | Títulos, descripciones y cuerpo de cada entrada |
 | Locale / URLs | `src/i18n/` | Resolución de idioma y segmentos de ruta (no copy) |
 
-Cualquier texto nuevo de la UI del Lab (CTAs, filtros, mensajes vacíos, tabs del shell) va en `lab.ui` de los JSON del portfolio. El rail solo guarda datos estructurales del botón (`id`, `label`, `icon`).
+Cualquier texto nuevo de la UI del Lab (CTAs, filtros, mensajes vacíos, tabs del shell, pie de feedback de tutoriales) va en `lab.ui` de los JSON del portfolio. El rail solo guarda datos estructurales del botón (`id`, `label`, `icon`).
+
+Los tutoriales renderizan automáticamente `LabTutorialContactNote` al final del contenido (enlace a `/{locale}/contacto` + correo de `ui.contactSocial`). Copy: `tutorialContactLead`, `tutorialContactFormLabel`, `tutorialContactOr`.
 
 ## Relación con el portfolio 3D
 

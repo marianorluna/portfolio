@@ -17,11 +17,20 @@ type Props = {
   data: PortfolioData;
   locale: Locale;
   initialProjectId?: string;
+  /** Panel del rail abierto al montar (p. ej. deep-link `/contacto`). */
+  initialActivePanel?: string;
   labItems: LabResourceSummary[];
   labCopy: LabUiCopy;
 };
 
-export function PortfolioSceneClient({ data, locale, initialProjectId, labItems, labCopy }: Props) {
+export function PortfolioSceneClient({
+  data,
+  locale,
+  initialProjectId,
+  initialActivePanel,
+  labItems,
+  labCopy,
+}: Props) {
   useEffect(() => {
     void importPortfolioScene();
   }, []);
@@ -31,6 +40,7 @@ export function PortfolioSceneClient({ data, locale, initialProjectId, labItems,
       data={data}
       locale={locale}
       initialProjectId={initialProjectId}
+      initialActivePanel={initialActivePanel}
       labItems={labItems}
       labCopy={labCopy}
     />

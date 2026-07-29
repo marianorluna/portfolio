@@ -17,4 +17,12 @@ export {
   resolveLabBentoBreakpoint,
 } from "./bento-pages";
 export type { LabBentoBreakpoint } from "./bento-pages";
+export {
+  LAB_BENTO_WIDE_ASPECT_RATIO,
+  resolveLabBentoCoverSrc,
+  resolveLabBentoCoverVariant,
+} from "./cover-variant";
+export type { LabBentoCoverVariant } from "./cover-variant";
 export { labFrontmatterSchema, labIndexSchema } from "./schema";
+export { labFaceToneForType, LAB_FACE_TONES } from "./face-tone";
+export type { LabFaceTone } from "./face-tone";

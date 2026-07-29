@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Locale } from "@/types/portfolio";
@@ -16,7 +17,7 @@ type Props = {
   showBackToLab?: boolean;
   /**
    * `index`: viewport completo sin chrome; el hero vive en el bento.
-   * `tutorial`: shell interactivo (hero glow + TOC) para tutorial/guia.
+   * `tutorial`: shell interactivo (hero glow + TOC) para tutoriales.
    * `article` (default): header clásico con título y descripción.
    */
   variant?: "index" | "article" | "tutorial";
@@ -25,6 +26,8 @@ type Props = {
   /** Items de tabs de sección (solo `tutorial`). */
   tocItems?: LabTocItem[];
   tocAriaLabel?: string;
+  /** Imagen de portada del hero (solo `tutorial`). */
+  heroImage?: string;
   /** Chrome móvil/tablet: menú + modal de ajustes. */
   settingsLabel?: string;
   menuOpenLabel?: string;
@@ -114,6 +117,7 @@ export function LabPageLayout({
   meta,
   tocItems,
   tocAriaLabel = "Secciones",
+  heroImage,
   settingsLabel,
   menuOpenLabel,
   menuCloseLabel,
@@ -142,17 +146,43 @@ export function LabPageLayout({
   );
 
   if (variant === "tutorial") {
+    const hasCover = heroImage != null && heroImage.length > 0;
     return (
       <main className="lab-page lab-page--tutorial">
-        <header className="lab-entry-hero">
-          <div className="lab-entry-hero__glow" aria-hidden />
-          {chrome}
-          {kicker != null && <p className="lab-page__kicker">{kicker}</p>}
-          <h1 className="lab-entry-hero__title">{title}</h1>
-          {description != null && (
-            <p className="lab-entry-hero__description">{description}</p>
+        <header
+          className={["lab-entry-hero", hasCover ? "lab-entry-hero--has-cover" : ""]
+            .filter(Boolean)
+            .join(" ")}
+        >
+          {hasCover ? (
+            <div className="lab-entry-hero__cover">
+              <div className="lab-entry-hero__media" aria-hidden>
+                <Image
+                  src={heroImage}
+                  alt=""
+                  fill
+                  priority
+                  sizes="100vw"
+                  className="lab-entry-hero__image"
+                />
+                <div className="lab-entry-hero__shade" />
+              </div>
+              {chrome}
+            </div>
+          ) : (
+            <>
+              <div className="lab-entry-hero__glow" aria-hidden />
+              {chrome}
+            </>
           )}
-          {meta != null && <div className="lab-entry-hero__meta">{meta}</div>}
+          <div className="lab-entry-hero__copy">
+            {kicker != null && <p className="lab-page__kicker">{kicker}</p>}
+            <h1 className="lab-entry-hero__title">{title}</h1>
+            {description != null && (
+              <p className="lab-entry-hero__description">{description}</p>
+            )}
+            {meta != null && <div className="lab-entry-hero__meta">{meta}</div>}
+          </div>
         </header>
         <article className="lab-page__content lab-page__content--tutorial">
           {tocItems != null && tocItems.length > 0 ? (

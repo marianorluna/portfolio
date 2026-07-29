@@ -7,7 +7,6 @@ import type { Locale } from "./portfolio";
  */
 export const LAB_RESOURCE_TYPES = [
   "tutorial",
-  "guia",
   "checklist",
   "infografia",
   "dashboard",
@@ -31,10 +30,17 @@ export type LabFrontmatter = {
   slug: string;
   level: LabResourceLevel;
   tags: string[];
-  /** Ruta pública de la portada (p. ej. `/lab/covers/mi-entrada.webp`). */
+  /** Ruta pública de la card del bento en celdas ~cuadradas (`{slug}-grid.webp`, ~1:1). */
   coverImage: string;
-  /** Texto alternativo de la portada; si falta, se usa el título. */
+  /** Texto alternativo de la card; si falta, se usa el título. */
   coverAlt?: string;
+  /**
+   * Ruta pública del hero y cover ancha del bento (`{slug}-portada.webp`, ~16:9).
+   * En el índice se usa cuando la celda supera ~4/3 de aspect ratio.
+   */
+  heroImage?: string;
+  /** Texto alternativo del hero; si falta, se usa `coverAlt` o el título. */
+  heroAlt?: string;
   /** Span en el bento del índice; por defecto `md`. */
   size?: LabCardSize;
   /** Si es `true`, el recurso no se lista ni se publica. */
@@ -116,21 +122,6 @@ export type LabUiCopy = {
   levelLabel: Record<LabResourceLevel, string>;
 };
 
-/** Tonos de fondo para placeholders (bajo el velo gris). */
-export const LAB_PLACEHOLDER_TONES = [
-  "teal",
-  "slate",
-  "violet",
-  "amber",
-  "rose",
-  "olive",
-  "sky",
-  "coral",
-  "indigo",
-  "mint",
-] as const;
-export type LabPlaceholderTone = (typeof LAB_PLACEHOLDER_TONES)[number];
-
 /** Placeholder visual del bento (aún no publicado). */
 export type LabPlaceholderCard = {
   id: string;
@@ -139,5 +130,4 @@ export type LabPlaceholderCard = {
   title: string;
   description: string;
   tags: string[];
-  tone: LabPlaceholderTone;
 };

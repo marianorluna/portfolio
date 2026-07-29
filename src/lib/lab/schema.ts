@@ -17,8 +17,20 @@ export const labFrontmatterSchema = z.object({
   tags: z.array(z.string().min(1)).min(1, "tags debe tener al menos un elemento"),
   coverImage: z
     .string()
-    .regex(PUBLIC_PATH_PATTERN, "coverImage debe ser una ruta pública (ej. /lab/covers/entrada.webp)"),
+    .regex(
+      PUBLIC_PATH_PATTERN,
+      "coverImage debe ser una ruta pública (ej. /lab/covers/entrada-grid.webp)"
+    ),
   coverAlt: z.string().min(1).optional(),
+  /** Hero 16:9 (`*-portada.webp`); también cover ancha del bento si la celda es ≥ 4/3. */
+  heroImage: z
+    .string()
+    .regex(
+      PUBLIC_PATH_PATTERN,
+      "heroImage debe ser una ruta pública (ej. /lab/covers/entrada-portada.webp)"
+    )
+    .optional(),
+  heroAlt: z.string().min(1).optional(),
   size: z.enum(LAB_CARD_SIZES).optional(),
   draft: z.boolean().optional(),
 });

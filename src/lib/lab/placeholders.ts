@@ -4,17 +4,17 @@ import type { LabPlaceholderCard } from "@/types/lab";
 /**
  * Placeholders del bento para previsualizar el índice lleno
  * (11 slots de contenido + hero = 12). No son MDX ni rutas publicables.
+ * El color lo marca el tipo vía `labFaceToneForType` (tokens del tema).
  */
 const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
   es: [
     {
-      id: "ph-guia-ifc",
-      type: "guia",
+      id: "ph-tutorial-navis",
+      type: "dashboard",
       size: "md",
-      title: "Exportar IFC limpio desde Revit",
-      description: "Checklist visual de qué limpiar antes de compartir el modelo.",
-      tags: ["IFC", "Revit", "BIM"],
-      tone: "teal",
+      title: "Clash detection sin drama",
+      description: "Cómo preparar el modelo antes de abrir Navisworks.",
+      tags: ["Navisworks", "Clash"],
     },
     {
       id: "ph-checklist-qa",
@@ -23,7 +23,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "QA BIM en 15 minutos",
       description: "Una pasada rápida de calidad antes de entregar.",
       tags: ["QA", "BIM"],
-      tone: "amber",
     },
     {
       id: "ph-nota-prompts",
@@ -32,7 +31,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "5 prompts útiles para modelado",
       description: "Plantillas cortas para pedir ayuda a la IA sin rodeos.",
       tags: ["IA", "Prompts"],
-      tone: "violet",
     },
     {
       id: "ph-infografia-mcp",
@@ -41,7 +39,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "Mapa visual del protocolo MCP",
       description: "De Cursor a Revit: quién habla con quién y por qué.",
       tags: ["MCP", "Cursor", "Revit"],
-      tone: "sky",
     },
     {
       id: "ph-dashboard-kpi",
@@ -50,7 +47,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "KPIs de coordinación en obra",
       description: "Qué mirar cada semana sin ahogarte en Excel.",
       tags: ["KPI", "Obra"],
-      tone: "coral",
     },
     {
       id: "ph-tutorial-dynamo",
@@ -59,16 +55,14 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "Automatiza planos con Dynamo + IA",
       description: "De la idea al script: pasos claros para quien empieza.",
       tags: ["Dynamo", "IA", "Revit"],
-      tone: "indigo",
     },
     {
-      id: "ph-guia-navis",
-      type: "guia",
+      id: "ph-tutorial-ifc",
+      type: "tutorial",
       size: "md",
-      title: "Clash detection sin drama",
-      description: "Cómo preparar el modelo antes de abrir Navisworks.",
-      tags: ["Navisworks", "Clash"],
-      tone: "olive",
+      title: "Exportar IFC limpio desde Revit",
+      description: "Checklist visual de qué limpiar antes de compartir el modelo.",
+      tags: ["IFC", "Revit", "BIM"],
     },
     {
       id: "ph-checklist-entrega",
@@ -77,7 +71,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "Entrega digital al cliente",
       description: "Lo mínimo que debe salir del BIM Manager.",
       tags: ["Entrega", "CDE"],
-      tone: "rose",
     },
     {
       id: "ph-nota-python",
@@ -86,7 +79,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "Python en Revit sin miedo",
       description: "Tres conceptos para leer un script de pyRevit.",
       tags: ["Python", "pyRevit"],
-      tone: "mint",
     },
     {
       id: "ph-dashboard-coste",
@@ -95,18 +87,16 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "Coste vs avance en tiempo real",
       description: "Una vista simple para reunión de obra.",
       tags: ["Coste", "4D"],
-      tone: "slate",
     },
   ],
   en: [
     {
-      id: "ph-guia-ifc",
-      type: "guia",
+      id: "ph-tutorial-navis",
+      type: "dashboard",
       size: "md",
-      title: "Export a clean IFC from Revit",
-      description: "A visual checklist of what to clean before sharing the model.",
-      tags: ["IFC", "Revit", "BIM"],
-      tone: "teal",
+      title: "Clash detection without the drama",
+      description: "How to prep the model before opening Navisworks.",
+      tags: ["Navisworks", "Clash"],
     },
     {
       id: "ph-checklist-qa",
@@ -115,7 +105,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "BIM QA in 15 minutes",
       description: "A fast quality pass before you hand over.",
       tags: ["QA", "BIM"],
-      tone: "amber",
     },
     {
       id: "ph-nota-prompts",
@@ -124,7 +113,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "5 useful modeling prompts",
       description: "Short templates to ask AI for help without fluff.",
       tags: ["AI", "Prompts"],
-      tone: "violet",
     },
     {
       id: "ph-infografia-mcp",
@@ -133,7 +121,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "Visual map of the MCP protocol",
       description: "From Cursor to Revit: who talks to whom and why.",
       tags: ["MCP", "Cursor", "Revit"],
-      tone: "sky",
     },
     {
       id: "ph-dashboard-kpi",
@@ -142,7 +129,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "Site coordination KPIs",
       description: "What to watch every week without drowning in spreadsheets.",
       tags: ["KPI", "Site"],
-      tone: "coral",
     },
     {
       id: "ph-tutorial-dynamo",
@@ -151,16 +137,14 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "Automate sheets with Dynamo + AI",
       description: "From idea to script: clear steps for beginners.",
       tags: ["Dynamo", "AI", "Revit"],
-      tone: "indigo",
     },
     {
-      id: "ph-guia-navis",
-      type: "guia",
+      id: "ph-tutorial-ifc",
+      type: "tutorial",
       size: "md",
-      title: "Clash detection without the drama",
-      description: "How to prep the model before opening Navisworks.",
-      tags: ["Navisworks", "Clash"],
-      tone: "olive",
+      title: "Export a clean IFC from Revit",
+      description: "A visual checklist of what to clean before sharing the model.",
+      tags: ["IFC", "Revit", "BIM"],
     },
     {
       id: "ph-checklist-entrega",
@@ -169,7 +153,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "Digital handover to the client",
       description: "The minimum a BIM Manager should ship.",
       tags: ["Handover", "CDE"],
-      tone: "rose",
     },
     {
       id: "ph-nota-python",
@@ -178,7 +161,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "Python in Revit without fear",
       description: "Three concepts to read a pyRevit script.",
       tags: ["Python", "pyRevit"],
-      tone: "mint",
     },
     {
       id: "ph-dashboard-coste",
@@ -187,7 +169,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "Cost vs progress in real time",
       description: "A simple view for the site meeting.",
       tags: ["Cost", "4D"],
-      tone: "slate",
     },
   ],
 };

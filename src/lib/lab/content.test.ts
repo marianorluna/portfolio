@@ -53,7 +53,7 @@ const baseFrontmatter = {
   type: "tutorial",
   level: "intro",
   tags: ["revit"],
-  coverImage: "/lab/covers/conectar-revit-2027-cursor.webp",
+  coverImage: "/lab/covers/conectar-revit-2027-cursor-grid.webp",
 };
 
 beforeEach(() => {

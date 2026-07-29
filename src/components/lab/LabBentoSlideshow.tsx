@@ -66,7 +66,7 @@ function LabBentoSlideshowInner({
   const fullHomeCount = 1 + LAB_BENTO_CAPACITY[breakpoint].firstContent;
   const fullMoreCount = LAB_BENTO_CAPACITY[breakpoint].moreSize;
   const [page, setPage] = useState(0);
-  const [navOpen, setNavOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(true);
   const safePage = Math.min(page, Math.max(0, totalPages - 1));
   const navOpenVisible = compactNav && navOpen;
 

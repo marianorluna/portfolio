@@ -27,7 +27,7 @@ El formato de página **no es único** para todo el Lab: lo elige `type`.
 
 | `type` | Shell actual |
 |--------|----------------|
-| `tutorial` / `guia` | Shell tutorial (hero, TOC, kit interactivo) |
+| `tutorial` | Shell tutorial (hero, TOC, kit interactivo) |
 | `dashboard` / `infografia` / `checklist` | Article mínimo (shell propio pendiente) |
 | `nota` | Article plano (blog corto) |
 
@@ -73,12 +73,14 @@ Reglas:
 ---
 title: "Título claro y accionable"
 description: "Una frase que diga qué aprenderá el lector."
-type: tutorial   # tutorial | guia | checklist | infografia | dashboard | nota
+type: tutorial   # tutorial | checklist | infografia | dashboard | nota
 slug: mi-entrada-kebab-case
 level: intro     # intro | intermedio
 tags: ["Revit", "IA"]
-coverImage: "/lab/covers/mi-entrada.webp"
-# coverAlt: "Descripción breve de la portada"
+coverImage: "/lab/covers/mi-entrada-grid.webp"
+# coverAlt: "Descripción breve de la card"
+heroImage: "/lab/covers/mi-entrada-portada.webp"
+# heroAlt: "Descripción breve del hero"
 # size: lg   # sm | md | lg | wide (default: md)
 # draft: true
 ---
@@ -86,7 +88,19 @@ coverImage: "/lab/covers/mi-entrada.webp"
 
 Las fechas **no** van en el frontmatter: viven en `index.json`.
 
-La portada debe vivir en `public/lab/covers/` (WebP preferible). El índice del Lab es un **bento** image-first: sin `coverImage` el schema falla.
+## Imágenes (2 por entrada)
+
+Viven en `public/lab/covers/` como **WebP**. Convención de nombres:
+
+| Sufijo | Frontmatter | Ratio | Uso |
+|--------|-------------|-------|-----|
+| `{slug}-portada.webp` | `heroImage` | **16:9** (~1920×1080) | Hero de la entrada **y** card del bento en celdas anchas |
+| `{slug}-grid.webp` | `coverImage` | **1:1** (~1600×1600 o 2048×2048) | Card del bento en celdas ~cuadradas; safe zone centrada |
+
+- `coverImage` (**obligatorio**): sin ella el schema falla. Siempre el asset `-grid`.
+- `heroImage` (recomendado): portada del hero. Si falta, el hero queda sin imagen y el bento usa solo `-grid`.
+- **Selección inteligente en el bento:** si hay `heroImage`, la card muestra `-grid` cuando el aspect ratio de la celda es &lt; 4/3 (1 columna / fill compacto) y `-portada` cuando es ≥ 4/3 (span 2 columnas, filtro con pocas cards, filas a ancho completo en móvil).
+- Sujeto y safe zone **centrados**: el bento hace `object-fit: cover` y recorta bordes según la celda.
 
 ## Componentes MDX (kit opcional)
 

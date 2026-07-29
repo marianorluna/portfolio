@@ -20,7 +20,7 @@ type PageProps = {
   params: Promise<{ locale: string; slug: string }>;
 };
 
-const TUTORIAL_TYPES = new Set(["tutorial", "guia"]);
+const TUTORIAL_TYPES = new Set(["tutorial"]);
 
 export async function generateStaticParams(): Promise<Array<{ locale: Locale; slug: string }>> {
   const perLocale = await Promise.all(
@@ -73,7 +73,7 @@ export default async function LabEntryPage({ params }: PageProps) {
 
   const labJsonLd = {
     "@context": "https://schema.org",
-    "@type": frontmatter.type === "tutorial" || frontmatter.type === "guia" ? "TechArticle" : "Article",
+    "@type": frontmatter.type === "tutorial" ? "TechArticle" : "Article",
     headline: frontmatter.title,
     description: frontmatter.description,
     datePublished: labMonthToDate(createdAt).toISOString(),
@@ -118,6 +118,7 @@ export default async function LabEntryPage({ params }: PageProps) {
         meta={meta}
         tocItems={isTutorialShell ? copy.tutorialToc : undefined}
         tocAriaLabel={copy.tocAriaLabel}
+        heroImage={frontmatter.heroImage}
         settingsLabel={data.nav.uiText.settingsLabel}
         menuOpenLabel={copy.menuOpenLabel}
         menuCloseLabel={copy.menuCloseLabel}

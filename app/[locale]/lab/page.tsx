@@ -95,6 +95,7 @@ export default async function LabIndexPage({ params, searchParams }: PageProps) 
               tags={resource.tags}
               coverImage={resource.coverImage}
               coverAlt={resource.coverAlt ?? resource.title}
+              wideCoverImage={resource.heroImage}
               size={resource.size ?? "md"}
               openCtaLabel={copy.openCtaLabel}
               dateLabel={isLabUpdated(resource) ? copy.updatedLabel : copy.publishedLabel}
@@ -112,7 +113,6 @@ export default async function LabIndexPage({ params, searchParams }: PageProps) 
             typeLabel={copy.typeLabel[item.type]}
             tags={item.tags}
             size={item.size}
-            tone={item.tone}
             comingSoonLabel={copy.comingSoonLabel}
             enterDelayMs={100 + (visibleResources.length + index) * 40}
           />

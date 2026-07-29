@@ -17,10 +17,9 @@ describe("lab dates helpers", () => {
     expect(isLabUpdated({ createdAt: "2026-07", updatedAt: "2026-07" })).toBe(false);
   });
 
-  it("formatea mes y año sin día", () => {
-    expect(formatLabMonthYear("2026-07", "es")).toMatch(/2026/);
-    expect(formatLabMonthYear("2026-07", "es").toLowerCase()).toContain("jul");
-    expect(formatLabMonthYear("2026-07", "en")).toMatch(/2026/);
+  it("formatea mes y año sin día, mes en mayúsculas", () => {
+    expect(formatLabMonthYear("2026-07", "es")).toBe("JUL 2026");
+    expect(formatLabMonthYear("2026-07", "en")).toBe("JUL 2026");
   });
 
   it("convierte YYYY-MM a Date UTC día 1", () => {

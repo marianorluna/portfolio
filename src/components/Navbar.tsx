@@ -247,7 +247,9 @@ export function Navbar({
           >
             <p className="nav-rail__flyout-kicker">{uiText.sectionKicker}</p>
             <h2 className="nav-rail__flyout-title">{openLink.label}</h2>
-            <p className="nav-rail__flyout-desc">{openLink.description}</p>
+            <p className="nav-rail__flyout-desc">
+              {openLink.id === "lab" ? labCopy.indexDescription : openLink.description}
+            </p>
             {openLink.id === "proyectos" && (
               <div className="nav-projects">
                 {projects.categories.map(category => (

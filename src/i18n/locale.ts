@@ -1,4 +1,5 @@
 import type { Locale, PortfolioData } from "@/types/portfolio";
+import type { LabUiCopy } from "@/types/lab";
 import dataEsRaw from "@/data/data-es.json";
 import dataEnRaw from "@/data/data-en.json";
 
@@ -16,6 +17,11 @@ export function isLocale(value: string): value is Locale {
 
 export function getPortfolioDataByLocale(locale: Locale): PortfolioData {
   return dataByLocale[locale];
+}
+
+/** Chrome UI del Lab desde `data-*.json` → `lab.ui`. */
+export function getLabCopy(locale: Locale): LabUiCopy {
+  return getPortfolioDataByLocale(locale).lab.ui;
 }
 
 export const SITE_LOCALE_HEADER = "x-site-locale";

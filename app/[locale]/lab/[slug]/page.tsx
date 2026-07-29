@@ -3,8 +3,7 @@ import type { Metadata } from "next";
 import { LabPageLayout } from "@/components/lab/LabPageLayout";
 import { ServerInsertedScripts } from "@/components/seo/ServerInsertedScripts";
 import { buildLabEntryMetadata, SITE_URL } from "@/config/site-seo";
-import { getPortfolioDataByLocale, isLocale, LOCALES } from "@/i18n/locale";
-import { getLabCopy } from "@/i18n/lab-copy";
+import { getLabCopy, getPortfolioDataByLocale, isLocale, LOCALES } from "@/i18n/locale";
 import {
   formatLabMonthYear,
   getLabEffectiveDate,
@@ -22,19 +21,6 @@ type PageProps = {
 };
 
 const TUTORIAL_TYPES = new Set(["tutorial", "guia"]);
-
-const TOC_BY_LOCALE: Record<Locale, Array<{ id: string; label: string }>> = {
-  es: [
-    { id: "requisitos", label: "Requisitos" },
-    { id: "tutorial", label: "Guía paso a paso" },
-    { id: "casos-uso", label: "Casos de uso" },
-  ],
-  en: [
-    { id: "requisitos", label: "Prerequisites" },
-    { id: "tutorial", label: "Step-by-step" },
-    { id: "casos-uso", label: "Use cases" },
-  ],
-};
 
 export async function generateStaticParams(): Promise<Array<{ locale: Locale; slug: string }>> {
   const perLocale = await Promise.all(
@@ -130,7 +116,7 @@ export default async function LabEntryPage({ params }: PageProps) {
         backToLabLabel={copy.backToLabLabel}
         variant={isTutorialShell ? "tutorial" : "article"}
         meta={meta}
-        tocItems={isTutorialShell ? TOC_BY_LOCALE[locale] : undefined}
+        tocItems={isTutorialShell ? copy.tutorialToc : undefined}
         tocAriaLabel={copy.tocAriaLabel}
         settingsLabel={data.nav.uiText.settingsLabel}
         menuOpenLabel={copy.menuOpenLabel}

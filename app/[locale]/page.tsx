@@ -4,8 +4,7 @@ import { LoadingScreenShell } from "@/components/LoadingScreenShell";
 import { PortfolioSceneClient } from "@/components/PortfolioSceneClient";
 import { ServerInsertedScripts } from "@/components/seo/ServerInsertedScripts";
 import { buildHomeMetadata, OG_IMAGE_PATH, SITE_URL } from "@/config/site-seo";
-import { getPortfolioDataByLocale, isLocale, LOCALES } from "@/i18n/locale";
-import { getLabCopy } from "@/i18n/lab-copy";
+import { getLabCopy, getPortfolioDataByLocale, isLocale, LOCALES } from "@/i18n/locale";
 import { getLabIndexForNav } from "@/lib/lab";
 import type { Locale } from "@/types/portfolio";
 

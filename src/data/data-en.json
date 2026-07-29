@@ -26,13 +26,12 @@
       {
         "id": "formacion",
         "label": "Education",
-        "description": "Academic background, certifications, and continuous learning applied to BIM and development.",
+        "description": "Academic background, certifications, and continuous learning applied to Architecture, BIM and development.",
         "icon": "layers"
       },
       {
         "id": "lab",
         "label": "Lab",
-        "description": "Practical tutorials, guides, checklists, and infographics on BIM, AI, and development.",
         "icon": "flask"
       },
       {
@@ -528,6 +527,50 @@
             ]
           }
         ]
+      }
+    }
+  },
+  "lab": {
+    "ui": {
+      "flyoutCtaLabel": "Open the Lab",
+      "flyoutEmptyMessage": "No entries published yet. Check back soon.",
+      "indexKicker": "Lab",
+      "indexTitle": "Lab",
+      "indexDescription": "A lab for ideas and practice with tutorials, guides, checklists, and infographics on Architecture, BIM, AI, and development, designed to experiment, stay informed, and learn.",
+      "indexEmptyMessage": "No entries published yet in this language. Check back soon.",
+      "filterAllLabel": "All",
+      "publishedLabel": "Published",
+      "updatedLabel": "Updated",
+      "backToLabLabel": "Back to Lab",
+      "tocAriaLabel": "Tutorial sections",
+      "tutorialToc": [
+        { "id": "requisitos", "label": "Prerequisites" },
+        { "id": "tutorial", "label": "Step-by-step" },
+        { "id": "casos-uso", "label": "Use cases" }
+      ],
+      "openCtaLabel": "Open",
+      "comingSoonLabel": "Coming soon",
+      "nextPageLabel": "Next",
+      "prevPageLabel": "Previous",
+      "pagesNavOpenLabel": "Show pages",
+      "pagesNavCloseLabel": "Hide pages",
+      "filterEmptyMessage": "No results for this filter.",
+      "settingsCloseLabel": "Close settings",
+      "menuOpenLabel": "Open menu",
+      "menuCloseLabel": "Close menu",
+      "menuKicker": "Section",
+      "menuTitle": "Menu",
+      "typeLabel": {
+        "tutorial": "Tutorial",
+        "guia": "Guide",
+        "checklist": "Checklist",
+        "infografia": "Infographic",
+        "dashboard": "Dashboard",
+        "nota": "Note"
+      },
+      "levelLabel": {
+        "intro": "Introductory level",
+        "intermedio": "Intermediate level"
       }
     }
   },

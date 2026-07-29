@@ -68,9 +68,14 @@ export type LabResource = {
   content: ReactNode;
 };
 
-/** Copy localizado del chrome del Lab (rail, índice, entrada). No vive en `data-*.json`. */
+/** Tab del shell tutorial/guía (id debe coincidir con `<Section id="...">` en MDX). */
+export type LabTocItem = {
+  id: string;
+  label: string;
+};
+
+/** Copy localizado del chrome del Lab (flyout 3D, índice, entrada). Vive en `data-*.json` → `lab.ui`. */
 export type LabUiCopy = {
-  navKicker: string;
   flyoutCtaLabel: string;
   flyoutEmptyMessage: string;
   indexKicker: string;
@@ -85,6 +90,8 @@ export type LabUiCopy = {
   backToLabLabel: string;
   /** Aria-label del TOC sticky del shell tutorial. */
   tocAriaLabel: string;
+  /** Tabs del shell tutorial/guía (ids deben coincidir con `<Section id="...">` en MDX). */
+  tutorialToc: LabTocItem[];
   /** CTA tras revelar la card en touch (móvil/tablet). */
   openCtaLabel: string;
   comingSoonLabel: string;

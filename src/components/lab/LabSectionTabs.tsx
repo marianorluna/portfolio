@@ -9,11 +9,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import type { LabTocItem } from "@/types/lab";
 
-export type LabTocItem = {
-  id: string;
-  label: string;
-};
+export type { LabTocItem };
 
 type LabSectionTabsContextValue = {
   activeId: string;

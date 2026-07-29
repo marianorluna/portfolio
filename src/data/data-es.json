@@ -32,7 +32,6 @@
       {
         "id": "lab",
         "label": "Lab",
-        "description": "Tutoriales, guías, checklists e infografías prácticas sobre BIM, IA y desarrollo.",
         "icon": "flask"
       },
       {
@@ -528,6 +527,50 @@
             ]
           }
         ]
+      }
+    }
+  },
+  "lab": {
+    "ui": {
+      "flyoutCtaLabel": "Abrir el Lab",
+      "flyoutEmptyMessage": "Aún no hay entradas publicadas. Vuelve pronto.",
+      "indexKicker": "Lab",
+      "indexTitle": "Lab",
+      "indexDescription": "Un laboratorio de ideas y práctica con tutoriales, guías, checklists e infografías sobre Arquitectura, BIM, IA y desarrollo, pensados para experimentar, informarse y aprender.",
+      "indexEmptyMessage": "Aún no hay entradas publicadas en este idioma. Vuelve pronto.",
+      "filterAllLabel": "Todos",
+      "publishedLabel": "Publicado",
+      "updatedLabel": "Actualizado",
+      "backToLabLabel": "Volver al Lab",
+      "tocAriaLabel": "Secciones del tutorial",
+      "tutorialToc": [
+        { "id": "requisitos", "label": "Requisitos" },
+        { "id": "tutorial", "label": "Guía paso a paso" },
+        { "id": "casos-uso", "label": "Casos de uso" }
+      ],
+      "openCtaLabel": "Abrir",
+      "comingSoonLabel": "Próximamente",
+      "nextPageLabel": "Siguiente",
+      "prevPageLabel": "Anterior",
+      "pagesNavOpenLabel": "Mostrar páginas",
+      "pagesNavCloseLabel": "Ocultar páginas",
+      "filterEmptyMessage": "No hay resultados para este filtro.",
+      "settingsCloseLabel": "Cerrar configuración",
+      "menuOpenLabel": "Abrir menú",
+      "menuCloseLabel": "Cerrar menú",
+      "menuKicker": "Sección",
+      "menuTitle": "Menú",
+      "typeLabel": {
+        "tutorial": "Tutorial",
+        "guia": "Guía",
+        "checklist": "Checklist",
+        "infografia": "Infografía",
+        "dashboard": "Dashboard",
+        "nota": "Nota"
+      },
+      "levelLabel": {
+        "intro": "Nivel introductorio",
+        "intermedio": "Nivel intermedio"
       }
     }
   },

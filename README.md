@@ -52,7 +52,7 @@ Este repositorio implementa un portfolio personal con foco en:
 |  |- lib/lab/                    # Loader MDX, schema Zod, índice para el rail
 |  |- lib/legal/                  # Consentimiento y soporte legal
 |  |- data/                       # Contenido traducido (data-es.json, data-en.json)
-|  |- i18n/                       # Locale, Lab copy, segmentos de URL
+|  |- i18n/                       # Locale, segmentos de URL (sin copy)
 |  |- utils/                      # Escena 3D, hotspots, helpers de proyecto
 |  |- types/                      # Tipos compartidos (portfolio + lab)
 |- public/                        # Assets estáticos (incl. og-social-preview.png)
@@ -133,6 +133,8 @@ Si falta alguna variable crítica, el endpoint responde con error de configuraci
 ## Lab (recursos MDX)
 
 El Lab no es un blog clásico: es un hub de piezas útiles tipadas (`tutorial`, `guia`, `checklist`, `infografia`, `dashboard`, `nota`). Las notas cubren el rol de “blog” sin una sección aparte.
+
+**Copy e i18n:** la UI del Lab (flyout, índice, filtros, labels) vive en `src/data/data-{es,en}.json` → `lab.ui`; el contenido editorial en `content/lab/`; `src/i18n/` solo resuelve locale y segmentos de URL.
 
 ### Acceso desde la UI 3D
 

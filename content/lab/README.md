@@ -105,6 +105,18 @@ Iconos `ReqCard` / `ToolCard`: `python`, `cuboid`, `search`, `boxes`, `palette`,
 
 No uses HTML suelto en `/public` para piezas del Lab: la fuente de verdad es este MDX.
 
+## Copy e i18n
+
+Dos capas de contenido + infra de locale:
+
+| Capa | Ubicación | Qué contiene |
+|------|-----------|--------------|
+| UI del Lab (+ resto del sitio) | `src/data/data-{es,en}.json` → `lab.ui` | Flyout del portfolio 3D, índice, filtros, labels, TOC del shell tutorial |
+| Contenido editorial | `content/lab/{locale}/*.mdx` + `index.json` | Títulos, descripciones y cuerpo de cada entrada |
+| Locale / URLs | `src/i18n/` | Resolución de idioma y segmentos de ruta (no copy) |
+
+Cualquier texto nuevo de la UI del Lab (CTAs, filtros, mensajes vacíos, tabs del shell) va en `lab.ui` de los JSON del portfolio. El rail solo guarda datos estructurales del botón (`id`, `label`, `icon`).
+
 ## Relación con el portfolio 3D
 
-El botón **Lab** del rail (entre Formación y Contacto) abre un flyout con las entradas más recientes y un CTA “Abrir el Lab”. Las páginas `/lab` viven fuera de la escena 3D (mismo enfoque que las páginas legales).
+El botón **Lab** del rail (entre Formación y Contacto) abre un flyout con las entradas más recientes y un CTA “Abrir el Lab”. La descripción del flyout y del índice provienen de `lab.ui.indexDescription` en los JSON. Las páginas `/lab` viven fuera de la escena 3D (mismo enfoque que las páginas legales).

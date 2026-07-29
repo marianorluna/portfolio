@@ -1,3 +1,5 @@
+import type { LabUiCopy } from "./lab";
+
 export type NavIconName = "folder" | "layers" | "flask" | "calendar" | "mail";
 export type DeviceMode = "mobile" | "tablet" | "desktop";
 export type TextSizeLevel = -2 | -1 | 0 | 1 | 2;
@@ -26,8 +28,9 @@ export type NavBrand = {
 export type NavLink = {
   id: string;
   label: string;
-  description: string;
   icon: NavIconName;
+  /** Prosa del flyout. Omitir en secciones cuyo copy vive en otro bloque (p. ej. lab → lab.ui). */
+  description?: string;
 };
 
 export type NavUiText = {
@@ -298,5 +301,9 @@ export type PortfolioData = {
     }[];
   };
   legal: LegalCopy;
+  /** Chrome UI del Lab (flyout, índice, entrada). Contenido editorial en content/lab/. */
+  lab: {
+    ui: LabUiCopy;
+  };
   notFound: NotFoundCopy;
 };

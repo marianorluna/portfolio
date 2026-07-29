@@ -7,8 +7,7 @@ import { LabPageLayout } from "@/components/lab/LabPageLayout";
 import { LabPlaceholderCard } from "@/components/lab/LabPlaceholderCard";
 import { LabResourceCard } from "@/components/lab/LabResourceCard";
 import { buildLabIndexMetadata } from "@/config/site-seo";
-import { getPortfolioDataByLocale, isLocale, LOCALES } from "@/i18n/locale";
-import { getLabCopy } from "@/i18n/lab-copy";
+import { getLabCopy, getPortfolioDataByLocale, isLocale, LOCALES } from "@/i18n/locale";
 import {
   formatLabMonthYear,
   getLabEffectiveDate,

@@ -19,8 +19,8 @@ export function isLabUpdated(entry: {
 }
 
 /**
- * Formatea `YYYY-MM` como mes + año localizado (p. ej. `jul 2026` / `Jul 2026`).
- * Sin día ni hora.
+ * Formatea `YYYY-MM` como mes + año localizado (p. ej. `JUL 2026`).
+ * Sin día ni hora; el mes va en mayúsculas.
  */
 export function formatLabMonthYear(yyyyMm: string, locale: Locale): string {
   const match = YEAR_MONTH_PATTERN.exec(yyyyMm);
@@ -32,7 +32,9 @@ export function formatLabMonthYear(yyyyMm: string, locale: Locale): string {
   return new Intl.DateTimeFormat(locale === "es" ? "es-ES" : "en-US", {
     month: "short",
     year: "numeric",
-  }).format(date);
+  })
+    .format(date)
+    .toUpperCase();
 }
 
 /** Convierte `YYYY-MM` a `Date` (día 1 UTC) para sitemap / JSON-LD. */

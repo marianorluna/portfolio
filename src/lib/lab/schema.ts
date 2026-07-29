@@ -14,6 +14,8 @@ export const labFrontmatterSchema = z.object({
   type: z.enum(LAB_RESOURCE_TYPES),
   slug: z.string().regex(SLUG_PATTERN, "slug debe ser kebab-case (ej. mi-entrada)"),
   level: z.enum(LAB_RESOURCE_LEVELS),
+  /** Minutos estimados con requisitos ya instalados (opcional; p. ej. 20). */
+  durationMinutes: z.number().int().positive().optional(),
   tags: z.array(z.string().min(1)).min(1, "tags debe tener al menos un elemento"),
   coverImage: z
     .string()

@@ -1,10 +1,11 @@
 ---
-title: "Connect Revit 2027 to Cursor AI with MCP"
-description: "Bring AI into your BIM models with pyRevit and MCP: install, connect, and automate queries in Revit straight from the Cursor chat."
+title: "Connect Revit to AI for free: Cursor, pyRevit & MCP in minutes"
+description: "Free tutorial: Python, pyRevit, Cursor & MCP to talk to Revit in minutes. Not hard, and you don’t need Claude—free tools (Revit on trial) and basic skills get you there."
 type: tutorial
 slug: conectar-revit-2027-cursor
 level: intro
-tags: ["Revit", "Cursor", "AI", "MCP", "pyRevit"]
+durationMinutes: 20
+tags: ["Revit", "Cursor", "AI", "MCP", "pyRevit", "Free"]
 coverImage: "/lab/covers/conectar-revit-2027-cursor-grid.webp"
 coverAlt: "BIM wireframe linked to AI nodes"
 heroImage: "/lab/covers/conectar-revit-2027-cursor-portada.webp"
@@ -14,19 +15,35 @@ size: lg
 
 <Section id="requisitos">
 
-Discover how to transform your BIM workflow by bringing artificial intelligence directly into your models. Using the **MCP** (Model Context Protocol), **pyRevit**, and **Cursor**, you can talk to your model, audit parameters, automate modeling, and write scripts on the fly without leaving the chat.
+<IntroCard icon="book" title="Introduction">
 
-This guide walks you through everything from installation to running your first AI prompt interacting with Revit in real time. It's written for people who aren't used to these tools: every step explains what to do and why.
+Many posts frame linking AI to Revit as a long, expensive process—or as something “only Claude can do.” **That isn’t true.** This lab shows that with **free** tools—Python, pyRevit, Cursor (Hobby or trial), and free or local AI models—and Revit on a **trial** if you don’t have a license yet, you can **talk to your model in a few minutes**.
 
-## Prerequisites
+Using the **MCP** (Model Context Protocol), **pyRevit**, and **Cursor**, you combine those pieces to chat with the model, audit parameters, automate modeling, and write scripts on the fly without leaving the chat. You don’t need to be an expert: basic knowledge plus this step-by-step guide is enough.
 
-Before you start, make sure you have this ready:
+If you already have the prerequisites installed (Python, Revit 2027, and Cursor), the step-by-step guide usually takes **about 20 minutes** to your first prompt. If tools are still missing, budget extra time for downloads and installs.
+
+This guide takes you from install to your first AI prompt interacting with Revit in real time. Every step explains what to do and why.
+
+</IntroCard>
 
 <CardGrid variant="req">
 
 <ReqCard icon="python" title="Python installed">
 
-You need a global Python install. MCP uses it as an intermediary server. Once installed, open your terminal (CMD or PowerShell) and install the base libraries:
+You need **Python 3.12** installed globally on Windows: MCP uses it as an intermediary server. This tutorial was developed with version **3.12.7**.
+
+1. Download the installer from [python.org/downloads](https://www.python.org/downloads/) (choose the 3.12 series).
+2. In the setup wizard, check **Add python.exe to PATH** before installing.
+3. Close and reopen the terminal (CMD or PowerShell) and verify:
+
+```bash
+python --version
+```
+
+You should see something like `Python 3.12.x`. If the command is not recognized, try `py --version`.
+
+4. Install the base libraries:
 
 ```bash
 pip install mcp httpx
@@ -34,9 +51,37 @@ pip install mcp httpx
 
 </ReqCard>
 
-<ReqCard icon="cuboid" title="Revit 2027">
+<ReqCard icon="cuboid" title="Revit 2027 installed">
 
-Version 2027 installed. During testing you must not be on the Home screen: the MCP server needs an open project or family.
+Works only with **Revit 2027** on **Windows**. Revit has no native Mac version (you would need a Windows virtual machine, which is out of scope for this guide). If you don’t have a paid license, Autodesk’s **trial period** is enough to follow the whole tutorial.
+
+1. Confirm you have **Revit 2027** installed (not 2025 or 2026).
+2. Work on a **Windows** PC with a valid license or **trial**.
+3. Open a **project or family** — do not leave Revit on the Home screen.
+4. Keep that document open while you follow the guide: the MCP server needs it active.
+
+</ReqCard>
+
+<ReqCard icon="sparkles" title="Cursor installed">
+
+You need the [Cursor](https://cursor.com/download) editor. Cursor is no longer “free with no limits” like in the early days, but **you can follow this tutorial without paying**.
+
+1. Download it from [cursor.com/download](https://cursor.com/download) and install it on Windows.
+2. Create an account (**Hobby** does not require a card).
+3. In step 5 you will connect it to Revit via MCP.
+
+**Plans and cost**
+
+- **Hobby (free):** low monthly Agent and Tab quotas. Enough to try things and finish this guide with light use; it runs out quickly with all-day use.
+- **Pro trial:** new accounts often get **7–14 days** of Pro features.
+- **Pro ($20/mo):** a strong option for daily use — unlimited Tab, generous Auto Mode (Cursor picks the model), and ~$20/mo in credits for frontier models (Claude, GPT, etc.).
+- **Without Pro:** your own API key (BYOK) from OpenAI, Anthropic, DeepSeek, or OpenRouter — pay only API usage — or a local model with **Ollama / LM Studio** (free and unlimited; performance depends on your PC/GPU).
+
+On Pro, **Auto Mode** does not burn your credit pool at frontier-model rates when you pick models by hand: those credits are used when you select a specific model or turn on Max Mode. Official details: [cursor.com/pricing](https://cursor.com/pricing).
+
+<Callout variant="tip">
+Hobby or the Pro trial is enough for this guide. If you hit the quota mid-month, switch to Auto Mode, wait for the cycle reset, or use BYOK / Ollama.
+</Callout>
 
 </ReqCard>
 
@@ -46,11 +91,17 @@ Version 2027 installed. During testing you must not be on the Home screen: the M
 
 <Section id="tutorial">
 
-## Step-by-step guide
+<Step number={1} title="Install pyRevit">
 
-<Step number={1} title="Install pyRevit" defaultOpen>
+Download the pyRevit installer from its official GitHub repository: [github.com/pyrevitlabs/pyRevit](https://github.com/pyrevitlabs/pyRevit). Go to the **Releases** section, open the latest version, and download the **Admin / All Users** installer.
 
-Download the pyRevit installer from its official GitHub repository. The first time you open Revit after installing it, make sure to tell it to **always load** this add-in.
+<Figure
+  src="/lab/screenshots/conectar-revit-2027-cursor/01-pyrevit-github-releases.webp"
+  alt="pyRevit GitHub Releases page with the Admin / All Users installer highlighted"
+  caption="In Releases, download the Admin / All Users / %PROGRAMDATA% installer."
+/>
+
+The first time you open Revit after installing it, make sure to tell it to **always load** this add-in.
 
 <Callout variant="tip">
 Use the "Admin / All Users" installer to avoid permission issues.
@@ -62,16 +113,44 @@ Use the "Admin / All Users" installer to avoid permission issues.
 
 Go to the **pyRevit** tab → **Settings**.
 
+<Figure
+  src="/lab/screenshots/conectar-revit-2027-cursor/02-pyrevit-settings.webp"
+  alt="pyRevit ribbon in Revit with the pyRevit tab and Settings button highlighted"
+  caption="pyRevit tab → Settings (gear icon)."
+/>
+
 - In the left panel, look for **Routes**.
-- Turn on the **Enable Routes Server (Beta)** switch.
+- Turn on the **Routes Server (Beta)** switch.
 - Check the **pyrevit-core/** box.
 - Click **Save Settings and Reload** to apply the changes.
+
+Your panel should look similar to this:
+
+<Figure
+  src="/lab/screenshots/conectar-revit-2027-cursor/03-pyrevit-routes.webp"
+  alt="pyRevit Settings with Routes Server enabled and pyrevit-core checked"
+  caption="Routes Server (Beta) on and pyrevit-core/ checked."
+/>
 
 </Step>
 
 <Step number={3} title="Install the MCP extension">
 
-Go to **pyRevit → Extensions**. Find and install the extension named `mcp-server-for-revit-python`. After installing, reload Revit or pyRevit again.
+Go to the **pyRevit** tab → **Extensions**.
+
+<Figure
+  src="/lab/screenshots/conectar-revit-2027-cursor/04-pyrevit-extensions.webp"
+  alt="pyRevit ribbon in Revit with the pyRevit tab and Extensions button highlighted"
+  caption="pyRevit tab → Extensions (gear icon)."
+/>
+
+Find and install the extension named `mcp-server-for-revit-python`. After installing, check that its status is **Enabled**, then reload Revit or pyRevit again.
+
+<Figure
+  src="/lab/screenshots/conectar-revit-2027-cursor/05-pyrevit-extensions-mcp.webp"
+  alt="pyRevit Extensions manager showing mcp-server-for-revit-python installed and Enabled"
+  caption="mcp-server-for-revit-python extension installed and Enabled."
+/>
 
 </Step>
 
@@ -91,17 +170,32 @@ If everything is correct you should see a JSON response like this:
 
 ```json
 {
-  "status": "healthy",
+  "revit_available": true,
+  "health": "healthy",
   "api_name": "revit_mcp",
-  "revit_available": true
+  "status": "active"
 }
 ```
+
+<Figure
+  src="/lab/screenshots/conectar-revit-2027-cursor/06-localhost-status-healthy.webp"
+  alt="Browser showing healthy JSON at localhost:48884/revit_mcp/status"
+  caption="healthy response: Revit is available to the MCP server."
+/>
 
 </Step>
 
 <Step number={5} title="Configure Cursor">
 
-Download Cursor from its official site if you do not have it yet. In Cursor, open **Settings → Features → MCP** and click **+ Add New MCP Server**. Configure it as "command" with the following JSON (replace `your_user` with your real Windows username):
+If you do not have Cursor yet, download it from [cursor.com/download](https://cursor.com/download). In Cursor, open **Settings → Tools & MCPs** and click **+ New MCP Server**.
+
+<Figure
+  src="/lab/screenshots/conectar-revit-2027-cursor/07-cursor-mcp-settings.webp"
+  alt="Cursor Settings Tools & MCPs with mcp-server-for-revit-python and New MCP Server"
+  caption="Add a new MCP server from Settings → Tools & MCPs."
+/>
+
+Configure it as "command" with the following JSON (replace `your_user` with your real Windows username):
 
 ```json
 {
@@ -114,19 +208,27 @@ Download Cursor from its official site if you do not have it yet. In Cursor, ope
 }
 ```
 
+The path in `args` is the default extension install location. If you installed the plugin somewhere else, point `args` to that `main.py`. On Windows, use **double backslashes** (`\\`) in the JSON path; otherwise Cursor will not find the file.
+
 Check that a **green dot** appears next to the server name: that means Cursor completed the handshake with pyRevit.
 
 </Step>
 
 <Step number={6} title="First test!">
 
-Open the Cursor chat and send this prompt to verify the connection:
+Open the Cursor chat in **Agent** mode with the **Auto** model and send this prompt to verify the connection:
 
 <PromptExample label="Example prompt">
-"Check the status of Revit 2027 and tell me the name of the active document and its project unit."
+"Check the status of Revit 2027 and tell me the name of the active document and the name of the active view."
 </PromptExample>
 
-You will see Cursor automatically invoke the `get_revit_status` tool, pull information from your model, and write it back in natural language.
+You will see Cursor automatically invoke the `get_revit_status` tool, pull information from your model, and write it back in natural language. **Auto** is enough for this test; you can also pick stronger paid models or free local models with **Ollama / LM Studio**, as noted under [Prerequisites](#requisitos).
+
+<Figure
+  src="/lab/screenshots/conectar-revit-2027-cursor/09-cursor-chat-get-status.webp"
+  alt="Cursor query in Agent mode with Auto model: prompt about active document and view, Revit MCP, and agent reply"
+  caption="Example in Cursor with Agent + Auto: the agent queries Revit and replies with the active document and view."
+/>
 
 </Step>
 
@@ -134,9 +236,13 @@ You will see Cursor automatically invoke the `get_revit_status` tool, pull infor
 
 <Section id="casos-uso">
 
-## Use cases and tools
+<IntroCard icon="boxes" title="Use cases and tools">
 
 The MCP server exposes around 20 tools that Cursor's AI can use on its own based on what you ask.
+
+The prompts in this section are **illustrative**: they are examples and starting points. Results depend on the AI model you use and on what is in the Revit model (`.rvt` / `.rfa`) you are working in; adapt them, explore variations, and try what works in your own setup.
+
+</IntroCard>
 
 <CardGrid variant="tool">
 

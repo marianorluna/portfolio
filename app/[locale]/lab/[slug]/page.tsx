@@ -1,10 +1,12 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { LabPageLayout } from "@/components/lab/LabPageLayout";
+import { LabTutorialContactNote } from "@/components/lab/LabTutorialContactNote";
 import { ServerInsertedScripts } from "@/components/seo/ServerInsertedScripts";
 import { buildLabEntryMetadata, SITE_URL } from "@/config/site-seo";
 import { getLabCopy, getPortfolioDataByLocale, isLocale, LOCALES } from "@/i18n/locale";
 import {
+  formatLabDurationReady,
   formatLabMonthYear,
   getLabEffectiveDate,
   getLabResource,
@@ -91,6 +93,11 @@ export default async function LabEntryPage({ params }: PageProps) {
     <>
       <div className="lab-article__meta">
         <span className="lab-article__level">{copy.levelLabel[frontmatter.level]}</span>
+        {frontmatter.durationMinutes != null && (
+          <span className="lab-article__duration">
+            {formatLabDurationReady(frontmatter.durationMinutes, copy.durationReadyLabel)}
+          </span>
+        )}
         <time className="lab-article__date" dateTime={effective}>
           {dateLabel} {dateText}
         </time>
@@ -104,6 +111,10 @@ export default async function LabEntryPage({ params }: PageProps) {
       )}
     </>
   );
+
+  const contactEmailHref =
+    data.ui.contactSocial.items.find((item) => item.id === "email")?.href ??
+    "mailto:contact@marianorluna.com";
 
   return (
     <>
@@ -119,6 +130,11 @@ export default async function LabEntryPage({ params }: PageProps) {
         tocItems={isTutorialShell ? copy.tutorialToc : undefined}
         tocAriaLabel={copy.tocAriaLabel}
         heroImage={frontmatter.heroImage}
+        heroCredit={
+          frontmatter.heroImage != null && frontmatter.heroImage.length > 0
+            ? copy.aiCoverCredit
+            : undefined
+        }
         settingsLabel={data.nav.uiText.settingsLabel}
         menuOpenLabel={copy.menuOpenLabel}
         menuCloseLabel={copy.menuCloseLabel}
@@ -126,7 +142,18 @@ export default async function LabEntryPage({ params }: PageProps) {
         menuTitle={copy.menuTitle}
         settingsCopy={settingsCopy}
       >
-        <div className="lab-article">{resource.content}</div>
+        <div className="lab-article">
+          {resource.content}
+          {isTutorialShell && (
+            <LabTutorialContactNote
+              locale={locale}
+              lead={copy.tutorialContactLead}
+              formLabel={copy.tutorialContactFormLabel}
+              orLabel={copy.tutorialContactOr}
+              emailHref={contactEmailHref}
+            />
+          )}
+        </div>
       </LabPageLayout>
       <ServerInsertedScripts
         scripts={[

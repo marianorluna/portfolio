@@ -29,6 +29,11 @@ export type LabFrontmatter = {
   /** Debe coincidir con el nombre de archivo (sin extensión). */
   slug: string;
   level: LabResourceLevel;
+  /**
+   * Duración estimada en minutos con requisitos ya instalados.
+   * Se muestra en card/hero con `LabUiCopy.durationReadyLabel`.
+   */
+  durationMinutes?: number;
   tags: string[];
   /** Ruta pública de la card del bento en celdas ~cuadradas (`{slug}-grid.webp`, ~1:1). */
   coverImage: string;
@@ -87,12 +92,18 @@ export type LabUiCopy = {
   indexKicker: string;
   indexTitle: string;
   indexDescription: string;
+  /** Crédito de portadas generadas con IA (índice y hero de entrada). */
+  aiCoverCredit: string;
   indexEmptyMessage: string;
   filterAllLabel: string;
   /** Label cuando createdAt === updatedAt (p. ej. "Publicado"). */
   publishedLabel: string;
   /** Label cuando updatedAt > createdAt (p. ej. "Actualizado"). */
   updatedLabel: string;
+  /**
+   * Plantilla de duración estimada; usa `{minutes}` (p. ej. "~{minutes} min").
+   */
+  durationReadyLabel: string;
   backToLabLabel: string;
   /** Aria-label del TOC sticky del shell tutorial. */
   tocAriaLabel: string;
@@ -118,6 +129,13 @@ export type LabUiCopy = {
   menuKicker: string;
   /** Título del panel a pantalla completa. */
   menuTitle: string;
+  /**
+   * Pie de feedback en tutoriales: lead + enlace al formulario + “o” + correo.
+   * El email se toma de `ui.contactSocial` (id `email`).
+   */
+  tutorialContactLead: string;
+  tutorialContactFormLabel: string;
+  tutorialContactOr: string;
   typeLabel: Record<LabResourceType, string>;
   levelLabel: Record<LabResourceLevel, string>;
 };

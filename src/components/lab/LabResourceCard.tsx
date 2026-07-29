@@ -29,6 +29,8 @@ type Props = {
   dateLabel?: string;
   dateText?: string;
   dateTime?: string;
+  /** Duración estimada ya formateada (p. ej. "~20 min"). */
+  durationText?: string;
   /** Retraso de entrada staggered (ms). */
   enterDelayMs?: number;
 };
@@ -48,6 +50,7 @@ export function LabResourceCard({
   dateLabel,
   dateText,
   dateTime,
+  durationText,
   enterDelayMs = 0,
 }: Props) {
   const coarse = useCoarsePointer();
@@ -142,6 +145,9 @@ export function LabResourceCard({
           <div className="lab-bento__back-body">
             <div className="lab-bento__meta">
               <span className="lab-bento__badge">{typeLabel}</span>
+              {durationText != null && durationText.length > 0 && (
+                <span className="lab-bento__duration">{durationText}</span>
+              )}
               {dateText != null && (
                 <time className="lab-bento__date" dateTime={dateTime}>
                   {dateLabel != null ? `${dateLabel} ${dateText}` : dateText}

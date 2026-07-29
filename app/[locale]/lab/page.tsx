@@ -9,6 +9,7 @@ import { LabResourceCard } from "@/components/lab/LabResourceCard";
 import { buildLabIndexMetadata } from "@/config/site-seo";
 import { getLabCopy, getPortfolioDataByLocale, isLocale, LOCALES } from "@/i18n/locale";
 import {
+  formatLabDurationReady,
   formatLabMonthYear,
   getLabEffectiveDate,
   getLabPlaceholders,
@@ -101,6 +102,11 @@ export default async function LabIndexPage({ params, searchParams }: PageProps) 
               dateLabel={isLabUpdated(resource) ? copy.updatedLabel : copy.publishedLabel}
               dateText={formatLabMonthYear(effective, locale)}
               dateTime={effective}
+              durationText={
+                resource.durationMinutes != null
+                  ? formatLabDurationReady(resource.durationMinutes, copy.durationReadyLabel)
+                  : undefined
+              }
               enterDelayMs={80 + index * 40}
             />
           );
@@ -136,6 +142,7 @@ export default async function LabIndexPage({ params, searchParams }: PageProps) 
             locale={locale}
             title={copy.indexTitle}
             description={copy.indexDescription}
+            aiCoverCredit={copy.aiCoverCredit}
             filters={filters}
             filtersAriaLabel={copy.filterAllLabel}
             backHref={`/${locale}`}

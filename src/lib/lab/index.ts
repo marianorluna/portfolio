@@ -5,6 +5,7 @@ export {
   isLabUpdated,
   labMonthToDate,
 } from "./dates";
+export { formatLabDurationReady } from "./duration";
 export { getLabPlaceholders } from "./placeholders";
 export {
   getLabBentoPageCount,

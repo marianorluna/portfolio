@@ -1,10 +1,14 @@
+"use client";
+
 import type { LucideIcon } from "lucide-react";
 import {
+  BookOpen,
   Boxes,
   Code2,
   Cuboid,
   Palette,
   Search,
+  Sparkles,
   Terminal,
 } from "lucide-react";
 import type { ReactNode } from "react";
@@ -19,6 +23,8 @@ const LAB_ICONS = {
   boxes: Boxes,
   palette: Palette,
   code: Code2,
+  sparkles: Sparkles,
+  book: BookOpen,
 } as const;
 
 export type LabIconName = keyof typeof LAB_ICONS;
@@ -53,6 +59,22 @@ export function ToolCard({ icon, title, tools, children }: ToolCardProps) {
     <ToolCardView icon={Icon} title={title} tools={tools}>
       {children}
     </ToolCardView>
+  );
+}
+
+type IntroCardProps = {
+  icon?: LabIconName;
+  title: string;
+  children: ReactNode;
+};
+
+/** Card a ancho completo para la intro de una sección (fuera del grid). */
+export function IntroCard({ icon = "book", title, children }: IntroCardProps) {
+  const Icon: LucideIcon | undefined = LAB_ICONS[icon];
+  return (
+    <ReqCardView icon={Icon} title={title} collapsible={false}>
+      {children}
+    </ReqCardView>
   );
 }
 

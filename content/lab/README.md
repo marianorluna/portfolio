@@ -76,6 +76,7 @@ description: "Una frase que diga qué aprenderá el lector."
 type: tutorial   # tutorial | checklist | infografia | dashboard | nota
 slug: mi-entrada-kebab-case
 level: intro     # intro | intermedio
+# durationMinutes: 20   # opcional; minutos con requisitos ya instalados
 tags: ["Revit", "IA"]
 coverImage: "/lab/covers/mi-entrada-grid.webp"
 # coverAlt: "Descripción breve de la card"
@@ -88,7 +89,9 @@ heroImage: "/lab/covers/mi-entrada-portada.webp"
 
 Las fechas **no** van en el frontmatter: viven en `index.json`.
 
-## Imágenes (2 por entrada)
+## Imágenes (2 por entrada + capturas)
+
+### Covers / hero
 
 Viven en `public/lab/covers/` como **WebP**. Convención de nombres:
 
@@ -102,12 +105,28 @@ Viven en `public/lab/covers/` como **WebP**. Convención de nombres:
 - **Selección inteligente en el bento:** si hay `heroImage`, la card muestra `-grid` cuando el aspect ratio de la celda es &lt; 4/3 (1 columna / fill compacto) y `-portada` cuando es ≥ 4/3 (span 2 columnas, filtro con pocas cards, filas a ancho completo en móvil).
 - Sujeto y safe zone **centrados**: el bento hace `object-fit: cover` y recorta bordes según la celda.
 
+### Capturas de pasos (screenshots)
+
+Viven en `public/lab/screenshots/{slug}/` como **WebP**. En el MDX, dentro de cada `<Step>`:
+
+```mdx
+<Figure
+  src="/lab/screenshots/{slug}/03-pyrevit-routes.webp"
+  alt="Descripción accesible"
+  caption="Pie opcional bajo la imagen"
+/>
+```
+
+Orden recomendado: instrucción → `<Figure>` → `Callout` / código. Si el archivo aún no existe, `Figure` muestra un hueco con el nombre esperado.
+
 ## Componentes MDX (kit opcional)
 
 | Componente | Uso |
 |------------|-----|
 | `<Section id="...">` | Panel de contenido de un tab del shell tutorial |
 | `<Step number={1} title="..." defaultOpen>` | Paso numerado con acordeón |
+| `<Figure src="..." alt="..." caption="...">` | Captura de pantalla en un paso |
+| `<IntroCard icon="book" title="...">` | Card a ancho completo (intro de sección) |
 | `<ReqCard icon="python" title="...">` | Card de requisito |
 | `<ToolCard icon="search" title="..." tools={[...]}>` | Card de caso de uso / tools |
 | `<CardGrid variant="req\|tool">` | Grid de cards |
@@ -115,7 +134,7 @@ Viven en `public/lab/covers/` como **WebP**. Convención de nombres:
 | `<PromptExample label="...">` | Prompt con botón Copiar |
 | Fences \`\`\`lang | Bloque de código con botón Copiar |
 
-Iconos `ReqCard` / `ToolCard`: `python`, `cuboid`, `search`, `boxes`, `palette`, `code`.
+Iconos `IntroCard` / `ReqCard` / `ToolCard`: `python`, `cuboid`, `search`, `boxes`, `palette`, `code`, `sparkles`, `book`.
 
 No uses HTML suelto en `/public` para piezas del Lab: la fuente de verdad es este MDX.
 

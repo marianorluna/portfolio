@@ -28,6 +28,8 @@ type Props = {
   tocAriaLabel?: string;
   /** Imagen de portada del hero (solo `tutorial`). */
   heroImage?: string;
+  /** Crédito bajo la portada (p. ej. generada con IA). */
+  heroCredit?: string;
   /** Chrome móvil/tablet: menú + modal de ajustes. */
   settingsLabel?: string;
   menuOpenLabel?: string;
@@ -118,6 +120,7 @@ export function LabPageLayout({
   tocItems,
   tocAriaLabel = "Secciones",
   heroImage,
+  heroCredit,
   settingsLabel,
   menuOpenLabel,
   menuCloseLabel,
@@ -176,6 +179,9 @@ export function LabPageLayout({
             </>
           )}
           <div className="lab-entry-hero__copy">
+            {hasCover && heroCredit != null && heroCredit.length > 0 && (
+              <p className="lab-entry-hero__credit">{heroCredit}</p>
+            )}
             {kicker != null && <p className="lab-page__kicker">{kicker}</p>}
             <h1 className="lab-entry-hero__title">{title}</h1>
             {description != null && (

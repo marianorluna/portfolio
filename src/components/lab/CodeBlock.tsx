@@ -1,10 +1,8 @@
-"use client";
-
-import { useState, type ComponentPropsWithoutRef, type ReactNode } from "react";
+import type { ComponentPropsWithoutRef, ReactElement, ReactNode } from "react";
+import { highlightCode, resolveCodeLanguage } from "@/lib/lab/highlight-code";
+import { CodeBlockClient } from "./CodeBlockClient";
 
 type Props = ComponentPropsWithoutRef<"pre">;
-
-const COPIED_RESET_MS = 1800;
 
 /** Extrae el texto plano de los hijos de un `<pre><code>...</code></pre>` generado por MDX. */
 function extractText(node: ReactNode): string {
@@ -18,37 +16,32 @@ function extractText(node: ReactNode): string {
   return "";
 }
 
-/**
- * Override del elemento `pre` para MDX del Lab: añade botón de copiar sin que
- * el autor tenga que usar un componente distinto al fence estándar (```).
- */
-export function CodeBlock({ children, className, ...rest }: Props) {
-  const [copied, setCopied] = useState(false);
-  const code = extractText(children).replace(/\n$/, "");
-
-  const handleCopy = async () => {
-    try {
-      await navigator.clipboard.writeText(code);
-      setCopied(true);
-      setTimeout(() => setCopied(false), COPIED_RESET_MS);
-    } catch {
-      // Clipboard no disponible (permisos/navegador); no bloquea la lectura.
+function extractClassName(node: ReactNode): string | undefined {
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = extractClassName(child);
+      if (found) return found;
     }
-  };
+    return undefined;
+  }
+  if (node != null && typeof node === "object" && "props" in node) {
+    const el = node as ReactElement<{ className?: string; children?: ReactNode }>;
+    if (typeof el.props.className === "string" && el.props.className.length > 0) {
+      return el.props.className;
+    }
+    return extractClassName(el.props.children);
+  }
+  return undefined;
+}
 
-  return (
-    <div className="lab-code">
-      <button
-        type="button"
-        className="lab-code__copy"
-        onClick={handleCopy}
-        aria-label={copied ? "Código copiado" : "Copiar código"}
-      >
-        {copied ? "Copiado ✓" : "Copiar"}
-      </button>
-      <pre className={`lab-code__pre${className ? ` ${className}` : ""}`} {...rest}>
-        {children}
-      </pre>
-    </div>
-  );
+/**
+ * Override del elemento `pre` para MDX del Lab: resaltado Shiki (RSC) + botón de
+ * copiar. El autor sigue usando el fence estándar (```json).
+ */
+export async function CodeBlock({ children, className }: Props) {
+  const code = extractText(children).replace(/\n$/, "");
+  const lang = resolveCodeLanguage(className ?? extractClassName(children));
+  const html = await highlightCode(code, lang);
+
+  return <CodeBlockClient code={code} html={html} />;
 }

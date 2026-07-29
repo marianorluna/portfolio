@@ -537,10 +537,12 @@
       "indexKicker": "Lab",
       "indexTitle": "Lab",
       "indexDescription": "Un laboratorio de ideas y práctica con tutoriales, guías, checklists e infografías sobre Arquitectura, BIM, IA y desarrollo, pensados para experimentar, informarse y aprender.",
+      "aiCoverCredit": "Imágenes de portada generadas con IA",
       "indexEmptyMessage": "Aún no hay entradas publicadas en este idioma. Vuelve pronto.",
       "filterAllLabel": "Todos",
       "publishedLabel": "Publicado",
       "updatedLabel": "Actualizado",
+      "durationReadyLabel": "~{minutes} min",
       "backToLabLabel": "Volver al Lab",
       "tocAriaLabel": "Secciones del tutorial",
       "tutorialToc": [
@@ -560,6 +562,9 @@
       "menuCloseLabel": "Cerrar menú",
       "menuKicker": "Sección",
       "menuTitle": "Menú",
+      "tutorialContactLead": "Por cualquier duda o sugerencia sobre este tutorial, puedes comunicarte conmigo por el",
+      "tutorialContactFormLabel": "formulario de contacto",
+      "tutorialContactOr": "o al correo",
       "typeLabel": {
         "tutorial": "Tutorial",
         "checklist": "Checklist",

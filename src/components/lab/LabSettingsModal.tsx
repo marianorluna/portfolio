@@ -5,7 +5,7 @@ import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import type { SceneTheme } from "@/config/scene-theme";
-import { applyDocumentTheme } from "@/config/scene-theme";
+import { applyDocumentTheme, resolveInitialTheme } from "@/config/scene-theme";
 import type { Locale } from "@/types/portfolio";
 
 export type LabSettingsCopy = {
@@ -30,12 +30,6 @@ type Props = {
   locale: Locale;
   copy: LabSettingsCopy;
 };
-
-function readStoredTheme(): SceneTheme {
-  if (typeof window === "undefined") return "dark";
-  const saved = window.localStorage.getItem("portfolio-theme");
-  return saved === "light" ? "light" : "dark";
-}
 
 const emptySubscribe = () => () => undefined;
 
@@ -69,7 +63,7 @@ function LabSettingsModalDialog({
   const router = useRouter();
   const pathname = usePathname();
   const titleId = useId();
-  const [theme, setTheme] = useState<SceneTheme>(() => readStoredTheme());
+  const [theme, setTheme] = useState<SceneTheme>(resolveInitialTheme);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {

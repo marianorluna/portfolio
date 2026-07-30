@@ -16,7 +16,7 @@ import type { DeviceMode, Locale, PortfolioData, TextSizeLevel } from "@/types/p
 import type { LabResourceSummary, LabUiCopy } from "@/types/lab";
 import { setupScene } from "@/utils/three-scene";
 import type { SceneLights } from "@/utils/three-scene";
-import { SCENE_BACKGROUND, SCENE_COLORS } from "@/config/scene-theme";
+import { SCENE_BACKGROUND, SCENE_COLORS, THEME_STORAGE_KEY, resolveInitialTheme } from "@/config/scene-theme";
 import type { SceneTheme } from "@/config/scene-theme";
 import {
   createFloor,
@@ -378,6 +378,7 @@ export function PortfolioScene({
   const [isCoarsePointer, setIsCoarsePointer] = useState(false);
   const [isMobileViewport, setIsMobileViewport] = useState(false);
   const [initialHelpEnabled, setInitialHelpEnabled] = useState(true);
+  const hasAutoDismissedHelpRef = useRef(false);
   const isMobileTouchUi = isCoarsePointer && isMobileViewport;
 
   // Three.js refs
@@ -406,13 +407,9 @@ export function PortfolioScene({
   // Lights + grid refs (para actualizar tema en caliente)
   const sceneLightsRef    = useRef<SceneLights | null>(null);
   const setGridColorsRef  = useRef<((major: number, minor: number, fog: number) => void) | null>(null);
-  // Inicializado desde localStorage para que los handlers del loop tengan el valor correcto
-  // desde el primer frame, antes de que useEffect([theme]) haya corrido.
-  const themeRef = useRef<SceneTheme>(
-    typeof window !== "undefined"
-      ? ((window.localStorage.getItem("portfolio-theme") as SceneTheme) ?? "dark")
-      : "dark"
-  );
+  // Inicializado con la misma resolución que el bootstrap (storage → sistema → dark)
+  // para que los handlers del loop tengan el valor correcto antes de useEffect([theme]).
+  const themeRef = useRef<SceneTheme>(resolveInitialTheme());
 
   // Animation state refs
   const isFlyingRef = useRef(false);
@@ -541,11 +538,8 @@ export function PortfolioScene({
   const setLiveSyncRef = useRef(setLiveSync);
   const prevLiveSyncRef = useRef(false);
 
-  // Tema: inicializado desde localStorage para evitar flash
-  const [theme, setTheme] = useState<SceneTheme>(() => {
-    if (typeof window === "undefined") return "dark";
-    return (window.localStorage.getItem("portfolio-theme") as SceneTheme) ?? "dark";
-  });
+  // Tema: misma resolución que el bootstrap para evitar flash / mismatch
+  const [theme, setTheme] = useState<SceneTheme>(resolveInitialTheme);
   const [activeDeviceMode, setActiveDeviceMode] = useState<DeviceMode>(() => {
     if (typeof window === "undefined") return "desktop";
     return getDeviceModeFromWidth(window.innerWidth);
@@ -654,8 +648,18 @@ export function PortfolioScene({
     initialHelpEnabled && isCoarsePointer && isMobileViewport && loadHidden;
 
   const dismissMobileControlsHelp = useCallback(() => {
+    hasAutoDismissedHelpRef.current = true;
     setInitialHelpEnabled(false);
   }, []);
+
+  useEffect(() => {
+    if (!showMobileControlsHelp || hasAutoDismissedHelpRef.current) return;
+    const timerId = window.setTimeout(() => {
+      hasAutoDismissedHelpRef.current = true;
+      setInitialHelpEnabled(false);
+    }, 3000);
+    return () => window.clearTimeout(timerId);
+  }, [showMobileControlsHelp]);
 
   const handleInitialHelpToggle = useCallback(() => {
     setInitialHelpEnabled(prev => !prev);
@@ -910,7 +914,7 @@ export function PortfolioScene({
   const handleThemeToggle = useCallback(() => {
     setTheme(prev => {
       const next: SceneTheme = prev === "dark" ? "light" : "dark";
-      window.localStorage.setItem("portfolio-theme", next);
+      window.localStorage.setItem(THEME_STORAGE_KEY, next);
       return next;
     });
   }, []);

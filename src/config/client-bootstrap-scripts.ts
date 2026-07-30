@@ -7,8 +7,16 @@
 
 export const THEME_BOOTSTRAP_SCRIPT = `(function () {
   try {
-    var saved = window.localStorage.getItem("portfolio-theme");
-    var theme = saved === "light" || saved === "dark" ? saved : "dark";
+    var saved = null;
+    try { saved = window.localStorage.getItem("portfolio-theme"); } catch (_s) {}
+    var theme = "dark";
+    if (saved === "light" || saved === "dark") {
+      theme = saved;
+    } else {
+      try {
+        if (window.matchMedia("(prefers-color-scheme: light)").matches) theme = "light";
+      } catch (_m) {}
+    }
     var doc = document.documentElement;
     doc.setAttribute("data-theme", theme);
     if (theme === "light") {

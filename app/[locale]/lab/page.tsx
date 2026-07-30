@@ -142,7 +142,6 @@ export default async function LabIndexPage({ params, searchParams }: PageProps) 
             locale={locale}
             title={copy.indexTitle}
             description={copy.indexDescription}
-            aiCoverCredit={copy.aiCoverCredit}
             filters={filters}
             filtersAriaLabel={copy.filterAllLabel}
             backHref={`/${locale}`}

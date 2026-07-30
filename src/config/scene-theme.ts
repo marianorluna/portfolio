@@ -5,6 +5,28 @@
 
 export type SceneTheme = "dark" | "light";
 
+export const THEME_STORAGE_KEY = "portfolio-theme";
+
+/**
+ * Resuelve el tema inicial: localStorage → prefers-color-scheme → dark.
+ * Seguro en SSR (devuelve dark) y con storage/matchMedia bloqueados.
+ */
+export function resolveInitialTheme(): SceneTheme {
+  if (typeof window === "undefined") return "dark";
+  try {
+    const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
+    if (saved === "light" || saved === "dark") return saved;
+  } catch {
+    // private mode / storage bloqueado
+  }
+  try {
+    if (window.matchMedia("(prefers-color-scheme: light)").matches) return "light";
+  } catch {
+    // matchMedia no disponible
+  }
+  return "dark";
+}
+
 function toCSS(hex: number) {
   return `#${(hex >>> 0).toString(16).padStart(6, "0")}` as const;
 }
@@ -61,7 +83,7 @@ export const SCENE_COLORS = {
 export function applyDocumentTheme(theme: SceneTheme): void {
   if (typeof window === "undefined") return;
   const colors = SCENE_COLORS[theme];
-  window.localStorage.setItem("portfolio-theme", theme);
+  window.localStorage.setItem(THEME_STORAGE_KEY, theme);
   const doc = document.documentElement;
   doc.setAttribute("data-theme", theme);
   doc.style.setProperty("--bg-color", colors.backgroundCSS);

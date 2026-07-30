@@ -2755,11 +2755,11 @@ html[data-theme="light"] .inspector-section__json {
     margin-bottom: 8px;
     padding: 10px 12px 12px;
     border-radius: 12px;
-    border: 1px solid var(--panel-border);
-    background: color-mix(in srgb, var(--panel-bg) 42%, transparent);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.18);
+    background: rgba(140, 140, 150, 0.38);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.22);
     color: var(--text-main);
     pointer-events: auto;
     position: relative;
@@ -4670,6 +4670,7 @@ html[data-theme="light"] .lab-bento__card--placeholder.lab-bento__card--face-fro
   line-height: 1.45;
   display: -webkit-box;
   -webkit-line-clamp: 4;
+  line-clamp: 4;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
@@ -4711,12 +4712,14 @@ html[data-theme="light"] .lab-bento__card--placeholder.lab-bento__card--face-fro
 @container lab-slot (max-height: 200px) {
   .lab-bento__description {
     -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 }
 
 @container lab-slot (max-height: 150px) {
   .lab-bento__description {
     -webkit-line-clamp: 1;
+    line-clamp: 1;
   }
 
   .lab-bento__tags {
@@ -4731,6 +4734,7 @@ html[data-theme="light"] .lab-bento__card--placeholder.lab-bento__card--face-fro
 
   .lab-bento__description {
     -webkit-line-clamp: 2;
+    line-clamp: 2;
   }
 }
 

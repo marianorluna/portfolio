@@ -18,8 +18,6 @@ type Props = {
   locale: Locale;
   title: string;
   description: string;
-  /** Crédito tipográfico bajo la descripción (portadas con IA). */
-  aiCoverCredit?: string;
   filters: FilterItem[];
   filtersAriaLabel: string;
   backHref: string;
@@ -33,7 +31,6 @@ export function LabHeroCard({
   locale,
   title,
   description,
-  aiCoverCredit,
   filters,
   filtersAriaLabel,
   backHref,
@@ -65,9 +62,6 @@ export function LabHeroCard({
       <div className="lab-bento__hero-main">
         <h1 className="lab-bento__hero-title">{title}</h1>
         <p className="lab-bento__hero-description">{description}</p>
-        {aiCoverCredit != null && aiCoverCredit.length > 0 && (
-          <p className="lab-bento__hero-credit">{aiCoverCredit}</p>
-        )}
         {filters.length > 0 && (
           <nav className="lab-bento__filters" aria-label={filtersAriaLabel}>
             {filters.map((filter) => (

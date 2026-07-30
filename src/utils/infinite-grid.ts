@@ -52,9 +52,6 @@ void main() {
 }
 `;
 
-const MAJOR = new THREE.Color(0x4a5568);
-const MINOR = new THREE.Color(0x2d3548);
-
 const PLANE_SIZE = 520;
 /** Suficiente ancho en alzado ortográfico (espacio edificio + márgen). */
 const HORIZON_HALF_WIDTH = 900;
@@ -80,6 +77,10 @@ export function createInfiniteGrid(options: {
   cellSize?: number;
   /** Debe coincidir con `scene.fog` (FogExp2) para el primer frame y por coherencia. */
   fogDensity?: number;
+  fogColor?: number;
+  majorColor?: number;
+  minorColor?: number;
+  horizonColor?: number;
 } = {}): {
   mesh: THREE.Mesh;
   horizon: THREE.Line;
@@ -89,6 +90,10 @@ export function createInfiniteGrid(options: {
 } {
   const uCell = options.cellSize ?? 2.0;
   const fogDensity = options.fogDensity ?? 0.012;
+  const majorHex = options.majorColor ?? 0x4a5568;
+  const minorHex = options.minorColor ?? 0x2d3548;
+  const fogHex = options.fogColor ?? SCENE_BACKGROUND;
+  const horizonHex = options.horizonColor ?? majorHex;
   const geom = new THREE.PlaneGeometry(PLANE_SIZE, PLANE_SIZE, 1, 1);
   const mat = new THREE.ShaderMaterial({
     fog: true,
@@ -97,10 +102,10 @@ export function createInfiniteGrid(options: {
     depthTest: true,
     // ShaderMaterial no hereda UniformsLib: hace falta lo que pide `refreshFogUniforms` (r180).
     uniforms: {
-      uColorMajor: { value: MAJOR },
-      uColorMinor: { value: MINOR },
+      uColorMajor: { value: new THREE.Color(majorHex) },
+      uColorMinor: { value: new THREE.Color(minorHex) },
       uCell: { value: uCell },
-      fogColor: { value: new THREE.Color(SCENE_BACKGROUND) },
+      fogColor: { value: new THREE.Color(fogHex) },
       fogDensity: { value: fogDensity },
     },
     vertexShader,
@@ -124,7 +129,7 @@ export function createInfiniteGrid(options: {
     horizonGeom.setAttribute("position", new THREE.BufferAttribute(arr, 3));
   }
   const horizonMat = new THREE.LineBasicMaterial({
-    color: 0x4a5568,
+    color: horizonHex,
     transparent: true,
     opacity: 0.9,
   });

@@ -1,5 +1,7 @@
 
 :root {
+  --bg-color: #323232;
+  --loading-bg: #1f1f1f;
   --accent-blue: #0070f3;
   --accent-cyan: #00e5ff;
   --text-main: #ededed;

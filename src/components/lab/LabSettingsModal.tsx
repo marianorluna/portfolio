@@ -1,11 +1,11 @@
 "use client";
 
-import { useCallback, useEffect, useId, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useId, useLayoutEffect, useState, useSyncExternalStore } from "react";
 import { createPortal } from "react-dom";
 import { usePathname, useRouter } from "next/navigation";
 import { X } from "lucide-react";
 import type { SceneTheme } from "@/config/scene-theme";
-import { applyDocumentTheme, resolveInitialTheme } from "@/config/scene-theme";
+import { applyDocumentTheme, readDocumentTheme } from "@/config/scene-theme";
 import type { Locale } from "@/types/portfolio";
 
 export type LabSettingsCopy = {
@@ -63,7 +63,13 @@ function LabSettingsModalDialog({
   const router = useRouter();
   const pathname = usePathname();
   const titleId = useId();
-  const [theme, setTheme] = useState<SceneTheme>(resolveInitialTheme);
+  const [theme, setTheme] = useState<SceneTheme>("dark");
+
+  useLayoutEffect(() => {
+    const t = readDocumentTheme();
+    setTheme(t);
+    applyDocumentTheme(t);
+  }, []);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {

@@ -17,15 +17,7 @@ export const THEME_BOOTSTRAP_SCRIPT = `(function () {
         if (window.matchMedia("(prefers-color-scheme: light)").matches) theme = "light";
       } catch (_m) {}
     }
-    var doc = document.documentElement;
-    doc.setAttribute("data-theme", theme);
-    if (theme === "light") {
-      doc.style.setProperty("--bg-color", "#e8eaed");
-      doc.style.setProperty("--loading-bg", "#f1f2f4");
-    } else {
-      doc.style.setProperty("--bg-color", "#323232");
-      doc.style.setProperty("--loading-bg", "#1f1f1f");
-    }
+    document.documentElement.setAttribute("data-theme", theme);
   } catch (_err) {}
 })();`;
 

@@ -1,4 +1,3 @@
-import type { CSSProperties } from "react";
 import { Inter, JetBrains_Mono } from "next/font/google";
 import { ImageInteractionGuard } from "@/components/ImageInteractionGuard";
 import { VercelTelemetry } from "@/components/legal/VercelTelemetry";
@@ -7,9 +6,7 @@ import {
   HYDRATION_SANITIZER_SCRIPT,
   THEME_BOOTSTRAP_SCRIPT,
 } from "@/config/client-bootstrap-scripts";
-import { SCENE_BACKGROUND_CSS } from "@/config/scene-theme";
 import { buildRootMetadata, personJsonLd, websiteJsonLd } from "@/config/site-seo";
-import { LOADING_BACKGROUND } from "@/config/ui-theme";
 import "./globals.css";
 
 const inter = Inter({
@@ -33,13 +30,8 @@ export const metadata = buildRootMetadata(
 export default function RootLayout({
   children
 }: Readonly<{ children: React.ReactNode }>) {
-  const rootStyle: CSSProperties & { "--bg-color": string; "--loading-bg": string } = {
-    "--bg-color": SCENE_BACKGROUND_CSS,
-    "--loading-bg": LOADING_BACKGROUND,
-  };
-
   return (
-    <html lang="es" suppressHydrationWarning style={rootStyle} className={`${inter.variable} ${jetbrainsMono.variable}`}>
+    <html lang="es" suppressHydrationWarning className={`${inter.variable} ${jetbrainsMono.variable}`}>
       <body suppressHydrationWarning>
         <ServerInsertedScripts
           scripts={[

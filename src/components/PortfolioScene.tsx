@@ -3,6 +3,7 @@
 import {
   useCallback,
   useEffect,
+  useLayoutEffect,
   useRef,
   useState,
   type MutableRefObject,
@@ -16,7 +17,12 @@ import type { DeviceMode, Locale, PortfolioData, TextSizeLevel } from "@/types/p
 import type { LabResourceSummary, LabUiCopy } from "@/types/lab";
 import { setupScene } from "@/utils/three-scene";
 import type { SceneLights } from "@/utils/three-scene";
-import { SCENE_BACKGROUND, SCENE_COLORS, THEME_STORAGE_KEY, resolveInitialTheme } from "@/config/scene-theme";
+import {
+  SCENE_COLORS,
+  applyDocumentTheme,
+  readDocumentTheme,
+  resolveInitialTheme,
+} from "@/config/scene-theme";
 import type { SceneTheme } from "@/config/scene-theme";
 import {
   createFloor,
@@ -407,9 +413,8 @@ export function PortfolioScene({
   // Lights + grid refs (para actualizar tema en caliente)
   const sceneLightsRef    = useRef<SceneLights | null>(null);
   const setGridColorsRef  = useRef<((major: number, minor: number, fog: number) => void) | null>(null);
-  // Inicializado con la misma resolución que el bootstrap (storage → sistema → dark)
-  // para que los handlers del loop tengan el valor correcto antes de useEffect([theme]).
-  const themeRef = useRef<SceneTheme>(resolveInitialTheme());
+  // SSR-safe "dark"; el layoutEffect / init 3D sincronizan con bootstrap / localStorage.
+  const themeRef = useRef<SceneTheme>("dark");
 
   // Animation state refs
   const isFlyingRef = useRef(false);
@@ -538,8 +543,8 @@ export function PortfolioScene({
   const setLiveSyncRef = useRef(setLiveSync);
   const prevLiveSyncRef = useRef(false);
 
-  // Tema: misma resolución que el bootstrap para evitar flash / mismatch
-  const [theme, setTheme] = useState<SceneTheme>(resolveInitialTheme);
+  // Tema: SSR y primer cliente = "dark" (sin mismatch); layoutEffect sincroniza con el DOM.
+  const [theme, setTheme] = useState<SceneTheme>("dark");
   const [activeDeviceMode, setActiveDeviceMode] = useState<DeviceMode>(() => {
     if (typeof window === "undefined") return "desktop";
     return getDeviceModeFromWidth(window.innerWidth);
@@ -548,6 +553,13 @@ export function PortfolioScene({
     if (typeof window === "undefined") return DEFAULT_TEXT_SIZE_BY_DEVICE;
     return parseStoredTextSizeByDevice(window.localStorage.getItem(TEXT_SIZE_STORAGE_KEY));
   });
+
+  useLayoutEffect(() => {
+    const t = readDocumentTheme();
+    themeRef.current = t;
+    setTheme(t);
+    applyDocumentTheme(t);
+  }, []);
 
   // React UI state
   const loadHiddenRef = useRef(loadHidden);
@@ -914,7 +926,7 @@ export function PortfolioScene({
   const handleThemeToggle = useCallback(() => {
     setTheme(prev => {
       const next: SceneTheme = prev === "dark" ? "light" : "dark";
-      window.localStorage.setItem(THEME_STORAGE_KEY, next);
+      applyDocumentTheme(next);
       return next;
     });
   }, []);
@@ -996,7 +1008,10 @@ export function PortfolioScene({
     buildingOffsetXRef.current = bX;
 
     // Scene
-    const { scene, lights, updateInfiniteGrid, setGridColors, disposeInfiniteGrid } = setupScene();
+    const initialTheme = resolveInitialTheme();
+    themeRef.current = initialTheme;
+    const themeColors = SCENE_COLORS[initialTheme];
+    const { scene, lights, updateInfiniteGrid, setGridColors, disposeInfiniteGrid } = setupScene(initialTheme);
     sceneRef.current      = scene;
     sceneLightsRef.current    = lights;
     setGridColorsRef.current  = setGridColors;
@@ -1023,7 +1038,7 @@ export function PortfolioScene({
     renderStrategyRef.current = resolveRenderStrategy(W);
     renderer.setSize(W, H);
     renderer.setPixelRatio(Math.min(window.devicePixelRatio, renderStrategyRef.current.maxPixelRatio));
-    renderer.setClearColor(SCENE_BACKGROUND, 1);
+    renderer.setClearColor(themeColors.background, 1);
     rendererRef.current = renderer;
 
     // OrbitControls
@@ -1151,7 +1166,13 @@ export function PortfolioScene({
     buildingGroupRef.current = buildingGroup;
 
     const baseMaterial = createBaseMaterial();
+    baseMaterial.color.setHex(themeColors.buildingBase);
+    baseMaterial.metalness = themeColors.buildingMetalness;
+    baseMaterial.roughness = themeColors.buildingRoughness;
+    baseMaterial.opacity = themeColors.buildingBaseOpacity;
     const lineMaterial = createLineMaterial();
+    lineMaterial.color.setHex(themeColors.buildingLines);
+    lineMaterial.opacity = themeColors.buildingLinesOpacity;
     baseMaterialRef.current = baseMaterial;
     lineMaterialRef.current = lineMaterial;
 
@@ -1545,9 +1566,7 @@ export function PortfolioScene({
     const scene    = sceneRef.current;
     const renderer = rendererRef.current;
 
-    // CSS variables (sobreescribe el valor inline del layout)
-    document.documentElement.style.setProperty("--bg-color", colors.backgroundCSS);
-    document.documentElement.setAttribute("data-theme", theme);
+    applyDocumentTheme(theme);
 
     if (!scene || !renderer) return;
 

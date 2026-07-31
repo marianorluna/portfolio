@@ -181,6 +181,8 @@ export type PortfolioData = {
         platformLabel: string;
         scopeLabel: string;
         stackLabel: string;
+        /** Sección opcional cuando el proyecto define `demoNote`. */
+        demoNoteLabel: string;
       };
     };
     viewControls: {
@@ -277,6 +279,11 @@ export type PortfolioData = {
          * cuando el `demo` no puede embeberse (X-Frame-Options, etc.).
          */
         demoEmbedFallback?: string;
+        /**
+         * Aviso corto para la demo (p. ej. cold start de Render).
+         * Se muestra en el Inspector y en el footer del visor.
+         */
+        demoNote?: string;
       }[];
     }[];
   };

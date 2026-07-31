@@ -5,10 +5,14 @@ import type { InspectorContent, InspectorSection } from "@/types/inspector";
 import { formatInlineText } from "@/utils/format-inline-text";
 
 const DEFAULT_OPEN_SECTION_ID = "stack";
+const PREFERRED_OPEN_SECTION_IDS = ["demo-note", DEFAULT_OPEN_SECTION_ID] as const;
 
 function getDefaultOpenSectionId(sections: InspectorSection[]): string | undefined {
-  const preferred = sections.find(s => s.id === DEFAULT_OPEN_SECTION_ID);
-  return preferred?.id ?? sections[0]?.id;
+  for (const id of PREFERRED_OPEN_SECTION_IDS) {
+    const preferred = sections.find(s => s.id === id);
+    if (preferred != null) return preferred.id;
+  }
+  return sections[0]?.id;
 }
 
 type Props = {

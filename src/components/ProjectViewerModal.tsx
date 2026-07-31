@@ -4,7 +4,11 @@ import { useEffect, useId, useRef, useState } from "react";
 import Image from "next/image";
 import type { PortfolioData } from "@/types/portfolio";
 import { hasThirdPartyConsent, onConsentChanged, setThirdPartyConsent } from "@/lib/legal/consent";
-import { isNonEmbeddableDemoUrl } from "@/lib/project-demo";
+import {
+  isNonEmbeddableDemoUrl,
+  normalizeDemoUrl,
+  toExternalDemoUrl,
+} from "@/lib/project-demo";
 
 type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][number];
 
@@ -34,7 +38,8 @@ export function ProjectViewerModal({
   const titleId = useId();
   const closeRef = useRef<HTMLButtonElement | null>(null);
   const loadTimeoutRef = useRef<number | null>(null);
-  const demoUrl = isHttpUrlString(project.demo) ? project.demo : null;
+  const demoUrl = isHttpUrlString(project.demo) ? normalizeDemoUrl(project.demo) : null;
+  const externalDemoUrl = demoUrl != null ? toExternalDemoUrl(demoUrl) : null;
   const embedFallback =
     typeof project.demoEmbedFallback === "string" && project.demoEmbedFallback.trim() !== ""
       ? project.demoEmbedFallback.trim()
@@ -168,9 +173,12 @@ export function ProjectViewerModal({
           >
             {projectViewer.closeLabel}
           </button>
-          {demoUrl != null ? (
+          {typeof project.demoNote === "string" && project.demoNote.trim() !== "" ? (
+            <p className="project-viewer__demo-note">{project.demoNote.trim()}</p>
+          ) : null}
+          {externalDemoUrl != null ? (
             <a
-              href={demoUrl}
+              href={externalDemoUrl}
               className="btn btn-primary"
               target="_blank"
               rel="noreferrer"

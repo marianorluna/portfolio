@@ -1,4 +1,5 @@
 import type { PortfolioData } from "@/types/portfolio";
+import { toExternalDemoUrl } from "@/lib/project-demo";
 import { formatInlineText } from "@/utils/format-inline-text";
 
 type ProjectItem = PortfolioData["projects"]["categories"][number]["items"][number];
@@ -91,7 +92,7 @@ export function HeroText({
           </button>
         ) : useProjectLinks && isHttpUrlString(demoUrl) ? (
           <a
-            href={demoUrl}
+            href={toExternalDemoUrl(demoUrl)}
             className="btn btn-primary"
             target="_blank"
             rel="noreferrer"

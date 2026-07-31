@@ -60,7 +60,21 @@ export function buildProjectInspectorContent(
   copy: InspectorCopy,
 ): InspectorContent {
   const labels = copy.projectSections;
+  const demoNote =
+    typeof project.demoNote === "string" && project.demoNote.trim() !== ""
+      ? project.demoNote.trim()
+      : null;
   const sections: InspectorSection[] = [
+    ...(demoNote != null
+      ? [
+          {
+            id: "demo-note",
+            label: labels.demoNoteLabel,
+            kind: "text" as const,
+            text: demoNote,
+          },
+        ]
+      : []),
     {
       id: "context",
       label: labels.contextLabel,

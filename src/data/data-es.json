@@ -112,7 +112,8 @@
         "roleLabel": "Mi rol",
         "platformLabel": "Entorno",
         "scopeLabel": "Alcance del proyecto",
-        "stackLabel": "Tecnologías"
+        "stackLabel": "Tecnologías",
+        "demoNoteLabel": "Nota de demo"
       }
     },
     "viewControls": {
@@ -243,7 +244,8 @@
             "stack": ["C#", "Revit API", ".NET Framework 4.8", ".NET 10", "WPF", "MVVM", "ClosedXML"],
             "link": "https://arqfi.com",
             "github": "https://github.com/marianorluna/revit-control-manager",
-            "demo": "https://apps.autodesk.com/RVT/es/Detail/Index?id=6529215684524589255&appLang=es&os=Win64&mode=preview"
+            "demo": "https://apps.autodesk.com/RVT/es/Detail/Index?id=6529215684524589255&appLang=es&os=Win64&mode=preview",
+            "demoEmbedFallback": "/images/screenshot-control-manager.png"
           },
           {
             "id": "ribbon-revit",
@@ -258,7 +260,7 @@
             "stack": ["Python", "pyRevit", "Revit API", "WinForms", "Task Dialog", "RPW"],
             "link": "https://arqfi.com",
             "github": "https://github.com/marianorluna/ribbon-pyrevit",
-            "demo": "https://www.youtube.com/embed/rWGBVo9qDEg?si=feIjLqulLjMs4RA5&amp;controls=0"
+            "demo": "https://www.youtube.com/embed/rWGBVo9qDEg?si=feIjLqulLjMs4RA5&controls=0"
           }
         ]
       },
@@ -279,7 +281,8 @@
             "stack": ["React", "Vite", "Tailwind CSS", "Radix UI", "Node.js", "Express", "MongoDB", "Mongoose", "Socket.io", "JWT", "Riot Games API", "Cloudinary", "Zod"],
             "link": "https://arqfi.com",
             "github": "https://github.com/marianorluna/lolmatch-frontend",
-            "demo": "https://lolmatch.online/"
+            "demo": "https://lolmatch.online/",
+            "demoNote": "El backend en Render puede estar en sleep: el primer login con el usuario de prueba puede tardar entre 15 y 60 segundos."
           },
           {
             "id": "stockearly",
@@ -294,7 +297,8 @@
             "stack": ["React", "TypeScript", "Vite", "Material UI", "Tailwind CSS", "Zustand", "Node.js", "Express", "MongoDB", "Mongoose", "Socket.io", "JWT", "Joi", "Capacitor"],
             "link": "https://etama.es/",
             "github": "https://github.com/marianorluna/stock-app-backend",
-            "demo": "https://www.stockearly.online/"
+            "demo": "https://www.stockearly.online/",
+            "demoNote": "El backend en Render puede estar en sleep: el primer login con el usuario de prueba puede tardar entre 15 y 60 segundos."
           },
           {
             "id": "emp-web",

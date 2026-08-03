@@ -12,19 +12,27 @@ heroAlt: "Camino de CAD a BIM Developer con IA"
 size: sm
 ---
 
-Todo empieza con un punto en el espacio vacío. Después aparece otro, y otro más, hasta que forman una línea continua. Esa línea puede dibujarse en un plano de dos dimensiones. Ahí es donde muchos descubrimos el CAD. En aquel momento AutoCAD parecía ser la norma, el lenguaje universal. Pero tarde o temprano el 2D se queda corto. Surge la necesidad de ver más, de entender el espacio, de recorrerlo. Y aparece el 3D.
+Todo empieza con un punto en el espacio vacío. Después aparece otro, y otro más, hasta que forman una línea continua. Esa línea puede dibujarse en un plano de dos dimensiones. Ahí es donde muchos descubrimos el **CAD**. En aquel momento **[AutoCAD](https://www.autodesk.com/products/autocad/overview)** parecía ser la norma, el lenguaje universal. Pero tarde o temprano el 2D se queda corto. Surge la necesidad de ver más, de entender el espacio, de recorrerlo. Y aparece el 3D.
 
-El 3D te cambia la cabeza. Te das cuenta de que el 2D no es más que distintas miradas de algo tridimensional. Y entonces llega la pregunta inevitable: ¿y si esa geometría pudiera tener información, parámetros, inteligencia? Ese es el momento en que aparece el BIM.
+El 3D te cambia la cabeza. Te das cuenta de que el 2D no es más que distintas miradas de algo tridimensional. Y entonces llega la pregunta inevitable: ¿y si esa geometría pudiera tener información, parámetros, inteligencia? Ese es el momento en que aparece el **BIM**.
 
-ArchiCAD muestra el camino primero, pero Autodesk recupera el liderazgo con Revit. Y ahí empieza una etapa distinta: ya no se trata sólo de dibujar o modelar, sino de entender cómo funciona el software por dentro.
+**[ArchiCAD](https://graphisoft.com/solutions/archicad)** muestra el camino primero, pero **Autodesk** recupera el liderazgo con **[Revit](/es/proyectos/control-manager)**. Y ahí empieza una etapa distinta: ya no se trata sólo de dibujar o modelar, sino de entender cómo funciona el software por dentro.
 
-Con el tiempo aparece una necesidad nueva: automatizar. Hay tareas repetitivas que te quitan tiempo para lo que realmente importa. Y como los ordenadores son buenos en eso, buscas cómo delegarlo. Dynamo suele ser la primera puerta. Empiezas a conectar nodos, a entender flujos, a resolver problemas sin escribir una sola línea de código.
+Con el tiempo aparece una necesidad nueva: automatizar. Hay tareas repetitivas que te quitan tiempo para lo que realmente importa. Y como los ordenadores son buenos en eso, buscas cómo delegarlo. **[Dynamo](https://dynamobim.org/)** suele ser la primera puerta. Empiezas a conectar nodos, a entender flujos, a resolver problemas sin escribir una sola línea de código.
 
-Pero llega un punto en el que Dynamo te queda chico. No por malo, sino porque te despierta una curiosidad mayor: ¿qué pasa si puedo crear mis propios nodos? ¿Qué pasa si puedo controlar todo con más precisión? Ahí aparece Python. Y con Python aparece pyRevit. Y con pyRevit aparece un mundo nuevo: el ribbon de Revit, su API, sus clases, su lógica interna.
+Pero llega un punto en el que **Dynamo** te queda chico. No por malo, sino porque te despierta una curiosidad mayor: ¿qué pasa si puedo crear mis propios nodos? ¿Qué pasa si puedo controlar todo con más precisión? Ahí aparece **[Python](/es/proyectos/ribbon-revit)**. Y con **Python** aparece **[pyRevit](/es/proyectos/ribbon-revit)**. Y con **pyRevit** aparece un mundo nuevo: el ribbon de **Revit**, su **[API](/es/proyectos/control-manager)**, sus clases, su lógica interna.
 
-En algún momento ocurre una epifanía silenciosa: todo esto no es más que una base de datos y un conjunto enorme de clases escritas en C#.
+<Highlight>
+En algún momento ocurre una epifanía silenciosa: todo esto no es más que una base de datos y un conjunto enorme de clases escritas en **[C#](/es/proyectos/control-manager)**.
+</Highlight>
 
-Ese descubrimiento te cambia la perspectiva. Entiendes que si aprendes C#, puedes crear herramientas nativas, más rápidas, más potentes, con mejores interfaces. Puedes construir plugins que no sólo resuelven problemas, sino que se sienten parte del propio Revit. Y cuando dominas eso, ya estás en otro nivel: ya no usas el software, lo expandes.
+Ese descubrimiento te cambia la perspectiva. Entiendes que si aprendes **C#**, puedes crear herramientas nativas, más rápidas, más potentes, con mejores interfaces. Puedes construir plugins que no sólo resuelven problemas, sino que se sienten parte del propio **Revit**. Y cuando dominas eso, ya estás en otro nivel: ya no usas el software, lo expandes.
+
+Y ahí aparece otra pregunta inevitable: si **C#** y **Python** son lenguajes de **backend**… ¿cómo se domina realmente el backend?
+
+Ese es el momento en que entran las bases de datos. Descubres **SQL**, **[PostgreSQL](https://www.postgresql.org/)**, **[MongoDB](/es/proyectos/lol-match)**. Aprendes qué es un **CRUD**, cómo estructurar datos, cómo protegerlos, cómo diseñar modelos que escalen. Entiendes que controlar tus datos es controlar tus herramientas. Y que la seguridad no es un detalle: es parte del diseño.
+
+Con el tiempo aparece otra pieza del ecosistema: **[Power BI](https://www.microsoft.com/es-es/power-platform/products/power-bi)**. Te das cuenta de que no sólo puedes almacenar datos, sino también analizarlos, visualizarlos y convertirlos en decisiones. Y aparece **[Speckle](https://speckle.systems/)**, que te muestra que los datos también pueden viajar, transformarse y conectarse entre plataformas sin fricción. El **BIM** deja de ser un modelo: se convierte en un flujo de información.
 
 <Figure
   src="/lab/covers/de-0-a-bim-developer-ia-grid.webp"
@@ -32,28 +40,42 @@ Ese descubrimiento te cambia la perspectiva. Entiendes que si aprendes C#, puede
   caption="Como avanzar en el tablero de un juego: cada herramienta abre la siguiente puerta."
 />
 
-Pero el camino sigue. Un día descubres que todo lo que haces en local también puede vivir en la nube. Que Autodesk tiene un ecosistema entero pensado para eso: APS, Autodesk Forma, APIs, servicios web. Y te das cuenta de que tus conocimientos ya no se limitan a tu ordenador: ahora puedes crear herramientas que funcionan para cualquiera, en cualquier lugar.
+Pero el camino sigue. Un día descubres que todo lo que haces en local también puede vivir en la nube. Que **Autodesk** tiene un ecosistema entero pensado para eso: **[APS](/es/proyectos/data-extractor)**, **[Autodesk Forma](/es/proyectos/data-extractor)**, **APIs**, servicios web. Y te das cuenta de que tus conocimientos ya no se limitan a tu ordenador: ahora puedes crear herramientas que funcionan para cualquiera, en cualquier lugar.
 
 En ese punto aparece otra pregunta inevitable: si puedo programar del lado del servidor, ¿qué pasa con el lado del cliente?
 
-Y ahí llegas al frontend. Descubres que JavaScript es el rey, que HTML y CSS son sus compañeros inseparables, y que frameworks como React te permiten construir interfaces modernas sin morir en el intento. Y lo mejor: JavaScript también vive en el servidor gracias a Node.js. De repente, puedes construir soluciones full-stack para BIM, desde la base de datos hasta la interfaz final. Puedes usar APS, web-ifc, three.js… y crear herramientas que antes parecían imposibles.
+Y ahí llegas al frontend. Descubres que **[JavaScript](/es/proyectos/lol-match)** es el rey, que **HTML** y **CSS** son sus compañeros inseparables, y que frameworks como **[React](/es/proyectos/lol-match)** te permiten construir interfaces modernas sin morir en el intento. Y lo mejor: **JavaScript** también vive en el servidor gracias a **[Node.js](/es/proyectos/lol-match)**. De repente, puedes construir soluciones full-stack para **BIM**, desde la base de datos hasta la interfaz final. Puedes usar **APS**, **[web-ifc](/es/proyectos/visor-ifc)**, **[three.js](/es/proyectos/visor-ifc)**… y crear herramientas que antes parecían imposibles.
 
-Cuando llegas hasta aquí, ya tienes todo lo necesario para ser desarrollador BIM. En el camino aparecen otras palabras que se vuelven parte de tu día a día: Docker, Git, GitHub, Vercel… todas piezas del mismo rompecabezas.
+Cuando llegas hasta aquí, ya tienes todo lo necesario para ser desarrollador **BIM**. En el camino aparecen otras palabras que se vuelven parte de tu día a día: **[Docker](/es/proyectos/emp-web)**, **[Git](https://git-scm.com/)**, **[GitHub](https://github.com/marianorluna/)**, **[Vercel](/es/proyectos/stockearly)**… todas piezas del mismo rompecabezas.
 
-Y entonces surge la pregunta final: ¿dónde entra la IA en todo esto?
+Y entonces surge la pregunta final: ¿dónde entra la **IA** en todo esto?
 
+<PullQuote>
 La respuesta es simple: en todas partes.
+</PullQuote>
 
-La IA es la ventaja que antes no existía. Puede ayudarte a aprender, a comprender conceptos, a descubrir tecnologías, a escribir código, a documentar, a testear, a desplegar. Puedes dejarla en piloto automático —aunque no es recomendable— o puedes trabajar junto a ella, orquestando tú y ejecutando ella. Algunos dirán que eso no es programar. Pero la verdad es que programar nunca fue el objetivo. El objetivo siempre fue desarrollar soluciones que aporten valor.
+La **IA** es la ventaja que antes no existía. Puede ayudarte a aprender, a comprender conceptos, a descubrir tecnologías, a escribir código, a documentar, a testear, a desplegar. Puedes dejarla en piloto automático —aunque no es recomendable— o puedes trabajar junto a ella, orquestando tú y ejecutando ella. Algunos dirán que eso no es programar.
 
-Por eso aprender cómo funciona la IA, sus modelos, sus límites, sus vulnerabilidades, sus herramientas, es parte del camino. Porque esta nueva era no sólo acelera el aprendizaje: también abre la puerta a algo más grande. Pasar del monopolio del software propietario a un software personalizado, creado por el propio usuario, adaptado a sus necesidades, construido con herramientas libres y potenciadas por IA.
+<Highlight>
+Pero la verdad es que programar nunca fue el objetivo. El objetivo siempre fue desarrollar soluciones que aporten valor.
+</Highlight>
 
-Al final, todo esto de lo que hablamos no son más que herramientas. Hoy usamos unas, mañana usaremos otras. Lo importante es entender conceptualmente lo que hacemos, construir criterio, elegir bien, resolver problemas reales y optimizar tiempo y recursos. Sólo haciendo, probando y equivocándonos evolucionamos como desarrolladores BIM.
+Por eso aprender cómo funciona la **IA**, sus modelos, sus límites, sus vulnerabilidades, sus herramientas, es parte del camino. Porque esta nueva era no sólo acelera el aprendizaje: también abre la puerta a algo más grande. Pasar del monopolio del software propietario a un software personalizado, creado por el propio usuario, adaptado a sus necesidades, construido con herramientas libres y potenciadas por **IA**.
 
+Al final, todo esto de lo que hablamos no son más que herramientas. Hoy usamos unas, mañana usaremos otras. Lo importante es entender conceptualmente lo que hacemos, construir criterio, elegir bien, resolver problemas reales y optimizar tiempo y recursos. Sólo haciendo, probando y equivocándonos evolucionamos como desarrolladores **BIM**.
+
+<PullQuote>
 El límite lo ponemos nosotros.
 
-No empieza en CAD ni termina en IA.
+No empieza en **CAD** ni termina en **IA**.
 
 Empieza en ti.
 
 Y llega tan lejos como decidas llevarlo.
+</PullQuote>
+
+<Figure
+  src="/lab/screenshots/de-0-a-bim-developer-ia/stack-resumen.webp"
+  alt="Mapa del stack del BIM Developer agrupado por capas: diseño, automatización, datos, nube, web e IA"
+  caption="Del conocimiento a la IA"
+/>

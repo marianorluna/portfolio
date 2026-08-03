@@ -29,7 +29,7 @@ El formato de página **no es único** para todo el Lab: lo elige `type`.
 |--------|----------------|
 | `tutorial` | Shell tutorial (hero, TOC, kit interactivo) |
 | `dashboard` / `infografia` / `checklist` | Article mínimo (shell propio pendiente) |
-| `nota` | Shell de lectura (tipografía amena, imagen destacada, barra de progreso, subir) |
+| `nota` | Shell de lectura (tipografía amena, imagen destacada, barra de progreso, subir). Enlaces a fichas `/proyectos|projects/` abren en pestaña nueva |
 
 Un dashboard futuro tendrá otro layout; no hereda el shell tutorial.
 
@@ -127,6 +127,8 @@ Orden recomendado: instrucción → `<Figure>` → `Callout` / código. Si el ar
 | `<Section id="...">` | Panel de contenido de un tab del shell tutorial |
 | `<Step number={1} title="..." defaultOpen>` | Paso numerado con acordeón |
 | `<Figure src="..." alt="..." caption="...">` | Captura o imagen editorial (pasos o cuerpo de notas) |
+| `<Highlight>` | Párrafo importante con recuadro suave (notas) |
+| `<PullQuote>` | Cita / frase clave con borde izquierdo accent (notas) |
 | `<IntroCard icon="book" title="...">` | Card a ancho completo (intro de sección) |
 | `<ReqCard icon="python" title="...">` | Card de requisito |
 | `<ToolCard icon="search" title="..." tools={[...]}>` | Card de caso de uso / tools |

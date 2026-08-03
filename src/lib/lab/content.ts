@@ -55,11 +55,12 @@ async function loadLabIndex(): Promise<Map<string, LabIndexEntry>> {
   return bySlug;
 }
 
+/** Une frontmatter + índice; `readingMinutes` se calcula aparte a partir del body. */
 function mergeWithIndex(
   frontmatter: LabFrontmatter,
   locale: Locale,
   indexBySlug: Map<string, LabIndexEntry>
-): LabResourceSummary {
+): Omit<LabResourceSummary, "readingMinutes"> {
   const indexEntry = indexBySlug.get(frontmatter.slug);
   if (indexEntry == null) {
     throw new Error(

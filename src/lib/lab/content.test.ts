@@ -78,6 +78,7 @@ describe("listLabResources", () => {
     expect(result[0].locale).toBe("es");
     expect(result[0].id).toBe("1002");
     expect(result[0].updatedAt).toBe("2026-06");
+    expect(result[0].readingMinutes).toBeGreaterThanOrEqual(1);
   });
 
   it("excluye recursos marcados como draft", async () => {

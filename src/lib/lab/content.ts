@@ -119,7 +119,10 @@ export async function listLabResources(locale: Locale): Promise<LabResourceSumma
   const entries = await Promise.all(slugs.map((slug) => readEntryFile(locale, slug)));
   return entries
     .filter((entry): entry is RawEntry => entry != null && !entry.frontmatter.draft)
-    .map((entry) => mergeWithIndex(entry.frontmatter, locale, indexBySlug))
+    .map((entry) => ({
+      ...mergeWithIndex(entry.frontmatter, locale, indexBySlug),
+      readingMinutes: estimateLabReadingMinutes(entry.body),
+    }))
     .sort((a, b) => {
       const dateA = getLabEffectiveDate(a);
       const dateB = getLabEffectiveDate(b);

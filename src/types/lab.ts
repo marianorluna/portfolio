@@ -67,6 +67,8 @@ export type LabIndexEntry = {
 export type LabResourceSummary = LabFrontmatter &
   LabIndexEntry & {
     locale: Locale;
+    /** Minutos de lectura estimados a partir del cuerpo MDX (mismo valor que en la entrada). */
+    readingMinutes: number;
   };
 
 /** Recurso completo con el MDX ya compilado a elementos React (RSC). */

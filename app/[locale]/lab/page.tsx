@@ -85,6 +85,10 @@ export default async function LabIndexPage({ params, searchParams }: PageProps) 
     : [
         ...visibleResources.map((resource, index) => {
           const effective = getLabEffectiveDate(resource);
+          const cardMinutes =
+            resource.type === "nota"
+              ? resource.readingMinutes
+              : resource.durationMinutes;
           return (
             <LabResourceCard
               key={resource.id}
@@ -103,8 +107,8 @@ export default async function LabIndexPage({ params, searchParams }: PageProps) 
               dateText={formatLabMonthYear(effective, locale)}
               dateTime={effective}
               durationText={
-                resource.durationMinutes != null
-                  ? formatLabDurationReady(resource.durationMinutes, copy.durationReadyLabel)
+                cardMinutes != null
+                  ? formatLabDurationReady(cardMinutes, copy.durationReadyLabel)
                   : undefined
               }
               enterDelayMs={80 + index * 40}

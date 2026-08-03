@@ -4036,6 +4036,166 @@ html[data-theme="light"] .lab-page--index {
   color: var(--text-main);
 }
 
+/* Shell nota: columna de lectura + chrome de progreso */
+.lab-page--note {
+  padding-top: 20px;
+}
+
+.lab-page__header--note {
+  max-width: 680px;
+  margin: 0 auto 40px;
+  text-align: center;
+}
+
+.lab-page__header--note .lab-entry-nav {
+  margin-bottom: 28px;
+}
+
+.lab-note-header__copy {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.lab-page__header--note .lab-page__kicker {
+  margin: 0 0 14px;
+}
+
+.lab-note-header__title {
+  margin: 0;
+  font-size: clamp(1.75rem, 4.2vw, 2.35rem);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+  line-height: 1.15;
+  color: var(--text-main);
+}
+
+.lab-note-header__description {
+  margin: 16px auto 0;
+  max-width: 560px;
+  font-size: 16px;
+  line-height: 1.65;
+}
+
+.lab-note-header__meta {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  margin-top: 22px;
+}
+
+.lab-note-header__meta .lab-article__meta,
+.lab-note-header__meta .lab-article__tags {
+  justify-content: center;
+}
+
+.lab-note-featured {
+  margin: 32px 0 0;
+  padding: 0;
+}
+
+.lab-note-featured__media {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  overflow: hidden;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  background: color-mix(in srgb, var(--panel-bg) 70%, transparent);
+}
+
+.lab-note-featured__image {
+  object-fit: cover;
+}
+
+.lab-note-featured__credit {
+  margin: 10px 0 0;
+  font-size: 12px;
+  color: var(--text-muted);
+  text-align: center;
+}
+
+.lab-page__content--note {
+  max-width: 680px;
+}
+
+.lab-reading-progress {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 60;
+  height: 6px;
+  pointer-events: none;
+  background: color-mix(in srgb, var(--panel-border) 55%, transparent);
+}
+
+.lab-reading-progress__bar {
+  height: 100%;
+  width: 100%;
+  transform-origin: left center;
+  transform: scaleX(0);
+  background: var(--accent-cyan);
+  will-change: transform;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .lab-reading-progress__bar {
+    transition: transform 0.12s linear;
+  }
+}
+
+.lab-scroll-top {
+  position: fixed;
+  right: max(32px, calc(env(safe-area-inset-right) + 24px));
+  bottom: max(20px, env(safe-area-inset-bottom));
+  z-index: 60;
+  display: grid;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  border: 1px solid var(--panel-border);
+  background: color-mix(in srgb, var(--panel-bg) 92%, transparent);
+  color: var(--accent-cyan);
+  cursor: pointer;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transform: translateY(8px);
+  transition:
+    opacity 0.2s ease,
+    transform 0.2s ease,
+    visibility 0.2s,
+    border-color 0.15s,
+    background 0.15s;
+}
+
+.lab-scroll-top.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+  transform: translateY(0);
+}
+
+.lab-scroll-top:hover {
+  border-color: var(--accent-cyan);
+  background: color-mix(in srgb, var(--accent-cyan) 12%, var(--panel-bg));
+}
+
+.lab-scroll-top:focus-visible {
+  outline: 2px solid var(--accent-cyan);
+  outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .lab-scroll-top {
+    transition: none;
+    transform: none;
+  }
+}
+
 .lab-empty {
   color: var(--text-muted);
   font-size: 14px;
@@ -5495,6 +5655,10 @@ html[data-theme="light"] .lab-bento-nav__tab {
   .lab-page__header .lab-entry-nav {
     margin-bottom: 16px;
   }
+
+  .lab-page__header--note .lab-entry-nav {
+    margin-bottom: 24px;
+  }
 }
 
 html[data-theme="light"] .lab-entry-flyout {
@@ -5643,6 +5807,49 @@ html[data-theme="light"] .lab-entry-flyout {
   gap: 18px;
   font-size: 15px;
   line-height: 1.7;
+}
+
+.lab-article--note {
+  gap: 0;
+  max-width: 680px;
+  margin-inline: auto;
+  font-size: 17.5px;
+  line-height: 1.75;
+  color: var(--text-main);
+}
+
+.lab-article--note > p {
+  margin: 0 0 1.35em;
+  color: var(--text-main);
+}
+
+.lab-article--note > p:first-child {
+  font-size: 1.05em;
+  line-height: 1.7;
+  color: color-mix(in srgb, var(--text-main) 88%, var(--text-muted));
+}
+
+.lab-article--note > p:last-child {
+  margin-bottom: 0;
+}
+
+.lab-article--note h2 {
+  margin: 1.75em 0 0.65em;
+  font-size: 1.35em;
+}
+
+.lab-article--note h3 {
+  margin: 1.45em 0 0.55em;
+  font-size: 1.15em;
+}
+
+.lab-article--note ul,
+.lab-article--note ol {
+  margin: 0 0 1.35em;
+}
+
+.lab-article--note .lab-figure {
+  margin: 1.75em 0;
 }
 
 .lab-section {

@@ -77,6 +77,8 @@ export type LabResource = {
   createdAt: string;
   updatedAt: string;
   content: ReactNode;
+  /** Minutos de lectura estimados a partir del cuerpo MDX. */
+  readingMinutes: number;
 };
 
 /** Tab del shell tutorial/guía (id debe coincidir con `<Section id="...">` en MDX). */
@@ -104,7 +106,14 @@ export type LabUiCopy = {
    * Plantilla de duración estimada; usa `{minutes}` (p. ej. "~{minutes} min").
    */
   durationReadyLabel: string;
+  /**
+   * Plantilla de tiempo de lectura (notas); usa `{minutes}`
+   * (p. ej. "~{minutes} min de lectura").
+   */
+  readingTimeLabel: string;
   backToLabLabel: string;
+  /** Aria-label del botón subir al inicio en el shell de notas. */
+  scrollToTopLabel: string;
   /** Aria-label del TOC sticky del shell tutorial. */
   tocAriaLabel: string;
   /** Tabs del shell tutorial/guía (ids deben coincidir con `<Section id="...">` en MDX). */

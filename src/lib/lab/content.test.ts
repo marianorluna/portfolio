@@ -192,6 +192,7 @@ describe("getLabResource", () => {
     expect(result?.id).toBe("01TESTID000000000000000001");
     expect(result?.createdAt).toBe("2026-01");
     expect(result?.updatedAt).toBe("2026-03");
+    expect(result?.readingMinutes).toBeGreaterThanOrEqual(1);
     expect(isValidElement(result?.content)).toBe(true);
   });
 

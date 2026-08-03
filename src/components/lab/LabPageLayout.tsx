@@ -3,6 +3,7 @@ import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Locale } from "@/types/portfolio";
 import { LabEntryNav } from "./LabEntryNav";
+import { LabReadingChrome } from "./LabReadingChrome";
 import { LabSectionTabs, type LabTocItem } from "./LabSectionTabs";
 import type { LabSettingsCopy } from "./LabSettingsModal";
 
@@ -18,18 +19,23 @@ type Props = {
   /**
    * `index`: viewport completo sin chrome; el hero vive en el bento.
    * `tutorial`: shell interactivo (hero glow + TOC) para tutoriales.
+   * `note`: shell de lectura (tipografía, featured image, progress).
    * `article` (default): header clásico con título y descripción.
    */
-  variant?: "index" | "article" | "tutorial";
-  /** Meta bajo el título (nivel, fecha, tags) — usado en tutorial/article. */
+  variant?: "index" | "article" | "tutorial" | "note";
+  /** Meta bajo el título (nivel, fecha, tags) — usado en tutorial/article/note. */
   meta?: ReactNode;
   /** Items de tabs de sección (solo `tutorial`). */
   tocItems?: LabTocItem[];
   tocAriaLabel?: string;
-  /** Imagen de portada del hero (solo `tutorial`). */
+  /** Imagen de portada (hero tutorial o featured de nota). */
   heroImage?: string;
+  /** Alt de la imagen destacada (notas). */
+  heroAlt?: string;
   /** Crédito bajo la portada (p. ej. generada con IA). */
   heroCredit?: string;
+  /** Aria-label del botón subir (solo `note`). */
+  scrollToTopLabel?: string;
   /** Chrome móvil/tablet: menú + modal de ajustes. */
   settingsLabel?: string;
   menuOpenLabel?: string;
@@ -120,7 +126,9 @@ export function LabPageLayout({
   tocItems,
   tocAriaLabel = "Secciones",
   heroImage,
+  heroAlt,
   heroCredit,
+  scrollToTopLabel,
   settingsLabel,
   menuOpenLabel,
   menuCloseLabel,
@@ -199,6 +207,50 @@ export function LabPageLayout({
             children
           )}
         </article>
+      </main>
+    );
+  }
+
+  if (variant === "note") {
+    const hasFeatured = heroImage != null && heroImage.length > 0;
+    const featuredAlt = heroAlt != null && heroAlt.length > 0 ? heroAlt : title;
+
+    return (
+      <main className="lab-page lab-page--note">
+        {scrollToTopLabel != null && scrollToTopLabel.length > 0 && (
+          <LabReadingChrome scrollToTopLabel={scrollToTopLabel} />
+        )}
+        <header className="lab-page__header lab-page__header--note">
+          {chrome}
+          <div className="lab-note-header__copy">
+            {kicker != null && <p className="lab-page__kicker">{kicker}</p>}
+            <h1 className="lab-note-header__title">{title}</h1>
+            {description != null && (
+              <p className="lab-page__description lab-note-header__description">
+                {description}
+              </p>
+            )}
+            {meta != null && <div className="lab-note-header__meta">{meta}</div>}
+          </div>
+          {hasFeatured && (
+            <figure className="lab-note-featured">
+              <div className="lab-note-featured__media">
+                <Image
+                  src={heroImage}
+                  alt={featuredAlt}
+                  fill
+                  priority
+                  sizes="(max-width: 720px) 100vw, 680px"
+                  className="lab-note-featured__image"
+                />
+              </div>
+              {heroCredit != null && heroCredit.length > 0 && (
+                <figcaption className="lab-note-featured__credit">{heroCredit}</figcaption>
+              )}
+            </figure>
+          )}
+        </header>
+        <article className="lab-page__content lab-page__content--note">{children}</article>
       </main>
     );
   }

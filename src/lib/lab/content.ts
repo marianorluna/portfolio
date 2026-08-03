@@ -11,6 +11,7 @@ import type {
 } from "@/types/lab";
 import { labMdxComponents } from "@/components/lab/mdx-components";
 import { getLabEffectiveDate } from "./dates";
+import { estimateLabReadingMinutes } from "./duration";
 import { labFrontmatterSchema, labIndexSchema } from "./schema";
 
 const CONTENT_ROOT = path.join(process.cwd(), "content", "lab");
@@ -162,5 +163,6 @@ export async function getLabResource(locale: Locale, slug: string): Promise<LabR
     createdAt: summary.createdAt,
     updatedAt: summary.updatedAt,
     content,
+    readingMinutes: estimateLabReadingMinutes(entry.body),
   };
 }

@@ -29,7 +29,7 @@ El formato de página **no es único** para todo el Lab: lo elige `type`.
 |--------|----------------|
 | `tutorial` | Shell tutorial (hero, TOC, kit interactivo) |
 | `dashboard` / `infografia` / `checklist` | Article mínimo (shell propio pendiente) |
-| `nota` | Article plano (blog corto) |
+| `nota` | Shell de lectura (tipografía amena, imagen destacada, barra de progreso, subir) |
 
 Un dashboard futuro tendrá otro layout; no hereda el shell tutorial.
 
@@ -101,7 +101,8 @@ Viven en `public/lab/covers/` como **WebP**. Convención de nombres:
 | `{slug}-grid.webp` | `coverImage` | **1:1** (~1600×1600 o 2048×2048) | Card del bento en celdas ~cuadradas; safe zone centrada |
 
 - `coverImage` (**obligatorio**): sin ella el schema falla. Siempre el asset `-grid`.
-- `heroImage` (recomendado): portada del hero. Si falta, el hero queda sin imagen y el bento usa solo `-grid`.
+- `heroImage` (recomendado): portada del hero (tutoriales) o **imagen destacada** bajo el título (notas). Si falta, el hero/featured queda sin imagen y el bento usa solo `-grid`.
+- **Notas (`type: nota`):** el shell de lectura muestra `heroImage` como featured post bajo el meta. En el cuerpo puedes insertar `<Figure>` en cualquier párrafo (inicio o medio), igual que en tutoriales.
 - **Selección inteligente en el bento:** si hay `heroImage`, la card muestra `-grid` cuando el aspect ratio de la celda es &lt; 4/3 (1 columna / fill compacto) y `-portada` cuando es ≥ 4/3 (span 2 columnas, filtro con pocas cards, filas a ancho completo en móvil).
 - Sujeto y safe zone **centrados**: el bento hace `object-fit: cover` y recorta bordes según la celda.
 
@@ -125,7 +126,7 @@ Orden recomendado: instrucción → `<Figure>` → `Callout` / código. Si el ar
 |------------|-----|
 | `<Section id="...">` | Panel de contenido de un tab del shell tutorial |
 | `<Step number={1} title="..." defaultOpen>` | Paso numerado con acordeón |
-| `<Figure src="..." alt="..." caption="...">` | Captura de pantalla en un paso |
+| `<Figure src="..." alt="..." caption="...">` | Captura o imagen editorial (pasos o cuerpo de notas) |
 | `<IntroCard icon="book" title="...">` | Card a ancho completo (intro de sección) |
 | `<ReqCard icon="python" title="...">` | Card de requisito |
 | `<ToolCard icon="search" title="..." tools={[...]}>` | Card de caso de uso / tools |
@@ -148,9 +149,11 @@ Dos capas de contenido + infra de locale:
 | Contenido editorial | `content/lab/{locale}/*.mdx` + `index.json` | Títulos, descripciones y cuerpo de cada entrada |
 | Locale / URLs | `src/i18n/` | Resolución de idioma y segmentos de ruta (no copy) |
 
-Cualquier texto nuevo de la UI del Lab (CTAs, filtros, mensajes vacíos, tabs del shell, pie de feedback de tutoriales) va en `lab.ui` de los JSON del portfolio. El rail solo guarda datos estructurales del botón (`id`, `label`, `icon`).
+Cualquier texto nuevo de la UI del Lab (CTAs, filtros, mensajes vacíos, tabs del shell, pie de feedback de tutoriales, botón subir en notas) va en `lab.ui` de los JSON del portfolio. El rail solo guarda datos estructurales del botón (`id`, `label`, `icon`).
 
 Los tutoriales renderizan automáticamente `LabTutorialContactNote` al final del contenido (enlace a `/{locale}/contacto` + correo de `ui.contactSocial`). Copy: `tutorialContactLead`, `tutorialContactFormLabel`, `tutorialContactOr`.
+
+Las notas (`type: nota`) montan `LabReadingChrome` (barra de progreso + subir) y muestran tiempo de lectura estimado a partir del cuerpo MDX. Copy: `scrollToTopLabel`, `readingTimeLabel`.
 
 ## Relación con el portfolio 3D
 

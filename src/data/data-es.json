@@ -433,7 +433,7 @@
     "pages": {
       "legalNotice": {
         "metadataTitle": "Aviso Legal",
-        "metadataDescription": "Aviso legal de marianorluna.com: titular del sitio, condiciones de uso y propiedad intelectual.",
+        "metadataDescription": "Aviso legal de marianorluna.com: titular del sitio, condiciones de uso, propiedad intelectual y derechos sobre el Lab.",
         "title": "Aviso legal",
         "sections": [
           {
@@ -453,7 +453,14 @@
           {
             "title": "Propiedad intelectual",
             "paragraphs": [
-              "Los contenidos, diseño y código del sitio son titularidad del propietario del sitio o de terceros con licencia. Queda prohibida su reproducción sin autorización."
+              "El diseño, los textos, las imágenes y demás contenidos del sitio, incluidos de forma expresa los materiales del Lab (tutoriales, notas, checklists, infografías, dashboards y recursos publicados en /lab), son titularidad de Mariano Luna o de terceros con licencia. Todos los derechos están reservados.",
+              "Se permite la consulta y el uso personal de estos contenidos. Queda prohibida su reproducción, distribución, modificación o uso comercial sin autorización previa por escrito del titular.",
+              "La licencia MIT del repositorio de código fuente de este proyecto aplica únicamente al código publicado en dicho repositorio. No cubre el contenido editorial del Lab ni los activos del sitio, salvo que se indique expresamente lo contrario."
+            ],
+            "bullets": [
+              "Si se comparte o cita un material del Lab (enlace, extracto razonable, redes sociales o docencia), debe citarse al autor (Mariano Luna), el título de la pieza y la URL canónica en marianorluna.com.",
+              "No debe alterarse el sentido del contenido ni omitirse la atribución, ni presentarse el material como de dominio público o libre de derechos.",
+              "Las marcas y nombres de terceros (por ejemplo, Autodesk o Revit) pertenecen a sus respectivos titulares."
             ]
           }
         ]
@@ -547,7 +554,9 @@
       "publishedLabel": "Publicado",
       "updatedLabel": "Actualizado",
       "durationReadyLabel": "~{minutes} min",
+      "readingTimeLabel": "~{minutes} min de lectura",
       "backToLabLabel": "Volver al Lab",
+      "scrollToTopLabel": "Volver arriba",
       "tocAriaLabel": "Secciones del tutorial",
       "tutorialToc": [
         { "id": "requisitos", "label": "Requisitos" },

@@ -50,13 +50,19 @@ export default async function LabEntryPage({ params }: PageProps) {
 
   const copy = getLabCopy(locale);
   const data = getPortfolioDataByLocale(locale);
-  const { frontmatter, createdAt, updatedAt } = resource;
+  const { frontmatter, createdAt, updatedAt, readingMinutes } = resource;
   const effective = getLabEffectiveDate({ createdAt, updatedAt });
   const dateLabel = isLabUpdated({ createdAt, updatedAt })
     ? copy.updatedLabel
     : copy.publishedLabel;
   const dateText = formatLabMonthYear(effective, locale);
   const isTutorialShell = TUTORIAL_TYPES.has(frontmatter.type);
+  const isNoteShell = frontmatter.type === "nota";
+  const layoutVariant = isNoteShell
+    ? ("note" as const)
+    : isTutorialShell
+      ? ("tutorial" as const)
+      : ("article" as const);
   const settingsCopy = {
     settingsKicker: data.nav.uiText.settingsKicker,
     settingsTitle: data.nav.uiText.settingsTitle,
@@ -87,16 +93,23 @@ export default async function LabEntryPage({ params }: PageProps) {
       name: "Mariano Luna",
     },
     url: `${SITE_URL}/${locale}/lab/${slug}`,
+    ...(isNoteShell ? { timeRequired: `PT${readingMinutes}M` } : {}),
   };
 
   const meta = (
     <>
       <div className="lab-article__meta">
         <span className="lab-article__level">{copy.levelLabel[frontmatter.level]}</span>
-        {frontmatter.durationMinutes != null && (
+        {isNoteShell ? (
           <span className="lab-article__duration">
-            {formatLabDurationReady(frontmatter.durationMinutes, copy.durationReadyLabel)}
+            {formatLabDurationReady(readingMinutes, copy.readingTimeLabel)}
           </span>
+        ) : (
+          frontmatter.durationMinutes != null && (
+            <span className="lab-article__duration">
+              {formatLabDurationReady(frontmatter.durationMinutes, copy.durationReadyLabel)}
+            </span>
+          )
         )}
         <time className="lab-article__date" dateTime={effective}>
           {dateLabel} {dateText}
@@ -123,27 +136,29 @@ export default async function LabEntryPage({ params }: PageProps) {
         kicker={copy.typeLabel[frontmatter.type]}
         title={frontmatter.title}
         description={frontmatter.description}
-        backToHomeLabel={data.legal.backToHome}
-        backToLabLabel={copy.backToLabLabel}
-        variant={isTutorialShell ? "tutorial" : "article"}
-        meta={meta}
-        tocItems={isTutorialShell ? copy.tutorialToc : undefined}
-        tocAriaLabel={copy.tocAriaLabel}
-        heroImage={frontmatter.heroImage}
-        heroCredit={
-          frontmatter.heroImage != null && frontmatter.heroImage.length > 0
-            ? copy.aiCoverCredit
-            : undefined
-        }
-        settingsLabel={data.nav.uiText.settingsLabel}
-        menuOpenLabel={copy.menuOpenLabel}
-        menuCloseLabel={copy.menuCloseLabel}
-        menuKicker={copy.menuKicker}
-        menuTitle={copy.menuTitle}
-        settingsCopy={settingsCopy}
-      >
-        <div className="lab-article">
-          {resource.content}
+      backToHomeLabel={data.legal.backToHome}
+      backToLabLabel={copy.backToLabLabel}
+      variant={layoutVariant}
+      meta={meta}
+      tocItems={isTutorialShell ? copy.tutorialToc : undefined}
+      tocAriaLabel={copy.tocAriaLabel}
+      heroImage={frontmatter.heroImage}
+      heroAlt={frontmatter.heroAlt}
+      heroCredit={
+        frontmatter.heroImage != null && frontmatter.heroImage.length > 0
+          ? copy.aiCoverCredit
+          : undefined
+      }
+      scrollToTopLabel={isNoteShell ? copy.scrollToTopLabel : undefined}
+      settingsLabel={data.nav.uiText.settingsLabel}
+      menuOpenLabel={copy.menuOpenLabel}
+      menuCloseLabel={copy.menuCloseLabel}
+      menuKicker={copy.menuKicker}
+      menuTitle={copy.menuTitle}
+      settingsCopy={settingsCopy}
+    >
+      <div className={isNoteShell ? "lab-article lab-article--note" : "lab-article"}>
+        {resource.content}
           {isTutorialShell && (
             <LabTutorialContactNote
               locale={locale}

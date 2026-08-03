@@ -5,9 +5,25 @@ import type { LabPlaceholderCard } from "@/types/lab";
  * Placeholders del bento para previsualizar el índice lleno
  * (11 slots de contenido + hero = 12). No son MDX ni rutas publicables.
  * El color lo marca el tipo vía `labFaceToneForType` (tokens del tema).
+ *
+ * Desktop home (tras N recursos reales en feat…):
+ *   hero hero feat s2  s3
+ *   s4   s5   s5   s6  s7
+ *   s8   s9   s10  s10 s11
+ * Ordenar para que el mismo face-tone no quede en celdas vecinas.
+ * Con 2 recursos (nota blue + tutorial cover), tonos en s3…s11:
+ *   cyan → ink → frost → slate → blue → slate → ink → cyan → ink
  */
 const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
   es: [
+    {
+      id: "ph-tutorial-dynamo",
+      type: "tutorial",
+      size: "lg",
+      title: "Automatiza planos con Dynamo + IA",
+      description: "De la idea al script: pasos claros para quien empieza.",
+      tags: ["Dynamo", "IA", "Revit"],
+    },
     {
       id: "ph-tutorial-navis",
       type: "dashboard",
@@ -15,22 +31,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       title: "Clash detection sin drama",
       description: "Cómo preparar el modelo antes de abrir Navisworks.",
       tags: ["Navisworks", "Clash"],
-    },
-    {
-      id: "ph-checklist-qa",
-      type: "checklist",
-      size: "sm",
-      title: "QA BIM en 15 minutos",
-      description: "Una pasada rápida de calidad antes de entregar.",
-      tags: ["QA", "BIM"],
-    },
-    {
-      id: "ph-nota-prompts",
-      type: "nota",
-      size: "sm",
-      title: "5 prompts útiles para modelado",
-      description: "Plantillas cortas para pedir ayuda a la IA sin rodeos.",
-      tags: ["IA", "Prompts"],
     },
     {
       id: "ph-infografia-mcp",
@@ -41,28 +41,20 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       tags: ["MCP", "Cursor", "Revit"],
     },
     {
-      id: "ph-dashboard-kpi",
-      type: "dashboard",
-      size: "md",
-      title: "KPIs de coordinación en obra",
-      description: "Qué mirar cada semana sin ahogarte en Excel.",
-      tags: ["KPI", "Obra"],
+      id: "ph-checklist-qa",
+      type: "checklist",
+      size: "sm",
+      title: "QA BIM en 15 minutos",
+      description: "Una pasada rápida de calidad antes de entregar.",
+      tags: ["QA", "BIM"],
     },
     {
-      id: "ph-tutorial-dynamo",
-      type: "tutorial",
-      size: "lg",
-      title: "Automatiza planos con Dynamo + IA",
-      description: "De la idea al script: pasos claros para quien empieza.",
-      tags: ["Dynamo", "IA", "Revit"],
-    },
-    {
-      id: "ph-tutorial-ifc",
-      type: "tutorial",
-      size: "md",
-      title: "Exportar IFC limpio desde Revit",
-      description: "Checklist visual de qué limpiar antes de compartir el modelo.",
-      tags: ["IFC", "Revit", "BIM"],
+      id: "ph-nota-python",
+      type: "nota",
+      size: "sm",
+      title: "Python en Revit sin miedo",
+      description: "Tres conceptos para leer un script de pyRevit.",
+      tags: ["Python", "pyRevit"],
     },
     {
       id: "ph-checklist-entrega",
@@ -73,12 +65,20 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       tags: ["Entrega", "CDE"],
     },
     {
-      id: "ph-nota-python",
-      type: "nota",
-      size: "sm",
-      title: "Python en Revit sin miedo",
-      description: "Tres conceptos para leer un script de pyRevit.",
-      tags: ["Python", "pyRevit"],
+      id: "ph-dashboard-kpi",
+      type: "dashboard",
+      size: "md",
+      title: "KPIs de coordinación en obra",
+      description: "Qué mirar cada semana sin ahogarte en Excel.",
+      tags: ["KPI", "Obra"],
+    },
+    {
+      id: "ph-tutorial-ifc",
+      type: "tutorial",
+      size: "md",
+      title: "Exportar IFC limpio desde Revit",
+      description: "Checklist visual de qué limpiar antes de compartir el modelo.",
+      tags: ["IFC", "Revit", "BIM"],
     },
     {
       id: "ph-dashboard-coste",
@@ -91,28 +91,20 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
   ],
   en: [
     {
+      id: "ph-tutorial-dynamo",
+      type: "tutorial",
+      size: "lg",
+      title: "Automate sheets with Dynamo + AI",
+      description: "From idea to script: clear steps for beginners.",
+      tags: ["Dynamo", "AI", "Revit"],
+    },
+    {
       id: "ph-tutorial-navis",
       type: "dashboard",
       size: "md",
       title: "Clash detection without the drama",
       description: "How to prep the model before opening Navisworks.",
       tags: ["Navisworks", "Clash"],
-    },
-    {
-      id: "ph-checklist-qa",
-      type: "checklist",
-      size: "sm",
-      title: "BIM QA in 15 minutes",
-      description: "A fast quality pass before you hand over.",
-      tags: ["QA", "BIM"],
-    },
-    {
-      id: "ph-nota-prompts",
-      type: "nota",
-      size: "sm",
-      title: "5 useful modeling prompts",
-      description: "Short templates to ask AI for help without fluff.",
-      tags: ["AI", "Prompts"],
     },
     {
       id: "ph-infografia-mcp",
@@ -123,28 +115,20 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       tags: ["MCP", "Cursor", "Revit"],
     },
     {
-      id: "ph-dashboard-kpi",
-      type: "dashboard",
-      size: "md",
-      title: "Site coordination KPIs",
-      description: "What to watch every week without drowning in spreadsheets.",
-      tags: ["KPI", "Site"],
+      id: "ph-checklist-qa",
+      type: "checklist",
+      size: "sm",
+      title: "BIM QA in 15 minutes",
+      description: "A fast quality pass before you hand over.",
+      tags: ["QA", "BIM"],
     },
     {
-      id: "ph-tutorial-dynamo",
-      type: "tutorial",
-      size: "lg",
-      title: "Automate sheets with Dynamo + AI",
-      description: "From idea to script: clear steps for beginners.",
-      tags: ["Dynamo", "AI", "Revit"],
-    },
-    {
-      id: "ph-tutorial-ifc",
-      type: "tutorial",
-      size: "md",
-      title: "Export a clean IFC from Revit",
-      description: "A visual checklist of what to clean before sharing the model.",
-      tags: ["IFC", "Revit", "BIM"],
+      id: "ph-nota-python",
+      type: "nota",
+      size: "sm",
+      title: "Python in Revit without fear",
+      description: "Three concepts to read a pyRevit script.",
+      tags: ["Python", "pyRevit"],
     },
     {
       id: "ph-checklist-entrega",
@@ -155,12 +139,20 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       tags: ["Handover", "CDE"],
     },
     {
-      id: "ph-nota-python",
-      type: "nota",
-      size: "sm",
-      title: "Python in Revit without fear",
-      description: "Three concepts to read a pyRevit script.",
-      tags: ["Python", "pyRevit"],
+      id: "ph-dashboard-kpi",
+      type: "dashboard",
+      size: "md",
+      title: "Site coordination KPIs",
+      description: "What to watch every week without drowning in spreadsheets.",
+      tags: ["KPI", "Site"],
+    },
+    {
+      id: "ph-tutorial-ifc",
+      type: "tutorial",
+      size: "md",
+      title: "Export a clean IFC from Revit",
+      description: "A visual checklist of what to clean before sharing the model.",
+      tags: ["IFC", "Revit", "BIM"],
     },
     {
       id: "ph-dashboard-coste",

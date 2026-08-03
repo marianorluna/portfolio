@@ -433,7 +433,7 @@
     "pages": {
       "legalNotice": {
         "metadataTitle": "Legal Notice",
-        "metadataDescription": "Legal notice for marianorluna.com: site owner, terms of use, and intellectual property.",
+        "metadataDescription": "Legal notice for marianorluna.com: site owner, terms of use, intellectual property, and Lab content rights.",
         "title": "Legal notice",
         "sections": [
           {
@@ -453,7 +453,14 @@
           {
             "title": "Intellectual property",
             "paragraphs": [
-              "The website content, design, and source code belong to the website owner or licensed third parties. Reproduction without permission is prohibited."
+              "The design, text, images, and other website content — including expressly the Lab materials (tutorials, notes, checklists, infographics, dashboards, and resources published under /lab) — belong to Mariano Luna or to licensed third parties. All rights reserved.",
+              "Personal viewing and use of these materials is permitted. Reproduction, distribution, modification, or commercial use without the owner's prior written permission is prohibited.",
+              "The MIT license of this project's source-code repository applies only to the code published in that repository. It does not cover Lab editorial content or site assets, unless expressly stated otherwise."
+            ],
+            "bullets": [
+              "If you share or cite Lab material (a link, a reasonable excerpt, social media, or teaching), you must credit the author (Mariano Luna), the piece title, and the canonical URL on marianorluna.com.",
+              "Do not alter the meaning of the content, omit attribution, or present the material as public domain or free of rights.",
+              "Third-party trademarks and names (for example, Autodesk or Revit) belong to their respective owners."
             ]
           }
         ]
@@ -547,7 +554,9 @@
       "publishedLabel": "Published",
       "updatedLabel": "Updated",
       "durationReadyLabel": "~{minutes} min",
+      "readingTimeLabel": "~{minutes} min read",
       "backToLabLabel": "Back to Lab",
+      "scrollToTopLabel": "Back to top",
       "tocAriaLabel": "Tutorial sections",
       "tutorialToc": [
         { "id": "requisitos", "label": "Prerequisites" },

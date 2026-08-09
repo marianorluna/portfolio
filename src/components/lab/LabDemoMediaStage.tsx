@@ -48,10 +48,13 @@ export function LabDemoMediaStage({
   const hasVideo = hasRealVideo || hasPendingVideo;
   const hasLive = demoUrl != null && demoUrl.length > 0;
   const tabsId = useId();
-  const [thirdPartyConsent, setThirdPartyConsentState] = useState(() => hasThirdPartyConsent());
+  // false en SSR y en el primer paint del cliente para evitar mismatch de hidratación
+  // (localStorage solo existe en el browser).
+  const [thirdPartyConsent, setThirdPartyConsentState] = useState(false);
   const [activeTab, setActiveTab] = useState<TabId>(() => (hasLive ? "live" : "video"));
 
   useEffect(() => {
+    setThirdPartyConsentState(hasThirdPartyConsent());
     return onConsentChanged((state) => {
       setThirdPartyConsentState(state.thirdParty);
     });

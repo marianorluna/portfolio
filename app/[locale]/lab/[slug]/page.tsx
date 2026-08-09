@@ -85,8 +85,10 @@ export default async function LabEntryPage({ params }: PageProps) {
   };
 
   const pageUrl = `${SITE_URL}/${locale}/lab/${slug}`;
-  const hasDemoVideo =
+  const hasDemoVideoId =
     frontmatter.demoVideoId != null && frontmatter.demoVideoId.length > 0;
+  const hasDemoVideoPending = frontmatter.demoVideoPending === true && !hasDemoVideoId;
+  const hasDemoVideo = hasDemoVideoId || hasDemoVideoPending;
   const hasDemoUrl = frontmatter.demoUrl != null && frontmatter.demoUrl.length > 0;
 
   const labJsonLd = {
@@ -112,7 +114,7 @@ export default async function LabEntryPage({ params }: PageProps) {
     url: pageUrl,
     ...(isNoteShell ? { timeRequired: `PT${readingMinutes}M` } : {}),
     ...(isDemoShell && hasDemoUrl ? { applicationCategory: "BusinessApplication" } : {}),
-    ...(isDemoShell && hasDemoVideo
+    ...(isDemoShell && hasDemoVideoId
       ? {
           video: {
             "@type": "VideoObject",
@@ -164,12 +166,14 @@ export default async function LabEntryPage({ params }: PageProps) {
       ? "lab-article lab-article--demo"
       : "lab-article";
 
+  // Con video (real o pendiente), el stage muestra solo video; la demo live va por CTA.
   const mediaStage =
     isDemoShell && (hasDemoVideo || hasDemoUrl) ? (
       <LabDemoMediaStage
         title={frontmatter.title}
         demoVideoId={frontmatter.demoVideoId}
-        demoUrl={frontmatter.demoUrl}
+        demoVideoPending={frontmatter.demoVideoPending}
+        demoUrl={hasDemoVideo ? undefined : frontmatter.demoUrl}
         posterSrc={frontmatter.heroImage}
         posterAlt={frontmatter.heroAlt ?? frontmatter.title}
         copy={{
@@ -180,6 +184,8 @@ export default async function LabEntryPage({ params }: PageProps) {
           demoTabVideoLabel: copy.demoTabVideoLabel,
           demoTabLiveLabel: copy.demoTabLiveLabel,
           demoStageAriaLabel: copy.demoStageAriaLabel,
+          comingSoonLabel: copy.comingSoonLabel,
+          demoVideoPendingHint: copy.demoVideoPendingHint,
         }}
       />
     ) : undefined;

@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import type { ReactNode } from "react";
 import type { Locale } from "@/types/portfolio";
+import { LabDemoStageProvider } from "./LabDemoStageSlot";
 import { LabEntryNav } from "./LabEntryNav";
 import { LabReadingChrome } from "./LabReadingChrome";
 import { LabSectionTabs, type LabTocItem } from "./LabSectionTabs";
@@ -301,27 +302,17 @@ export function LabPageLayout({
             {showCtas && demoCtaCopy != null && (
               <div className="lab-demo-header__ctas">
                 {hasLive && (
-                  <a
-                    href={demoUrl}
-                    className="btn btn-primary"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href="#lab-try-demo" className="btn btn-primary">
                     {demoCtaCopy.openLiveLabel}
                   </a>
                 )}
                 {hasDemoVideo && (
-                  <a href="#lab-demo-stage" className="btn btn-secondary">
+                  <a href="#lab-demo-video" className="btn btn-secondary">
                     {demoCtaCopy.watchVideoLabel}
                   </a>
                 )}
                 {hasRepo && (
-                  <a
-                    href={repoUrl}
-                    className="btn btn-secondary"
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
+                  <a href="#lab-demo-code" className="btn btn-secondary">
                     {demoCtaCopy.repoLabel}
                   </a>
                 )}
@@ -346,8 +337,11 @@ export function LabPageLayout({
             </figure>
           )}
         </header>
-        {mediaStage}
-        <article className="lab-page__content lab-page__content--demo">{children}</article>
+        <article className="lab-page__content lab-page__content--demo">
+          <LabDemoStageProvider stage={mediaStage ?? null}>
+            {children}
+          </LabDemoStageProvider>
+        </article>
       </main>
     );
   }

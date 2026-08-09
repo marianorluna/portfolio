@@ -44,6 +44,11 @@ export const labFrontmatterSchema = z.object({
     .string()
     .regex(YOUTUBE_VIDEO_ID_PATTERN, "demoVideoId debe ser un id de YouTube válido")
     .optional(),
+  /**
+   * Placeholder del panel Video sin id YouTube (opcional).
+   * Si hay `demoVideoId`, el pending no afecta al embed.
+   */
+  demoVideoPending: z.boolean().optional(),
   /** URL https de la demo en vivo (opcional). */
   demoUrl: z
     .string()

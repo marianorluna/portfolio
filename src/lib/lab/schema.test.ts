@@ -31,6 +31,18 @@ describe("labFrontmatterSchema demo fields", () => {
     }
   });
 
+  it("acepta demoVideoPending sin demoVideoId", () => {
+    const parsed = labFrontmatterSchema.safeParse({
+      ...base,
+      demoVideoPending: true,
+      demoUrl: "https://demo.example.com/",
+    });
+    expect(parsed.success).toBe(true);
+    if (parsed.success) {
+      expect(parsed.data.demoVideoPending).toBe(true);
+    }
+  });
+
   it("rechaza demoUrl que no sea https", () => {
     const parsed = labFrontmatterSchema.safeParse({
       ...base,

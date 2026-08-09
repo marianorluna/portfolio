@@ -587,6 +587,7 @@
       "demoRepoLabel": "Código",
       "demoWatchVideoLabel": "Ver video",
       "demoStageAriaLabel": "Demostración multimedia",
+      "demoVideoPendingHint": "El video de la demo estará disponible aquí en breve.",
       "typeLabel": {
         "tutorial": "Tutorial",
         "demo": "Demo",

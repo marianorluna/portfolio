@@ -4,15 +4,16 @@ description: "Dashboard BIM con actualización en tiempo real para modelos de Re
 type: demo
 slug: bim-dashboard
 level: intermedio
-tags: ["Revit", "Speckle", "IA"]
+tags: ["Revit", "Speckle", "FastAPI", "React", "IA"]
 coverImage: "/lab/covers/bim-dashboard-grid.webp"
 coverAlt: "BIM Dashboard: panel web con KPIs y visor 3D"
 heroImage: "/lab/covers/bim-dashboard-portada.webp"
 heroAlt: "Portada de BIM Dashboard"
 size: lg
+demoUrl: "https://bim-dashboard.demo.marianorluna.com"
+repoUrl: "https://github.com/marianorluna/lab-bim-dashboard"
+demoVideoPending: true
 ---
-
-Panel web compartible para modelos de Revit: cambios en el modelo llegan en tiempo real, los KPIs y la tabla se enlazan al visor 3D, y puedes preguntar en lenguaje natural con resaltado en la geometría.
 
 ## Características
 
@@ -37,12 +38,63 @@ Panel web compartible para modelos de Revit: cambios en el modelo llegan en tiem
   </Feature>
 </FeatureGrid>
 
+<h2 id="lab-demo-video">Video de la demo</h2>
+
+<DemoStage />
+
+<DemoTry>
+
+<h2 id="lab-try-demo">Probar la demo</h2>
+
+Panel web compartible para modelos de Revit: cambios en el modelo llegan en tiempo real, los KPIs y la tabla se enlazan al visor 3D, y puedes preguntar en lenguaje natural con resaltado en la geometría.
+
+Acceso público de invitado (pensado para compartir):
+
+<DemoAccess
+  email="invitado@marianorluna.com"
+  password="abc123"
+  emailLabel="Email"
+  passwordLabel="Contraseña"
+>
+  Hasta **3 preguntas de chat con resultado en el visor por día e IP**. Las consultas sin elementos seleccionables no consumen cuota. El usuario admin no se publica.
+</DemoAccess>
+
+<TryIt href="https://bim-dashboard.demo.marianorluna.com" label="Abrir demo en vivo" />
+
+</DemoTry>
+## Stack
+
+<StackGrid>
+  <StackItem layer="Backend" tool="FastAPI + uvicorn + WebSocket" />
+  <StackItem layer="Base de datos" tool="SQLite + SQLAlchemy 2.0 async" />
+  <StackItem layer="Frontend" tool="React 19 + Vite + Tailwind" />
+  <StackItem layer="Visor 3D" tool="@speckle/viewer" />
+  <StackItem layer="Gráficos" tool="Recharts" />
+  <StackItem layer="IA" tool="DeepSeek v3 vía OpenRouter" />
+  <StackItem layer="Auth" tool="JWT (admin / guest)" />
+  <StackItem layer="Revit push" tool="pyRevit spool JSONL → relay → /ws/revit" />
+  <StackItem layer="Deploy" tool="Docker Compose + Coolify" />
+</StackGrid>
+
 ## Roles
 
-<RoleCard role="admin" title="Admin">
-  Escritura e ingest: sincroniza el modelo, gestiona datos y usa el chat sin cuota de invitado.
-</RoleCard>
+<RoleTabs ariaLabel="Roles de acceso">
+  <RoleCard role="admin" title="Admin">
+    Escritura e ingest: sincroniza el modelo, gestiona datos y usa el chat sin cuota de invitado. Credenciales no públicas.
+  </RoleCard>
 
-<RoleCard role="guest" title="Invitado">
-  Demo pública con cuota de chat: explora KPIs, visor y consultas hasta el límite configurado.
-</RoleCard>
+  <RoleCard role="guest" title="Invitado">
+    Demo pública con cuota de chat: explora KPIs, visor y consultas hasta el límite diario por IP. Ideal para enseñar el producto sin exponer escritura.
+  </RoleCard>
+</RoleTabs>
+
+<h2 id="lab-demo-code">Código</h2>
+
+Si tienes un poco de conocimiento técnico, puedes clonar el repositorio y explorarlo en local: arquitectura, setup y el flujo completo Revit → API → panel web están documentados en el README.
+
+```bash
+git clone https://github.com/marianorluna/lab-bim-dashboard.git
+cd lab-bim-dashboard
+```
+
+<TryIt href="https://github.com/marianorluna/lab-bim-dashboard" label="Abrir en GitHub" />

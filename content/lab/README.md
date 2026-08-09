@@ -87,6 +87,7 @@ heroImage: "/lab/covers/mi-entrada-portada.webp"
 # draft: true
 # --- solo type: demo (opcionales e independientes) ---
 # demoVideoId: "xxxxxxxxxxx"   # id de YouTube (embed in-site + enlace externo)
+# demoVideoPending: true       # placeholder del panel Video hasta tener el id
 # demoUrl: "https://tu-demo.ejemplo.com/"
 # repoUrl: "https://github.com/org/repo"
 ---
@@ -96,15 +97,22 @@ Las fechas **no** van en el frontmatter: viven en `index.json`.
 
 ### Shell demo
 
-- `demoVideoId` y/o `demoUrl` activan el stage multimedia (`#lab-demo-stage`). Puedes usar uno, otro o ambos (tabs Video / Demo en vivo).
+- `demoVideoId`, `demoVideoPending` y/o `demoUrl` activan el stage multimedia (`#lab-demo-stage`). Puedes combinar live + video (tabs Video / Demo en vivo).
+- Con `demoVideoPending: true` (y sin `demoVideoId`) el panel Video muestra un placeholder “Próximamente” sobre el poster; al publicar el id, quita el flag y pon `demoVideoId`.
 - El video se reproduce **en el sitio** (`youtube-nocookie`, consentimiento `thirdParty`) y también ofrece “Ver en YouTube”.
 - La demo live se embebe en iframe (dominio propio) y abre en pestaña nueva.
-- Features y roles van en el MDX (flexibles), no en el frontmatter:
+- Features, roles, acceso y stack van en el MDX (flexibles), no en el frontmatter:
 
 ```mdx
 <FeatureGrid>
   <Feature icon="radio" title="Tiempo real">…</Feature>
 </FeatureGrid>
+
+<DemoAccess email="invitado@…" password="…">Nota de cuota…</DemoAccess>
+
+<StackGrid>
+  <StackItem layer="Backend" tool="FastAPI + WebSocket" />
+</StackGrid>
 
 <RoleCard role="admin" title="Admin">…</RoleCard>
 <RoleCard role="guest" title="Invitado">…</RoleCard>
@@ -161,6 +169,8 @@ Orden recomendado: instrucción → `<Figure>` → `Callout` / código. Si el ar
 | `<Callout variant="tip\|warning\|critical">` | Aviso destacado |
 | `<PromptExample label="...">` | Prompt con botón Copiar |
 | `<FeatureGrid>` / `<Feature icon="..." title="...">` | Features del shell demo |
+| `<DemoAccess email="..." password="...">` | Credenciales públicas de la demo + nota |
+| `<StackGrid>` / `<StackItem layer="..." tool="...">` | Capas del stack tecnológico |
 | `<RoleCard role="admin\|guest" title="...">` | Roles / cuotas en demos |
 | `<TryIt href="..." label="...">` | CTA inline a la demo live |
 | Fences \`\`\`lang | Bloque de código con botón Copiar |

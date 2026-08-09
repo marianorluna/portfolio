@@ -13,6 +13,8 @@ export type LabDemoMediaStageCopy = {
   demoTabVideoLabel: string;
   demoTabLiveLabel: string;
   demoStageAriaLabel: string;
+  comingSoonLabel: string;
+  demoVideoPendingHint: string;
 };
 
 type TabId = "live" | "video";
@@ -20,6 +22,8 @@ type TabId = "live" | "video";
 type Props = {
   title: string;
   demoVideoId?: string;
+  /** Muestra el panel Video como placeholder hasta publicar el id. */
+  demoVideoPending?: boolean;
   demoUrl?: string;
   posterSrc?: string;
   posterAlt?: string;
@@ -28,17 +32,20 @@ type Props = {
 
 /**
  * Escenario multimedia del shell demo: video YouTube (consent thirdParty),
- * iframe de demo live, o tabs si hay ambos.
+ * placeholder de video pendiente, iframe de demo live, o tabs si hay ambos.
  */
 export function LabDemoMediaStage({
   title,
   demoVideoId,
+  demoVideoPending = false,
   demoUrl,
   posterSrc,
   posterAlt,
   copy,
 }: Props) {
-  const hasVideo = demoVideoId != null && demoVideoId.length > 0;
+  const hasRealVideo = demoVideoId != null && demoVideoId.length > 0;
+  const hasPendingVideo = !hasRealVideo && demoVideoPending;
+  const hasVideo = hasRealVideo || hasPendingVideo;
   const hasLive = demoUrl != null && demoUrl.length > 0;
   const tabsId = useId();
   const [thirdPartyConsent, setThirdPartyConsentState] = useState(() => hasThirdPartyConsent());
@@ -55,8 +62,8 @@ export function LabDemoMediaStage({
   const showTabs = hasVideo && hasLive;
   const showVideoPanel = hasVideo && (!showTabs || activeTab === "video");
   const showLivePanel = hasLive && (!showTabs || activeTab === "live");
-  const embedSrc = hasVideo ? youtubeEmbedUrl(demoVideoId) : null;
-  const watchHref = hasVideo ? youtubeWatchUrl(demoVideoId) : null;
+  const embedSrc = hasRealVideo ? youtubeEmbedUrl(demoVideoId) : null;
+  const watchHref = hasRealVideo ? youtubeWatchUrl(demoVideoId) : null;
 
   const loadVideo = () => {
     setThirdPartyConsent(true);
@@ -138,7 +145,36 @@ export function LabDemoMediaStage({
         </div>
       )}
 
-      {showVideoPanel && embedSrc != null && watchHref != null && (
+      {showVideoPanel && hasPendingVideo && (
+        <div
+          className="lab-demo-stage__panel lab-demo-video lab-demo-video--pending"
+          role={showTabs ? "tabpanel" : undefined}
+          id={showTabs ? `${tabsId}-panel-video` : undefined}
+          aria-labelledby={showTabs ? `${tabsId}-video` : undefined}
+        >
+          <div className="lab-demo-stage__frame">
+            <div className="lab-demo-video__facade">
+              {posterSrc != null && posterSrc.length > 0 ? (
+                <Image
+                  src={posterSrc}
+                  alt={posterAlt ?? title}
+                  fill
+                  sizes="(max-width: 900px) 100vw, 880px"
+                  className="lab-demo-video__poster"
+                />
+              ) : (
+                <div className="lab-demo-video__poster-fallback" aria-hidden />
+              )}
+              <div className="lab-demo-video__consent lab-demo-video__pending">
+                <p className="lab-demo-video__pending-label">{copy.comingSoonLabel}</p>
+                <p className="lab-demo-video__consent-text">{copy.demoVideoPendingHint}</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {showVideoPanel && hasRealVideo && embedSrc != null && watchHref != null && (
         <div
           className="lab-demo-stage__panel lab-demo-video"
           role={showTabs ? "tabpanel" : undefined}

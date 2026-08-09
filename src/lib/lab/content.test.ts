@@ -235,4 +235,21 @@ describe("getLabResource", () => {
     expect(result?.frontmatter.demoUrl).toBe("https://demo.example.com/");
     expect(result?.frontmatter.repoUrl).toBe("https://github.com/example/demo");
   });
+
+  it("expone demoVideoPending en el frontmatter", async () => {
+    const { getLabResource } = await import("./content");
+    setIndex([{ id: "2002", slug: "demo-pending", createdAt: "2026-08", updatedAt: "2026-08" }]);
+    setEntry("es", "demo-pending", {
+      ...baseFrontmatter,
+      type: "demo",
+      slug: "demo-pending",
+      demoVideoPending: true,
+      demoUrl: "https://demo.example.com/",
+    });
+
+    const result = await getLabResource("es", "demo-pending");
+
+    expect(result?.frontmatter.demoVideoPending).toBe(true);
+    expect(result?.frontmatter.demoVideoId).toBeUndefined();
+  });
 });

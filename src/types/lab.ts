@@ -52,6 +52,11 @@ export type LabFrontmatter = {
   draft?: boolean;
   /** Id de video de YouTube (shell demo); opcional. */
   demoVideoId?: string;
+  /**
+   * Placeholder del panel Video en el stage (sin id YouTube aún).
+   * Ignorado si hay `demoVideoId`.
+   */
+  demoVideoPending?: boolean;
   /** URL https de la demo en vivo (shell demo); opcional. */
   demoUrl?: string;
   /** URL https del repositorio (shell demo); opcional. */
@@ -171,6 +176,8 @@ export type LabUiCopy = {
   demoWatchVideoLabel: string;
   /** Shell demo: aria-label del stage multimedia. */
   demoStageAriaLabel: string;
+  /** Shell demo: hint cuando el video aún no está publicado. */
+  demoVideoPendingHint: string;
   typeLabel: Record<LabResourceType, string>;
   levelLabel: Record<LabResourceLevel, string>;
 };

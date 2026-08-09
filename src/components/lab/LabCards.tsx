@@ -1,33 +1,12 @@
 "use client";
 
 import type { LucideIcon } from "lucide-react";
-import {
-  BookOpen,
-  Boxes,
-  Code2,
-  Cuboid,
-  Palette,
-  Search,
-  Sparkles,
-  Terminal,
-} from "lucide-react";
 import type { ReactNode } from "react";
+import { LAB_ICONS, type LabIconName } from "./DemoKit";
 import { ReqCardView } from "./ReqCard";
 import { ToolCardView } from "./ToolCard";
 
-/** Iconos permitidos en MDX por nombre (string), sin pasar componentes. */
-const LAB_ICONS = {
-  python: Terminal,
-  cuboid: Cuboid,
-  search: Search,
-  boxes: Boxes,
-  palette: Palette,
-  code: Code2,
-  sparkles: Sparkles,
-  book: BookOpen,
-} as const;
-
-export type LabIconName = keyof typeof LAB_ICONS;
+export type { LabIconName } from "./DemoKit";
 
 type ReqCardProps = {
   icon?: LabIconName;

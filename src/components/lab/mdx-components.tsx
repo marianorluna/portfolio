@@ -2,6 +2,7 @@ import type { MDXComponents } from "mdx/types";
 import type { ComponentPropsWithoutRef } from "react";
 import { Callout } from "./Callout";
 import { CodeBlock } from "./CodeBlock";
+import { Feature, FeatureGrid, RoleCard, TryIt } from "./DemoKit";
 import { Figure } from "./Figure";
 import { Highlight } from "./Highlight";
 import { CardGrid, IntroCard, ReqCard, ToolCard } from "./LabCards";
@@ -64,4 +65,8 @@ export const labMdxComponents: MDXComponents = {
   ToolCard,
   CardGrid,
   Section,
+  FeatureGrid,
+  Feature,
+  TryIt,
+  RoleCard,
 };

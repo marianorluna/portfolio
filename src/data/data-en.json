@@ -453,7 +453,7 @@
           {
             "title": "Intellectual property",
             "paragraphs": [
-              "The design, text, images, and other website content — including expressly the Lab materials (tutorials, notes, checklists, infographics, dashboards, and resources published under /lab) — belong to Mariano Luna or to licensed third parties. All rights reserved.",
+              "The design, text, images, and other website content — including expressly the Lab materials (tutorials, notes, demos, infographics, dashboards, and resources published under /lab) — belong to Mariano Luna or to licensed third parties. All rights reserved.",
               "Personal viewing and use of these materials is permitted. Reproduction, distribution, modification, or commercial use without the owner's prior written permission is prohibited.",
               "The MIT license of this project's source-code repository applies only to the code published in that repository. It does not cover Lab editorial content or site assets, unless expressly stated otherwise."
             ],
@@ -547,7 +547,7 @@
       "flyoutEmptyMessage": "No entries published yet. Check back soon.",
       "indexKicker": "Lab",
       "indexTitle": "Lab",
-      "indexDescription": "A lab for ideas and practice with tutorials, guides, checklists, and infographics on Architecture, BIM, AI, and development, designed to experiment, stay informed, and learn.",
+      "indexDescription": "A lab for ideas and practice with tutorials, guides, demos, and infographics on Architecture, BIM, AI, and development, designed to experiment, stay informed, and learn.",
       "aiCoverCredit": "Cover images generated with AI",
       "indexEmptyMessage": "No entries published yet in this language. Check back soon.",
       "filterAllLabel": "All",
@@ -578,9 +578,18 @@
       "tutorialContactLead": "For any questions or suggestions about this tutorial, you can reach me via the",
       "tutorialContactFormLabel": "contact form",
       "tutorialContactOr": "or by email at",
+      "demoLoadVideoLabel": "Accept and load video",
+      "demoConsentHint": "To watch the video on this site you must accept third-party cookies (YouTube).",
+      "demoOpenLiveLabel": "Open demo",
+      "demoOpenYoutubeLabel": "Watch on YouTube",
+      "demoTabVideoLabel": "Video",
+      "demoTabLiveLabel": "Live demo",
+      "demoRepoLabel": "Code",
+      "demoWatchVideoLabel": "Watch video",
+      "demoStageAriaLabel": "Multimedia demo",
       "typeLabel": {
         "tutorial": "Tutorial",
-        "checklist": "Checklist",
+        "demo": "Demo",
         "infografia": "Infographic",
         "dashboard": "Dashboard",
         "nota": "Note"

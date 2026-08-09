@@ -1,6 +1,6 @@
 # Lab · Guía de autoría
 
-El Lab publica tutoriales, guías, checklists, infografías, dashboards y notas (`nota` = blog corto) como MDX bajo este directorio.
+El Lab publica tutoriales, guías, demos, infografías, dashboards y notas (`nota` = blog corto) como MDX bajo este directorio.
 
 ## Estructura
 
@@ -28,7 +28,8 @@ El formato de página **no es único** para todo el Lab: lo elige `type`.
 | `type` | Shell actual |
 |--------|----------------|
 | `tutorial` | Shell tutorial (hero, TOC, kit interactivo) |
-| `dashboard` / `infografia` / `checklist` | Article mínimo (shell propio pendiente) |
+| `demo` | Shell producto: portada, CTAs, stage Video/Live (opcionales), kit `FeatureGrid` |
+| `dashboard` / `infografia` | Article mínimo (shell propio pendiente) |
 | `nota` | Shell de lectura (tipografía amena, imagen destacada, barra de progreso, subir). Enlaces a fichas `/proyectos|projects/` abren en pestaña nueva |
 
 Un dashboard futuro tendrá otro layout; no hereda el shell tutorial.
@@ -73,7 +74,7 @@ Reglas:
 ---
 title: "Título claro y accionable"
 description: "Una frase que diga qué aprenderá el lector."
-type: tutorial   # tutorial | checklist | infografia | dashboard | nota
+type: tutorial   # tutorial | demo | infografia | dashboard | nota
 slug: mi-entrada-kebab-case
 level: intro     # intro | intermedio
 # durationMinutes: 20   # opcional; minutos con requisitos ya instalados
@@ -84,10 +85,34 @@ heroImage: "/lab/covers/mi-entrada-portada.webp"
 # heroAlt: "Descripción breve del hero"
 # size: lg   # sm | md | lg | wide (default: md)
 # draft: true
+# --- solo type: demo (opcionales e independientes) ---
+# demoVideoId: "xxxxxxxxxxx"   # id de YouTube (embed in-site + enlace externo)
+# demoUrl: "https://tu-demo.ejemplo.com/"
+# repoUrl: "https://github.com/org/repo"
 ---
 ```
 
 Las fechas **no** van en el frontmatter: viven en `index.json`.
+
+### Shell demo
+
+- `demoVideoId` y/o `demoUrl` activan el stage multimedia (`#lab-demo-stage`). Puedes usar uno, otro o ambos (tabs Video / Demo en vivo).
+- El video se reproduce **en el sitio** (`youtube-nocookie`, consentimiento `thirdParty`) y también ofrece “Ver en YouTube”.
+- La demo live se embebe en iframe (dominio propio) y abre en pestaña nueva.
+- Features y roles van en el MDX (flexibles), no en el frontmatter:
+
+```mdx
+<FeatureGrid>
+  <Feature icon="radio" title="Tiempo real">…</Feature>
+</FeatureGrid>
+
+<RoleCard role="admin" title="Admin">…</RoleCard>
+<RoleCard role="guest" title="Invitado">…</RoleCard>
+
+<TryIt href="https://…" label="Abrir demo" />
+```
+
+Iconos extra del kit demo: `radio`, `eye`, `gauge`, `activity`, `shield`, `message`, `users`, `dashboard` (además de los del kit tutorial).
 
 ## Imágenes (2 por entrada + capturas)
 
@@ -135,6 +160,9 @@ Orden recomendado: instrucción → `<Figure>` → `Callout` / código. Si el ar
 | `<CardGrid variant="req\|tool">` | Grid de cards |
 | `<Callout variant="tip\|warning\|critical">` | Aviso destacado |
 | `<PromptExample label="...">` | Prompt con botón Copiar |
+| `<FeatureGrid>` / `<Feature icon="..." title="...">` | Features del shell demo |
+| `<RoleCard role="admin\|guest" title="...">` | Roles / cuotas en demos |
+| `<TryIt href="..." label="...">` | CTA inline a la demo live |
 | Fences \`\`\`lang | Bloque de código con botón Copiar |
 
 Iconos `IntroCard` / `ReqCard` / `ToolCard`: `python`, `cuboid`, `search`, `boxes`, `palette`, `code`, `sparkles`, `book`.

@@ -7,6 +7,10 @@ const SLUG_PATTERN = /^[a-z0-9]+(?:-[a-z0-9]+)*$/;
 const YEAR_MONTH_PATTERN = /^\d{4}-(0[1-9]|1[0-2])$/;
 /** Ruta pública absoluta que empieza por `/`. */
 const PUBLIC_PATH_PATTERN = /^\/[a-zA-Z0-9._\-/]+$/;
+/** Id de video de YouTube (11 chars típicos; admite guiones/underscores). */
+const YOUTUBE_VIDEO_ID_PATTERN = /^[\w-]{6,}$/;
+/** URL https absoluta. */
+const HTTPS_URL_PATTERN = /^https:\/\/.+/i;
 
 export const labFrontmatterSchema = z.object({
   title: z.string().min(1, "title es obligatorio"),
@@ -35,6 +39,21 @@ export const labFrontmatterSchema = z.object({
   heroAlt: z.string().min(1).optional(),
   size: z.enum(LAB_CARD_SIZES).optional(),
   draft: z.boolean().optional(),
+  /** Id YouTube para el stage del shell demo (opcional). */
+  demoVideoId: z
+    .string()
+    .regex(YOUTUBE_VIDEO_ID_PATTERN, "demoVideoId debe ser un id de YouTube válido")
+    .optional(),
+  /** URL https de la demo en vivo (opcional). */
+  demoUrl: z
+    .string()
+    .regex(HTTPS_URL_PATTERN, "demoUrl debe ser una URL https")
+    .optional(),
+  /** URL https del repositorio (opcional). */
+  repoUrl: z
+    .string()
+    .regex(HTTPS_URL_PATTERN, "repoUrl debe ser una URL https")
+    .optional(),
 });
 
 export type LabFrontmatterParseResult = z.infer<typeof labFrontmatterSchema>;

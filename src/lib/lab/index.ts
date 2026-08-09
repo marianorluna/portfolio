@@ -27,3 +27,4 @@ export type { LabBentoCoverVariant } from "./cover-variant";
 export { labFrontmatterSchema, labIndexSchema } from "./schema";
 export { labFaceToneForType, LAB_FACE_TONES } from "./face-tone";
 export type { LabFaceTone } from "./face-tone";
+export { isYouTubeVideoId, youtubeEmbedUrl, youtubeWatchUrl } from "./youtube";

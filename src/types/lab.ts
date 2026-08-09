@@ -7,7 +7,7 @@ import type { Locale } from "./portfolio";
  */
 export const LAB_RESOURCE_TYPES = [
   "tutorial",
-  "checklist",
+  "demo",
   "infografia",
   "dashboard",
   "nota",
@@ -50,6 +50,12 @@ export type LabFrontmatter = {
   size?: LabCardSize;
   /** Si es `true`, el recurso no se lista ni se publica. */
   draft?: boolean;
+  /** Id de video de YouTube (shell demo); opcional. */
+  demoVideoId?: string;
+  /** URL https de la demo en vivo (shell demo); opcional. */
+  demoUrl?: string;
+  /** URL https del repositorio (shell demo); opcional. */
+  repoUrl?: string;
 };
 
 /**
@@ -147,6 +153,24 @@ export type LabUiCopy = {
   tutorialContactLead: string;
   tutorialContactFormLabel: string;
   tutorialContactOr: string;
+  /** Shell demo: cargar iframe de YouTube tras consentimiento. */
+  demoLoadVideoLabel: string;
+  /** Shell demo: hint de cookies de terceros para el video. */
+  demoConsentHint: string;
+  /** Shell demo: abrir la demo live en pestaña nueva. */
+  demoOpenLiveLabel: string;
+  /** Shell demo: abrir el video en YouTube. */
+  demoOpenYoutubeLabel: string;
+  /** Shell demo: tab Video. */
+  demoTabVideoLabel: string;
+  /** Shell demo: tab Demo en vivo. */
+  demoTabLiveLabel: string;
+  /** Shell demo: CTA repositorio. */
+  demoRepoLabel: string;
+  /** Shell demo: ancla / CTA ver video en el stage. */
+  demoWatchVideoLabel: string;
+  /** Shell demo: aria-label del stage multimedia. */
+  demoStageAriaLabel: string;
   typeLabel: Record<LabResourceType, string>;
   levelLabel: Record<LabResourceLevel, string>;
 };

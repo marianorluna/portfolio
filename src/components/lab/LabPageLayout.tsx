@@ -7,6 +7,12 @@ import { LabReadingChrome } from "./LabReadingChrome";
 import { LabSectionTabs, type LabTocItem } from "./LabSectionTabs";
 import type { LabSettingsCopy } from "./LabSettingsModal";
 
+type DemoCtaCopy = {
+  openLiveLabel: string;
+  watchVideoLabel: string;
+  repoLabel: string;
+};
+
 type Props = {
   locale: Locale;
   kicker?: string;
@@ -20,22 +26,33 @@ type Props = {
    * `index`: viewport completo sin chrome; el hero vive en el bento.
    * `tutorial`: shell interactivo (hero glow + TOC) para tutoriales.
    * `note`: shell de lectura (tipografía, featured image, progress).
+   * `demo`: shell de producto (CTAs, portada, media stage).
    * `article` (default): header clásico con título y descripción.
    */
-  variant?: "index" | "article" | "tutorial" | "note";
-  /** Meta bajo el título (nivel, fecha, tags) — usado en tutorial/article/note. */
+  variant?: "index" | "article" | "tutorial" | "note" | "demo";
+  /** Meta bajo el título (nivel, fecha, tags) — usado en tutorial/article/note/demo. */
   meta?: ReactNode;
   /** Items de tabs de sección (solo `tutorial`). */
   tocItems?: LabTocItem[];
   tocAriaLabel?: string;
-  /** Imagen de portada (hero tutorial o featured de nota). */
+  /** Imagen de portada (hero tutorial o featured de nota/demo). */
   heroImage?: string;
-  /** Alt de la imagen destacada (notas). */
+  /** Alt de la imagen destacada (notas/demos). */
   heroAlt?: string;
   /** Crédito bajo la portada (p. ej. generada con IA). */
   heroCredit?: string;
   /** Aria-label del botón subir (solo `note`). */
   scrollToTopLabel?: string;
+  /** Shell demo: URL live (CTA primario). */
+  demoUrl?: string;
+  /** Shell demo: hay video (CTA ancla al stage). */
+  hasDemoVideo?: boolean;
+  /** Shell demo: URL del repo. */
+  repoUrl?: string;
+  /** Shell demo: copy de CTAs del header. */
+  demoCtaCopy?: DemoCtaCopy;
+  /** Shell demo: escenario multimedia (video / live). */
+  mediaStage?: ReactNode;
   /** Chrome móvil/tablet: menú + modal de ajustes. */
   settingsLabel?: string;
   menuOpenLabel?: string;
@@ -129,6 +146,11 @@ export function LabPageLayout({
   heroAlt,
   heroCredit,
   scrollToTopLabel,
+  demoUrl,
+  hasDemoVideo = false,
+  repoUrl,
+  demoCtaCopy,
+  mediaStage,
   settingsLabel,
   menuOpenLabel,
   menuCloseLabel,
@@ -251,6 +273,81 @@ export function LabPageLayout({
           )}
         </header>
         <article className="lab-page__content lab-page__content--note">{children}</article>
+      </main>
+    );
+  }
+
+  if (variant === "demo") {
+    const hasFeatured = heroImage != null && heroImage.length > 0;
+    const featuredAlt = heroAlt != null && heroAlt.length > 0 ? heroAlt : title;
+    const hasLive = demoUrl != null && demoUrl.length > 0;
+    const hasRepo = repoUrl != null && repoUrl.length > 0;
+    const showCtas =
+      demoCtaCopy != null && (hasLive || hasDemoVideo || hasRepo);
+
+    return (
+      <main className="lab-page lab-page--demo">
+        <header className="lab-page__header lab-page__header--demo">
+          {chrome}
+          <div className="lab-demo-header__copy">
+            {kicker != null && <p className="lab-page__kicker">{kicker}</p>}
+            <h1 className="lab-demo-header__title">{title}</h1>
+            {description != null && (
+              <p className="lab-page__description lab-demo-header__description">
+                {description}
+              </p>
+            )}
+            {meta != null && <div className="lab-demo-header__meta">{meta}</div>}
+            {showCtas && demoCtaCopy != null && (
+              <div className="lab-demo-header__ctas">
+                {hasLive && (
+                  <a
+                    href={demoUrl}
+                    className="btn btn-primary"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {demoCtaCopy.openLiveLabel}
+                  </a>
+                )}
+                {hasDemoVideo && (
+                  <a href="#lab-demo-stage" className="btn btn-secondary">
+                    {demoCtaCopy.watchVideoLabel}
+                  </a>
+                )}
+                {hasRepo && (
+                  <a
+                    href={repoUrl}
+                    className="btn btn-secondary"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    {demoCtaCopy.repoLabel}
+                  </a>
+                )}
+              </div>
+            )}
+          </div>
+          {hasFeatured && (
+            <figure className="lab-demo-featured">
+              <div className="lab-demo-featured__media">
+                <Image
+                  src={heroImage}
+                  alt={featuredAlt}
+                  fill
+                  priority
+                  sizes="(max-width: 900px) 100vw, 880px"
+                  className="lab-demo-featured__image"
+                />
+              </div>
+              {heroCredit != null && heroCredit.length > 0 && (
+                <figcaption className="lab-demo-featured__credit">{heroCredit}</figcaption>
+              )}
+            </figure>
+          )}
+        </header>
+        {mediaStage}
+        <article className="lab-page__content lab-page__content--demo">{children}</article>
       </main>
     );
   }

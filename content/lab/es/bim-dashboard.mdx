@@ -1,0 +1,48 @@
+---
+title: "BIM Dashboard"
+description: "Dashboard BIM con actualización en tiempo real para modelos de Revit. Visualiza KPIs, parámetros y geometría 3D en un panel web compartible, con alertas de calidad de datos y consultas en lenguaje natural vía IA."
+type: demo
+slug: bim-dashboard
+level: intermedio
+tags: ["Revit", "Speckle", "IA"]
+coverImage: "/lab/covers/bim-dashboard-grid.webp"
+coverAlt: "BIM Dashboard: panel web con KPIs y visor 3D"
+heroImage: "/lab/covers/bim-dashboard-portada.webp"
+heroAlt: "Portada de BIM Dashboard"
+size: lg
+---
+
+Panel web compartible para modelos de Revit: cambios en el modelo llegan en tiempo real, los KPIs y la tabla se enlazan al visor 3D, y puedes preguntar en lenguaje natural con resaltado en la geometría.
+
+## Características
+
+<FeatureGrid>
+  <Feature icon="radio" title="Tiempo real">
+    Cambios en Revit → WebSocket (pyRevit spool + relay).
+  </Feature>
+  <Feature icon="eye" title="Visor 3D">
+    Speckle Viewer vinculado a la tabla y al chat.
+  </Feature>
+  <Feature icon="gauge" title="KPIs">
+    Cards, gráficos (Recharts) y tabla filtrable.
+  </Feature>
+  <Feature icon="shield" title="QC">
+    Hallazgos de calidad de datos.
+  </Feature>
+  <Feature icon="sparkles" title="IA">
+    Preguntas en lenguaje natural (DeepSeek vía OpenRouter) con resaltado en el visor.
+  </Feature>
+  <Feature icon="users" title="Roles">
+    `admin` (escritura / ingest) e `invitado` (demo con cuota de chat).
+  </Feature>
+</FeatureGrid>
+
+## Roles
+
+<RoleCard role="admin" title="Admin">
+  Escritura e ingest: sincroniza el modelo, gestiona datos y usa el chat sin cuota de invitado.
+</RoleCard>
+
+<RoleCard role="guest" title="Invitado">
+  Demo pública con cuota de chat: explora KPIs, visor y consultas hasta el límite configurado.
+</RoleCard>

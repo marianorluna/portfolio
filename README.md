@@ -10,7 +10,7 @@ Este repositorio implementa un portfolio personal con foco en:
 - Internacionalización por rutas (`/es` y `/en`) con segmentos localizados.
 - Deep linking a proyectos concretos (`/es/proyectos/:slug`, `/en/projects/:slug`).
 - Captación de contacto y reservas (Cal.com) con validación robusta y mitigación anti-spam.
-- **Lab**: hub de recursos (tutoriales, guías, checklists, infografías, dashboards y notas) en MDX.
+- **Lab**: hub de recursos (tutoriales, guías, demos, infografías, dashboards y notas) en MDX.
 - Base mantenible para evolucionar contenido, UI y flujo comercial.
 
 ## Stack principal
@@ -135,7 +135,7 @@ Si falta alguna variable crítica, el endpoint responde con error de configuraci
 
 ## Lab (recursos MDX)
 
-El Lab no es un blog clásico: es un hub de piezas útiles tipadas (`tutorial`, `checklist`, `infografia`, `dashboard`, `nota`). Las notas cubren el rol de “blog” sin una sección aparte.
+El Lab no es un blog clásico: es un hub de piezas útiles tipadas (`tutorial`, `demo`, `infografia`, `dashboard`, `nota`). Las notas cubren el rol de “blog” sin una sección aparte.
 
 **Copy e i18n:** la UI del Lab (flyout, índice, filtros, labels) vive en `src/data/data-{es,en}.json` → `lab.ui`; el contenido editorial en `content/lab/`; `src/i18n/` solo resuelve locale y segmentos de URL.
 

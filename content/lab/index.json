@@ -11,6 +11,12 @@
       "slug": "de-0-a-bim-developer-ia",
       "createdAt": "2026-08",
       "updatedAt": "2026-08"
+    },
+    {
+      "id": "01K8BIMDASHBOARD9LABENTRY01",
+      "slug": "bim-dashboard",
+      "createdAt": "2026-08",
+      "updatedAt": "2026-08"
     }
   ]
 }

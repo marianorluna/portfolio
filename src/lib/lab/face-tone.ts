@@ -1,12 +1,12 @@
 import type { LabResourceType } from "@/types/lab";
 
 /** Tonos de la cara trasera del flip (tokens del tema claro/oscuro). */
-export const LAB_FACE_TONES = ["ink", "cyan", "blue", "slate", "frost"] as const;
+export const LAB_FACE_TONES = ["ink", "cyan", "aqua", "blue", "slate", "frost"] as const;
 export type LabFaceTone = (typeof LAB_FACE_TONES)[number];
 
 const TYPE_FACE_TONE: Record<LabResourceType, LabFaceTone> = {
   tutorial: "cyan",
-  checklist: "slate",
+  demo: "aqua",
   infografia: "frost",
   dashboard: "ink",
   nota: "blue",

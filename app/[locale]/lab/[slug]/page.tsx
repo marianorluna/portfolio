@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
+import { LabDemoMediaStage } from "@/components/lab/LabDemoMediaStage";
 import { LabPageLayout } from "@/components/lab/LabPageLayout";
 import { LabTutorialContactNote } from "@/components/lab/LabTutorialContactNote";
 import { ServerInsertedScripts } from "@/components/seo/ServerInsertedScripts";
@@ -13,6 +14,7 @@ import {
   isLabUpdated,
   labMonthToDate,
   listLabResources,
+  youtubeWatchUrl,
 } from "@/lib/lab";
 import type { Locale } from "@/types/portfolio";
 
@@ -58,11 +60,14 @@ export default async function LabEntryPage({ params }: PageProps) {
   const dateText = formatLabMonthYear(effective, locale);
   const isTutorialShell = TUTORIAL_TYPES.has(frontmatter.type);
   const isNoteShell = frontmatter.type === "nota";
+  const isDemoShell = frontmatter.type === "demo";
   const layoutVariant = isNoteShell
     ? ("note" as const)
     : isTutorialShell
       ? ("tutorial" as const)
-      : ("article" as const);
+      : isDemoShell
+        ? ("demo" as const)
+        : ("article" as const);
   const settingsCopy = {
     settingsKicker: data.nav.uiText.settingsKicker,
     settingsTitle: data.nav.uiText.settingsTitle,
@@ -79,10 +84,22 @@ export default async function LabEntryPage({ params }: PageProps) {
     closeLabel: copy.settingsCloseLabel,
   };
 
+  const pageUrl = `${SITE_URL}/${locale}/lab/${slug}`;
+  const hasDemoVideo =
+    frontmatter.demoVideoId != null && frontmatter.demoVideoId.length > 0;
+  const hasDemoUrl = frontmatter.demoUrl != null && frontmatter.demoUrl.length > 0;
+
   const labJsonLd = {
     "@context": "https://schema.org",
-    "@type": frontmatter.type === "tutorial" ? "TechArticle" : "Article",
+    "@type": isDemoShell
+      ? hasDemoUrl
+        ? "WebApplication"
+        : "Article"
+      : frontmatter.type === "tutorial"
+        ? "TechArticle"
+        : "Article",
     headline: frontmatter.title,
+    name: frontmatter.title,
     description: frontmatter.description,
     datePublished: labMonthToDate(createdAt).toISOString(),
     dateModified: labMonthToDate(updatedAt).toISOString(),
@@ -92,8 +109,20 @@ export default async function LabEntryPage({ params }: PageProps) {
       "@type": "Person",
       name: "Mariano Luna",
     },
-    url: `${SITE_URL}/${locale}/lab/${slug}`,
+    url: pageUrl,
     ...(isNoteShell ? { timeRequired: `PT${readingMinutes}M` } : {}),
+    ...(isDemoShell && hasDemoUrl ? { applicationCategory: "BusinessApplication" } : {}),
+    ...(isDemoShell && hasDemoVideo
+      ? {
+          video: {
+            "@type": "VideoObject",
+            name: frontmatter.title,
+            description: frontmatter.description,
+            embedUrl: `https://www.youtube-nocookie.com/embed/${frontmatter.demoVideoId}`,
+            contentUrl: youtubeWatchUrl(frontmatter.demoVideoId!),
+          },
+        }
+      : {}),
   };
 
   const meta = (
@@ -129,6 +158,32 @@ export default async function LabEntryPage({ params }: PageProps) {
     data.ui.contactSocial.items.find((item) => item.id === "email")?.href ??
     "mailto:contact@marianorluna.com";
 
+  const articleClass = isNoteShell
+    ? "lab-article lab-article--note"
+    : isDemoShell
+      ? "lab-article lab-article--demo"
+      : "lab-article";
+
+  const mediaStage =
+    isDemoShell && (hasDemoVideo || hasDemoUrl) ? (
+      <LabDemoMediaStage
+        title={frontmatter.title}
+        demoVideoId={frontmatter.demoVideoId}
+        demoUrl={frontmatter.demoUrl}
+        posterSrc={frontmatter.heroImage}
+        posterAlt={frontmatter.heroAlt ?? frontmatter.title}
+        copy={{
+          demoLoadVideoLabel: copy.demoLoadVideoLabel,
+          demoConsentHint: copy.demoConsentHint,
+          demoOpenLiveLabel: copy.demoOpenLiveLabel,
+          demoOpenYoutubeLabel: copy.demoOpenYoutubeLabel,
+          demoTabVideoLabel: copy.demoTabVideoLabel,
+          demoTabLiveLabel: copy.demoTabLiveLabel,
+          demoStageAriaLabel: copy.demoStageAriaLabel,
+        }}
+      />
+    ) : undefined;
+
   return (
     <>
       <LabPageLayout
@@ -136,29 +191,42 @@ export default async function LabEntryPage({ params }: PageProps) {
         kicker={copy.typeLabel[frontmatter.type]}
         title={frontmatter.title}
         description={frontmatter.description}
-      backToHomeLabel={data.legal.backToHome}
-      backToLabLabel={copy.backToLabLabel}
-      variant={layoutVariant}
-      meta={meta}
-      tocItems={isTutorialShell ? copy.tutorialToc : undefined}
-      tocAriaLabel={copy.tocAriaLabel}
-      heroImage={frontmatter.heroImage}
-      heroAlt={frontmatter.heroAlt}
-      heroCredit={
-        frontmatter.heroImage != null && frontmatter.heroImage.length > 0
-          ? copy.aiCoverCredit
-          : undefined
-      }
-      scrollToTopLabel={isNoteShell ? copy.scrollToTopLabel : undefined}
-      settingsLabel={data.nav.uiText.settingsLabel}
-      menuOpenLabel={copy.menuOpenLabel}
-      menuCloseLabel={copy.menuCloseLabel}
-      menuKicker={copy.menuKicker}
-      menuTitle={copy.menuTitle}
-      settingsCopy={settingsCopy}
-    >
-      <div className={isNoteShell ? "lab-article lab-article--note" : "lab-article"}>
-        {resource.content}
+        backToHomeLabel={data.legal.backToHome}
+        backToLabLabel={copy.backToLabLabel}
+        variant={layoutVariant}
+        meta={meta}
+        tocItems={isTutorialShell ? copy.tutorialToc : undefined}
+        tocAriaLabel={copy.tocAriaLabel}
+        heroImage={frontmatter.heroImage}
+        heroAlt={frontmatter.heroAlt}
+        heroCredit={
+          frontmatter.heroImage != null && frontmatter.heroImage.length > 0
+            ? copy.aiCoverCredit
+            : undefined
+        }
+        scrollToTopLabel={isNoteShell ? copy.scrollToTopLabel : undefined}
+        demoUrl={isDemoShell ? frontmatter.demoUrl : undefined}
+        hasDemoVideo={isDemoShell ? hasDemoVideo : false}
+        repoUrl={isDemoShell ? frontmatter.repoUrl : undefined}
+        demoCtaCopy={
+          isDemoShell
+            ? {
+                openLiveLabel: copy.demoOpenLiveLabel,
+                watchVideoLabel: copy.demoWatchVideoLabel,
+                repoLabel: copy.demoRepoLabel,
+              }
+            : undefined
+        }
+        mediaStage={mediaStage}
+        settingsLabel={data.nav.uiText.settingsLabel}
+        menuOpenLabel={copy.menuOpenLabel}
+        menuCloseLabel={copy.menuCloseLabel}
+        menuKicker={copy.menuKicker}
+        menuTitle={copy.menuTitle}
+        settingsCopy={settingsCopy}
+      >
+        <div className={articleClass}>
+          {resource.content}
           {isTutorialShell && (
             <LabTutorialContactNote
               locale={locale}

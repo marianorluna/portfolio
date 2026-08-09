@@ -215,4 +215,24 @@ describe("getLabResource", () => {
     // y dejaría el número de paso vacío si no se desactiva explícitamente.
     expect(html).toMatch(/lab-step__number"[^>]*>1</);
   });
+
+  it("expone campos demo del frontmatter (video, live, repo)", async () => {
+    const { getLabResource } = await import("./content");
+    setIndex([{ id: "2001", slug: "demo-bim", createdAt: "2026-08", updatedAt: "2026-08" }]);
+    setEntry("es", "demo-bim", {
+      ...baseFrontmatter,
+      type: "demo",
+      slug: "demo-bim",
+      demoVideoId: "rWGBVo9qDEg",
+      demoUrl: "https://demo.example.com/",
+      repoUrl: "https://github.com/example/demo",
+    });
+
+    const result = await getLabResource("es", "demo-bim");
+
+    expect(result?.frontmatter.type).toBe("demo");
+    expect(result?.frontmatter.demoVideoId).toBe("rWGBVo9qDEg");
+    expect(result?.frontmatter.demoUrl).toBe("https://demo.example.com/");
+    expect(result?.frontmatter.repoUrl).toBe("https://github.com/example/demo");
+  });
 });

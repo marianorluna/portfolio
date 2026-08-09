@@ -1,0 +1,48 @@
+---
+title: "BIM Dashboard"
+description: "Real-time BIM dashboard for Revit models. View KPIs, parameters, and 3D geometry in a shareable web panel, with data-quality alerts and natural-language queries via AI."
+type: demo
+slug: bim-dashboard
+level: intermedio
+tags: ["Revit", "Speckle", "AI"]
+coverImage: "/lab/covers/bim-dashboard-grid.webp"
+coverAlt: "BIM Dashboard: web panel with KPIs and 3D viewer"
+heroImage: "/lab/covers/bim-dashboard-portada.webp"
+heroAlt: "BIM Dashboard cover"
+size: lg
+---
+
+A shareable web panel for Revit models: model changes arrive in real time, KPIs and the table link to the 3D viewer, and you can ask questions in natural language with geometry highlighting.
+
+## Features
+
+<FeatureGrid>
+  <Feature icon="radio" title="Real time">
+    Revit changes → WebSocket (pyRevit spool + relay).
+  </Feature>
+  <Feature icon="eye" title="3D viewer">
+    Speckle Viewer linked to the table and chat.
+  </Feature>
+  <Feature icon="gauge" title="KPIs">
+    Cards, charts (Recharts), and a filterable table.
+  </Feature>
+  <Feature icon="shield" title="QC">
+    Data-quality findings.
+  </Feature>
+  <Feature icon="sparkles" title="AI">
+    Natural-language questions (DeepSeek via OpenRouter) with viewer highlighting.
+  </Feature>
+  <Feature icon="users" title="Roles">
+    `admin` (write / ingest) and `guest` (demo with chat quota).
+  </Feature>
+</FeatureGrid>
+
+## Roles
+
+<RoleCard role="admin" title="Admin">
+  Write and ingest: sync the model, manage data, and use chat without the guest quota.
+</RoleCard>
+
+<RoleCard role="guest" title="Guest">
+  Public demo with a chat quota: explore KPIs, viewer, and queries up to the configured limit.
+</RoleCard>

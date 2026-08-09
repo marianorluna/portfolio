@@ -453,7 +453,7 @@
           {
             "title": "Propiedad intelectual",
             "paragraphs": [
-              "El diseño, los textos, las imágenes y demás contenidos del sitio, incluidos de forma expresa los materiales del Lab (tutoriales, notas, checklists, infografías, dashboards y recursos publicados en /lab), son titularidad de Mariano Luna o de terceros con licencia. Todos los derechos están reservados.",
+              "El diseño, los textos, las imágenes y demás contenidos del sitio, incluidos de forma expresa los materiales del Lab (tutoriales, notas, demos, infografías, dashboards y recursos publicados en /lab), son titularidad de Mariano Luna o de terceros con licencia. Todos los derechos están reservados.",
               "Se permite la consulta y el uso personal de estos contenidos. Queda prohibida su reproducción, distribución, modificación o uso comercial sin autorización previa por escrito del titular.",
               "La licencia MIT del repositorio de código fuente de este proyecto aplica únicamente al código publicado en dicho repositorio. No cubre el contenido editorial del Lab ni los activos del sitio, salvo que se indique expresamente lo contrario."
             ],
@@ -547,7 +547,7 @@
       "flyoutEmptyMessage": "Aún no hay entradas publicadas. Vuelve pronto.",
       "indexKicker": "Lab",
       "indexTitle": "Lab",
-      "indexDescription": "Un laboratorio de ideas y práctica con tutoriales, guías, checklists e infografías sobre Arquitectura, BIM, IA y desarrollo, pensados para experimentar, informarse y aprender.",
+      "indexDescription": "Un laboratorio de ideas y práctica con tutoriales, guías, demos e infografías sobre Arquitectura, BIM, IA y desarrollo, pensados para experimentar, informarse y aprender.",
       "aiCoverCredit": "Imágenes de portada generadas con IA",
       "indexEmptyMessage": "Aún no hay entradas publicadas en este idioma. Vuelve pronto.",
       "filterAllLabel": "Todos",
@@ -578,9 +578,18 @@
       "tutorialContactLead": "Por cualquier duda o sugerencia sobre este tutorial, puedes comunicarte conmigo por el",
       "tutorialContactFormLabel": "formulario de contacto",
       "tutorialContactOr": "o al correo",
+      "demoLoadVideoLabel": "Aceptar y cargar video",
+      "demoConsentHint": "Para ver el video en el sitio debes aceptar cookies de terceros (YouTube).",
+      "demoOpenLiveLabel": "Abrir demo",
+      "demoOpenYoutubeLabel": "Ver en YouTube",
+      "demoTabVideoLabel": "Video",
+      "demoTabLiveLabel": "Demo en vivo",
+      "demoRepoLabel": "Código",
+      "demoWatchVideoLabel": "Ver video",
+      "demoStageAriaLabel": "Demostración multimedia",
       "typeLabel": {
         "tutorial": "Tutorial",
-        "checklist": "Checklist",
+        "demo": "Demo",
         "infografia": "Infografía",
         "dashboard": "Dashboard",
         "nota": "Nota"

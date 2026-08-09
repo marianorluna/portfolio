@@ -11,19 +11,11 @@ import type { LabPlaceholderCard } from "@/types/lab";
  *   s4   s5   s5   s6  s7
  *   s8   s9   s10  s10 s11
  * Ordenar para que el mismo face-tone no quede en celdas vecinas.
- * Con 2 recursos (nota blue + tutorial cover), tonos en s3…s11:
- *   cyan → ink → frost → slate → blue → slate → ink → cyan → ink
+ * Con 3 recursos (demo aqua + nota blue + tutorial cover), tonos en s4…s11:
+ *   ink → frost → aqua → blue → aqua → ink → cyan → ink
  */
 const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
   es: [
-    {
-      id: "ph-tutorial-dynamo",
-      type: "tutorial",
-      size: "lg",
-      title: "Automatiza planos con Dynamo + IA",
-      description: "De la idea al script: pasos claros para quien empieza.",
-      tags: ["Dynamo", "IA", "Revit"],
-    },
     {
       id: "ph-tutorial-navis",
       type: "dashboard",
@@ -41,8 +33,8 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       tags: ["MCP", "Cursor", "Revit"],
     },
     {
-      id: "ph-checklist-qa",
-      type: "checklist",
+      id: "ph-demo-qa",
+      type: "demo",
       size: "sm",
       title: "QA BIM en 15 minutos",
       description: "Una pasada rápida de calidad antes de entregar.",
@@ -57,8 +49,8 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       tags: ["Python", "pyRevit"],
     },
     {
-      id: "ph-checklist-entrega",
-      type: "checklist",
+      id: "ph-demo-entrega",
+      type: "demo",
       size: "sm",
       title: "Entrega digital al cliente",
       description: "Lo mínimo que debe salir del BIM Manager.",
@@ -91,14 +83,6 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
   ],
   en: [
     {
-      id: "ph-tutorial-dynamo",
-      type: "tutorial",
-      size: "lg",
-      title: "Automate sheets with Dynamo + AI",
-      description: "From idea to script: clear steps for beginners.",
-      tags: ["Dynamo", "AI", "Revit"],
-    },
-    {
       id: "ph-tutorial-navis",
       type: "dashboard",
       size: "md",
@@ -115,8 +99,8 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       tags: ["MCP", "Cursor", "Revit"],
     },
     {
-      id: "ph-checklist-qa",
-      type: "checklist",
+      id: "ph-demo-qa",
+      type: "demo",
       size: "sm",
       title: "BIM QA in 15 minutes",
       description: "A fast quality pass before you hand over.",
@@ -131,8 +115,8 @@ const PLACEHOLDERS: Record<Locale, LabPlaceholderCard[]> = {
       tags: ["Python", "pyRevit"],
     },
     {
-      id: "ph-checklist-entrega",
-      type: "checklist",
+      id: "ph-demo-entrega",
+      type: "demo",
       size: "sm",
       title: "Digital handover to the client",
       description: "The minimum a BIM Manager should ship.",
